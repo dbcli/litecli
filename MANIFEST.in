@@ -1,0 +1,4 @@
+include *.txt *.rst *.py
+include AUTHORS CHANGELOG LICENSE
+include tox.ini
+recursive-include test *.py
