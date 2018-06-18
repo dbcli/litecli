@@ -1,9 +1,10 @@
 .idea/
 /build
 /dist
-/mycli.egg-info
+/litecli.egg-info
 /src
 /test/behave.ini
+/litecli_env
 
 .vagrant
 *.pyc

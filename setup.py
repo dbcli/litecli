@@ -4,8 +4,7 @@
 import ast
 from io import open
 import re
-
-from setuptools import setup
+from setuptools import setup, find_packages
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
@@ -22,15 +21,35 @@ def open_file(filename):
 
 readme = open_file('README.rst')
 
+install_requirements = [
+    'click >= 4.1',
+    'Pygments >= 1.6',
+    'prompt_toolkit>=1.0.10,<1.1.0',
+    'sqlparse>=0.2.2,<0.3.0',
+    'configobj >= 5.0.5',
+    'cryptography >= 1.0.0',
+    'cli_helpers[styles] >= 1.0.1',
+]
+
 setup(
     name='litecli',
     author='dbcli',
     author_email='thomas@roten.us',
     version=version,
     url='https://github.com/dbcli/litecli',
+    packages=find_packages(),
+    package_data={'litecli': ['liteclirc', 'AUTHORS', 'SPONSORS']},
     description='CLI for SQLite Databases with auto-completion and syntax '
                 'highlighting.',
     long_description=readme,
+    install_requires=install_requirements,
+    entry_points={
+        'console_scripts': ['litecli = litecli.main:cli'],
+        'distutils.commands': [
+            'lint = tasks:lint',
+            'test = tasks:test',
+        ],
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
