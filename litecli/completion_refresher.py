@@ -99,15 +99,6 @@ def refresh_tables(completer, executor):
     completer.extend_relations(executor.tables(), kind='tables')
     completer.extend_columns(executor.table_columns(), kind='tables')
 
-@refresher('users')
-def refresh_users(completer, executor):
-    completer.extend_users(executor.users())
-
-# @refresher('views')
-# def refresh_views(completer, executor):
-#     completer.extend_relations(executor.views(), kind='views')
-#     completer.extend_columns(executor.view_columns(), kind='views')
-
 @refresher('functions')
 def refresh_functions(completer, executor):
     completer.extend_functions(executor.functions())
@@ -115,7 +106,3 @@ def refresh_functions(completer, executor):
 @refresher('special_commands')
 def refresh_special(completer, executor):
     completer.extend_special_commands(COMMANDS.keys())
-
-@refresher('show_commands')
-def refresh_show_commands(completer, executor):
-    completer.extend_show_items(executor.show_candidates())

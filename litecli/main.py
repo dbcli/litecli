@@ -35,7 +35,7 @@ import litecli.packages.special as special
 from .sqlcompleter import SQLCompleter
 from .clitoolbar import create_toolbar_tokens_func
 from .clistyle import style_factory
-from .sqlexecute import SQLExecute #, FIELD_TYPES 
+from .sqlexecute import SQLExecute #, FIELD_TYPES
 from .clibuffer import CLIBuffer
 from .completion_refresher import CompletionRefresher
 from .config import (write_default_config, get_mylogin_cnf_path,
@@ -72,7 +72,7 @@ PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 class LiteCli(object):
 
-    default_prompt = '\\t \\u@\\h:\\d> '
+    default_prompt = '\\t :\\d> '
     max_len_prompt = 45
     defaults_suffix = None
 
@@ -456,7 +456,6 @@ class LiteCli(object):
             print('Chat: https://gitter.im/dbcli/litecli')
             print('Mail: https://groups.google.com/forum/#!forum/litecli-users')
             print('Home: http://litecli.net')
-            print('Thanks to the contributor -', thanks_picker([author_file, sponsor_file]))
 
         def prompt_tokens(cli):
             prompt = self.get_prompt(self.prompt_format)
@@ -794,6 +793,7 @@ class LiteCli(object):
                 Document(text=text, cursor_position=cursor_positition), None)
 
     def get_prompt(self, string):
+        self.logger.info('Getting prompt')
         sqlexecute = self.sqlexecute
         now = datetime.now()
         string = string.replace('\\u', sqlexecute.user or '(none)')
@@ -1089,16 +1089,6 @@ def is_select(status):
     if not status:
         return False
     return status.split(None, 1)[0].lower() == 'select'
-
-
-def thanks_picker(files=()):
-    contents = []
-    for line in fileinput.input(files=files):
-        m = re.match('^ *\* (.*)', line)
-        if m:
-            contents.append(m.group(1))
-    return choice(contents)
-
 
 if __name__ == "__main__":
     cli()

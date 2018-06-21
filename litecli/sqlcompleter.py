@@ -29,7 +29,7 @@ class SQLCompleter(Completer):
                 'ORDER BY', 'OUTER', 'OWNER', 'PASSWORD', 'PORT', 'PRIMARY',
                 'PRIVILEGES', 'PROCESSLIST', 'PURGE', 'REFERENCES', 'REGEXP', 'RENAME', 'REPAIR', 'RESET',
                 'REVOKE', 'RIGHT', 'ROLLBACK','ROW', 'ROWS', 'ROW_FORMAT', 'SELECT', 'SESSION', 'SET',
-                'SHARE', 'SHOW', 'SLAVE', 'SMALLINT', 'START', 'STOP', 'TABLE', 'THEN',
+                'SHARE', 'SLAVE', 'SMALLINT', 'START', 'STOP', 'TABLE', 'THEN',
                 'TO', 'TRANSACTION', 'TRIGGER', 'TRUNCATE', 'UNION', 'UNIQUE', 'UNSIGNED', 'UPDATE',
                 'USE', 'USER', 'USING', 'VALUES', 'VARCHAR', 'VIEW', 'WHEN', 'WHERE',
                 'WITH']
@@ -38,8 +38,6 @@ class SQLCompleter(Completer):
                  'LCASE', 'LEN', 'MAX', 'MIN', 'MID', 'NOW', 'ROUND', 'SUM',
                  'TOP', 'UCASE']
 
-    show_items = []
-
     change_items = ['MASTER_BIND', 'MASTER_HOST', 'MASTER_USER',
                     'MASTER_PASSWORD', 'MASTER_PORT', 'MASTER_CONNECT_RETRY',
                     'MASTER_HEARTBEAT_PERIOD', 'MASTER_LOG_FILE',
@@ -47,8 +45,6 @@ class SQLCompleter(Completer):
                     'MASTER_SSL', 'MASTER_SSL_CA', 'MASTER_SSL_CAPATH',
                     'MASTER_SSL_CERT', 'MASTER_SSL_KEY', 'MASTER_SSL_CIPHER',
                     'MASTER_SSL_VERIFY_SERVER_CERT', 'IGNORE_SERVER_IDS']
-
-    users = []
 
     def __init__(self, smart_completion=True, supported_formats=(), keyword_casing='auto'):
         super(self.__class__, self).__init__()
@@ -95,20 +91,10 @@ class SQLCompleter(Completer):
         self.keywords.extend(additional_keywords)
         self.all_completions.update(additional_keywords)
 
-    def extend_show_items(self, show_items):
-        for show_item in show_items:
-            self.show_items.extend(show_item)
-            self.all_completions.update(show_item)
-
     def extend_change_items(self, change_items):
         for change_item in change_items:
             self.change_items.extend(change_item)
             self.all_completions.update(change_item)
-
-    def extend_users(self, users):
-        for user in users:
-            self.users.extend(user)
-            self.all_completions.update(user)
 
     def extend_schemata(self, schema):
         if schema is None:
@@ -192,8 +178,6 @@ class SQLCompleter(Completer):
 
     def reset_completions(self):
         self.databases = []
-        self.users = []
-        self.show_items = []
         self.dbname = ''
         self.dbmetadata = {'tables': {}, 'views': {}, 'functions': {}}
         self.all_completions = set(self.keywords + self.functions)
@@ -324,26 +308,12 @@ class SQLCompleter(Completer):
                                              casing=self.keyword_casing)
                 completions.extend(keywords)
 
-            elif suggestion['type'] == 'show':
-                show_items = self.find_matches(word_before_cursor,
-                                               self.show_items,
-                                               start_only=False,
-                                               fuzzy=True,
-                                               casing=self.keyword_casing)
-                completions.extend(show_items)
-
             elif suggestion['type'] == 'change':
                 change_items = self.find_matches(word_before_cursor,
                                                  self.change_items,
                                                  start_only=False,
                                                  fuzzy=True)
                 completions.extend(change_items)
-            elif suggestion['type'] == 'user':
-                users = self.find_matches(word_before_cursor, self.users,
-                                          start_only=False,
-                                          fuzzy=True)
-                completions.extend(users)
-
             elif suggestion['type'] == 'special':
                 special = self.find_matches(word_before_cursor,
                                             self.special_commands,

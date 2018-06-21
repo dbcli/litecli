@@ -1,14 +1,9 @@
 import uuid
 import logging
+from contextlib import closing
 import sqlite3
 import sqlparse
 from .packages import special
-
-# import pymysql
-# from pymysql.constants import FIELD_TYPE
-# from pymysql.converters import (convert_mysql_timestamp, convert_datetime,
-#                                 convert_timedelta, convert_date, conversions,
-#                                 decoders)
 
 _logger = logging.getLogger(__name__)
 
@@ -23,15 +18,6 @@ class SQLExecute(object):
     databases_query = '''SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1'''
 
     tables_query = '''SELECT sql FROM sqlite_master ORDER BY tbl_name, type DESC, name'''
-
-    version_query = '''SELECT @@VERSION'''
-
-    version_comment_query = '''SELECT @@VERSION_COMMENT'''
-    version_comment_query_mysql4 = '''SHOW VARIABLES LIKE "version_comment"'''
-
-    show_candidates_query = '''SELECT name from mysql.help_topic WHERE name like "SHOW %"'''
-
-    users_query = '''SELECT CONCAT("'", user, "'@'",host,"'") FROM mysql.user'''
 
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
@@ -66,20 +52,6 @@ class SQLExecute(object):
                       '\tcharset: %r'
                       '\tlocal_infile: %r',
                       database, user, socket, charset, local_infile)
-        # conv = conversions.copy()
-        # conv.update({
-        #     FIELD_TYPE.TIMESTAMP: lambda obj: (convert_mysql_timestamp(obj) or obj),
-        #     FIELD_TYPE.DATETIME: lambda obj: (convert_datetime(obj) or obj),
-        #     FIELD_TYPE.TIME: lambda obj: (convert_timedelta(obj) or obj),
-        #     FIELD_TYPE.DATE: lambda obj: (convert_date(obj) or obj),
-        # })
-
-        # conn = pymysql.connect(database=db, user=user, password=password,
-        #                        host=host, port=port, unix_socket=socket,
-        #                        use_unicode=True, charset=charset, autocommit=True,
-        #                        client_flag=pymysql.constants.CLIENT.INTERACTIVE,
-        #                        local_infile=local_infile,
-        #                        conv=conv, ssl=ssl)
 
         conn = sqlite3.connect(database=db)
         if hasattr(self, 'conn'):
@@ -163,7 +135,7 @@ class SQLExecute(object):
     def tables(self):
         """Yields table names"""
 
-        with self.conn.cursor() as cur:
+        with closing(self.conn.cursor()) as cur:
             _logger.debug('Tables Query. sql: %r', self.tables_query)
             cur.execute(self.tables_query)
             for row in cur:
@@ -171,7 +143,7 @@ class SQLExecute(object):
 
     def table_columns(self):
         """Yields column names"""
-        with self.conn.cursor() as cur:
+        with closing(self.conn.cursor()) as cur:
             _logger.debug('Columns Query. sql: %r', self.table_columns_query)
             cur.execute(self.table_columns_query % self.dbname)
             for row in cur:
@@ -190,7 +162,7 @@ class SQLExecute(object):
     def functions(self):
         """Yields tuples of (schema_name, function_name)"""
 
-        with self.conn.cursor() as cur:
+        with closing(self.conn.cursor()) as cur:
             _logger.debug('Functions Query. sql: %r', self.functions_query)
             cur.execute(self.functions_query % self.dbname)
             for row in cur:
@@ -211,49 +183,7 @@ class SQLExecute(object):
         finally:
             cur.close()
 
-    def users(self):
-        cur = self.conn.cursor()
-        try:
-            _logger.debug('Users Query. sql: %r', self.users_query)
-            try:
-                cur.execute(self.users_query)
-            except sqlite3.DatabaseError as e:
-                _logger.error('No user completions due to %r', e)
-                yield ''
-            else:
-                for row in cur:
-                    yield row
-        finally:
-            cur.close()
-
     def server_type(self):
-        # if self._server_type:
-        #     return self._server_type
-        # with self.conn.cursor() as cur:
-        #     _logger.debug('Version Query. sql: %r', self.version_query)
-        #     cur.execute(self.version_query)
-        #     version = cur.fetchone()[0]
-        #     if version[0] == '4':
-        #         _logger.debug('Version Comment. sql: %r',
-        #                       self.version_comment_query_mysql4)
-        #         cur.execute(self.version_comment_query_mysql4)
-        #         version_comment = cur.fetchone()[1].lower()
-        #         if isinstance(version_comment, bytes):
-        #             # with python3 this query returns bytes
-        #             version_comment = version_comment.decode('utf-8')
-        #     else:
-        #         _logger.debug('Version Comment. sql: %r',
-        #                       self.version_comment_query)
-        #         cur.execute(self.version_comment_query)
-        #         version_comment = cur.fetchone()[0].lower()
-
-        # if 'mariadb' in version_comment:
-        #     product_type = 'mariadb'
-        # elif 'percona' in version_comment:
-        #     product_type = 'percona'
-        # else:
-        #     product_type = 'mysql'
-
         self._server_type = ('sqlite3', '3')
         return self._server_type
 
