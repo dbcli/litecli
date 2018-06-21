@@ -115,17 +115,8 @@ class SQLExecute(object):
                     yield result
             except special.CommandNotFound:  # Regular SQL
                 _logger.debug('Regular sql statement. sql: %r', sql)
-                print(sql)
-                for r in cur.execute(sql):
-                    yield r
-                # while True:
-                #     yield self.get_result(cur)
-
-                #     # PyMySQL returns an extra, empty result set with stored
-                #     # procedures. We skip it (rowcount is zero and no
-                #     # description).
-                #     if not cur.rowcount and cur.description is None:
-                #         break
+                cur.execute(sql)
+                yield self.get_result(cur)
 
     def get_result(self, cursor):
         """Get the current result's data from the cursor."""
