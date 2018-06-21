@@ -15,16 +15,28 @@ _logger = logging.getLogger(__name__)
 
 class SQLExecute(object):
 
-    databases_query = '''SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1'''
+    databases_query = '''
+        PRAGMA database_list
+    '''
 
-    tables_query = '''SELECT sql FROM sqlite_master ORDER BY tbl_name, type DESC, name'''
+    tables_query = '''
+        SELECT name
+        FROM sqlite_master
+        WHERE type IN ('table','view')
+        AND name NOT LIKE 'sqlite_%'
+        ORDER BY 1
+    '''
+
+    table_columns_query = '''
+        SELECT name, sql
+        FROM sqlite_master
+        WHERE type IN ('table','view')
+        AND name NOT LIKE 'sqlite_%'
+        ORDER BY 1
+    '''
 
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
-
-    table_columns_query = '''select TABLE_NAME, COLUMN_NAME from information_schema.columns
-                                    where table_schema = '%s'
-                                    order by table_name,ordinal_position'''
 
     def __init__(self, database, user, password, socket, charset, local_infile):
         self.dbname = database
@@ -149,15 +161,23 @@ class SQLExecute(object):
             for row in cur:
                 yield row
 
-    def databases(self):
-        cur = self.conn.cursor()
-        try:
-            _logger.debug('Databases Query. sql: %r', self.databases_query)
-            cur.execute(self.databases_query)
+    def table_columns(self):
+        """Yields (table, column) pairs"""
+        with closing(self.conn.cursor()) as cur:
+            _logger.debug('Columns Query. sql: %r', self.table_columns_query)
+            for table, sql in cur.execute(self.table_columns_query):
+                for col in self._get_cols(sql):
+                    yield (table, col)
 
-            return [x[0] for x in cur.fetchall()]
-        finally:
-            cur.close()
+    def _get_cols(self, sql):
+        index = sql.index('(')
+        return [col.split()[0] for col in sql[index + 1: len(sql) - 1].split(', ')]
+
+    def databases(self):
+        with closing(self.conn.cursor()) as cur:
+            _logger.debug('Databases Query. sql: %r', self.databases_query)
+            for row in cur.execute(self.databases_query):
+                yield row[1]
 
     def functions(self):
         """Yields tuples of (schema_name, function_name)"""
