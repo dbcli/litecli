@@ -180,8 +180,7 @@ class SQLExecute(object):
                 yield row
 
     def show_candidates(self):
-        cur = self.conn.cursor()
-        try:
+        with closing(self.conn.cursor()) as cur:
             _logger.debug('Show Query. sql: %r', self.show_candidates_query)
             try:
                 cur.execute(self.show_candidates_query)
@@ -191,8 +190,6 @@ class SQLExecute(object):
             else:
                 for row in cur:
                     yield (row[0].split(None, 1)[-1], )
-        finally:
-            cur.close()
 
     def server_type(self):
         self._server_type = ('sqlite3', '3')

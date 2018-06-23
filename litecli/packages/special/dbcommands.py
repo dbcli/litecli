@@ -11,18 +11,26 @@ from .main import special_command, RAW_QUERY, PARSED_QUERY
 log = logging.getLogger(__name__)
 
 
-@special_command('\\dt', '\\dt[+] [table]', 'List or describe tables.',
+@special_command('.tables', '.tables[+] [table]', 'List or describe tables.',
                  arg_type=PARSED_QUERY, case_sensitive=True)
 def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
-    # if arg:
-    #     query = 'SHOW FIELDS FROM {0}'.format(arg)
-    # else:
-    #     query = 'SHOW TABLES'
-
-    query = "SELECT sql FROM sqlite_master ORDER BY tbl_name, type DESC, name"
+    if arg:
+        args = ('{0}%'.format(arg),)
+        query = '''
+            SELECT name FROM sqlite_master
+            WHERE type IN ('table','view') AND name LIKE ? AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+        '''
+    else:
+        args = tuple()
+        query = '''
+            SELECT name FROM sqlite_master
+            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+        '''
 
     log.debug(query)
-    cur.execute(query)
+    cur.execute(query, args)
     tables = cur.fetchall()
     status = ''
     if cur.description:
@@ -30,18 +38,18 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     else:
         return [(None, None, None, '')]
 
-    if verbose and arg:
-        query = 'SHOW CREATE TABLE {0}'.format(arg)
-        log.debug(query)
-        cur.execute(query)
-        status = cur.fetchone()[1]
+    # if verbose and arg:
+    #     query = "SELECT sql FROM sqlite_master WHERE name LIKE ?"
+    #     log.debug(query)
+    #     cur.execute(query)
+    #     status = cur.fetchone()[1]
 
     return [(None, tables, headers, status)]
 
 
-@special_command('\\l', '\\l', 'List databases.', arg_type=RAW_QUERY, case_sensitive=True)
+@special_command('.databases', '.databases', 'List databases.', arg_type=RAW_QUERY, case_sensitive=True)
 def list_databases(cur, **_):
-    query = "SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY 1"
+    query = "PRAGMA database_list"
     log.debug(query)
     cur.execute(query)
     if cur.description:
