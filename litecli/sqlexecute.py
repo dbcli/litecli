@@ -38,32 +38,29 @@ class SQLExecute(object):
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
 
-    def __init__(self, database, user, password, socket, charset, local_infile):
+    def __init__(self, database, user, password, charset, local_infile):
         self.dbname = database
         self.user = user
         self.password = password
-        self.socket = socket
         self.charset = charset
         self.local_infile = local_infile
         self._server_type = None
         self.connection_id = None
         self.connect()
 
-    def connect(self, database=None, user=None, password=None, socket=None,
+    def connect(self, database=None, user=None, password=None,
                 charset=None, local_infile=None):
         db = (database or self.dbname)
         user = (user or self.user)
         password = (password or self.password)
-        socket = (socket or self.socket)
         charset = (charset or self.charset)
         local_infile = (local_infile or self.local_infile)
         _logger.debug('Connection DB Params: \n'
                       '\tdatabase: %r'
                       '\tuser: %r'
-                      '\tsocket: %r'
                       '\tcharset: %r'
                       '\tlocal_infile: %r',
-                      database, user, socket, charset, local_infile)
+                      database, user, charset, local_infile)
 
         conn = sqlite3.connect(database=db)
         if hasattr(self, 'conn'):
@@ -75,7 +72,6 @@ class SQLExecute(object):
         self.dbname = db
         self.user = user
         self.password = password
-        self.socket = socket
         self.charset = charset
         # retrieve connection id
         self.reset_connection_id()
@@ -123,7 +119,7 @@ class SQLExecute(object):
         title = headers = None
 
         # cursor.description is not None for queries that return result sets,
-        # e.g. SELECT or SHOW.
+        # e.g. SELECT.
         if cursor.description is not None:
             headers = [x[0] for x in cursor.description]
             status = '{0} row{1} in set'

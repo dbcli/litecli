@@ -143,12 +143,6 @@ def status(cur, **_):
     output.append(('Db characterset:', charset[1]))
     output.append(('Client characterset:', charset[2]))
     output.append(('Conn. characterset:', charset[3]))
-
-    if 'TCP/IP' in host_info:
-        output.append(('TCP port:', cur.connection.port))
-    else:
-        output.append(('UNIX socket:', variables['socket']))
-
     output.append(('Uptime:', format_uptime(status['Uptime'])))
 
     # Print the current server statistics.

@@ -50,7 +50,7 @@ class CompletionRefresher(object):
         # Create a new pgexecute method to popoulate the completions.
         e = sqlexecute
         executor = SQLExecute(e.dbname, e.user, e.password,
-                              e.socket, e.charset, e.local_infile)
+                              e.charset, e.local_infile)
 
         # If callbacks is a single function then push it into a list.
         if callable(callbacks):

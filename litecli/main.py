@@ -313,12 +313,11 @@ class LiteCli(object):
         return {x: get(x) for x in keys}
 
     def connect(self, database='', user='', passwd='',
-            socket='', charset='', local_infile=''):
+            charset='', local_infile=''):
 
         cnf = {'database': None,
                'user': None,
                'password': None,
-               'socket': None,
                'default-character-set': None,
                'local-infile': None,
                'loose-local-infile': None
@@ -329,8 +328,6 @@ class LiteCli(object):
         # Fall back to config values only if user did not specify a value.
 
         database = database or cnf['database']
-        socket = ''
-        # socket = socket or cnf['socket']
         user = user or cnf['user'] or os.getenv('USER')
 
         passwd = passwd or cnf['password']
@@ -350,44 +347,18 @@ class LiteCli(object):
         def _connect():
             try:
                 self.sqlexecute = SQLExecute(database, user, passwd,
-                                             socket, charset, local_infile)
+                                             charset, local_infile)
             except OperationalError as e:
                 if ('Access denied for user' in e.args[1]):
                     new_passwd = click.prompt('Password', hide_input=True,
                                               show_default=False, type=str, err=True)
                     self.sqlexecute = SQLExecute(database, user, new_passwd,
-                                                 socket, charset, local_infile)
+                                                 charset, local_infile)
                 else:
                     raise e
 
         try:
-            if (socket is None) and not WIN:
-                # Try a sensible default socket first (simplifies auth)
-                # If we get a connection error, try tcp/ip localhost
-                try:
-                    socket = '/var/run/mysqld/mysqld.sock'
-                    _connect()
-                except OperationalError as e:
-                    # These are "Can't open socket" and 2x "Can't connect"
-                    if [code for code in (2001, 2002, 2003) if code == e.args[0]]:
-                        self.logger.debug('Database connection failed: %r.', e)
-                        self.logger.error(
-                            "traceback: %r", traceback.format_exc())
-                        self.logger.debug('Retrying over TCP/IP')
-                        self.echo(str(e), err=True)
-                        self.echo(
-                            'Failed to connect by socket, retrying over TCP/IP', err=True)
-
-                        # Else fall back to TCP/IP localhost
-                        socket = ""
-                        host = 'localhost'
-                        port = 3306
-                        _connect()
-                    else:
-                        raise e
-            else:
-                _connect()
-
+            _connect()
         except Exception as e:  # Connecting to a database could fail.
             self.logger.debug('Database connection failed: %r.', e)
             self.logger.error("traceback: %r", traceback.format_exc())
@@ -885,7 +856,6 @@ class LiteCli(object):
 
 @click.command()
 @click.option('-u', '--user', help='User name to connect to the database.')
-@click.option('-S', '--socket', envvar='MYSQL_UNIX_PORT', help='The socket file to use for connection.')
 @click.option('-p', '--password', 'password', envvar='MYSQL_PWD', type=str,
               help='Password to connect to the database.')
 @click.option('--pass', 'password', envvar='MYSQL_PWD', type=str,
@@ -925,7 +895,7 @@ class LiteCli(object):
 @click.option('-e', '--execute',  type=str,
               help='Execute command and quit.')
 @click.argument('database', default='', nargs=1)
-def cli(database, user, socket, password, dbname,
+def cli(database, user, password, dbname,
         version, verbose, prompt, logfile, defaults_group_suffix,
         defaults_file, login_path, auto_vertical_output, local_infile,
         table, csv, warn, execute, liteclirc, dsn, list_dsn):
@@ -976,7 +946,7 @@ def cli(database, user, socket, password, dbname,
                         err=True, fg='red')
             exit(1)
 
-    litecli.connect(database, user, password, socket, local_infile=local_infile)
+    litecli.connect(database, user, password, local_infile=local_infile)
 
     litecli.logger.debug('Launch Params: \n'
             '\tdatabase: %r'
