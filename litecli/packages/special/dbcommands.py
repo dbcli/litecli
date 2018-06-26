@@ -47,6 +47,35 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     return [(None, tables, headers, status)]
 
 
+@special_command('.schema', '.schema[+] [table]', 'The complete schema for the database or a single table',
+                 arg_type=PARSED_QUERY, case_sensitive=True)
+def show_schema(cur, arg=None, **_):
+    if arg:
+        args = (arg,)
+        query = '''
+            SELECT sql FROM sqlite_master
+            WHERE name==?
+            ORDER BY tbl_name, type DESC, name
+        '''
+    else:
+        args = tuple()
+        query = '''
+            SELECT sql FROM sqlite_master
+            ORDER BY tbl_name, type DESC, name
+        '''
+
+    log.debug(query)
+    cur.execute(query, args)
+    tables = cur.fetchall()
+    status = ''
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, '')]
+
+    return [(None, tables, headers, status)]
+
+
 @special_command('.databases', '.databases', 'List databases.', arg_type=RAW_QUERY, case_sensitive=True)
 def list_databases(cur, **_):
     query = "PRAGMA database_list"
