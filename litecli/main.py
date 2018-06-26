@@ -312,15 +312,12 @@ class LiteCli(object):
 
         return {x: get(x) for x in keys}
 
-    def connect(self, database='', user='', passwd='',
-            charset='', local_infile=''):
+    def connect(self, database='', user='', passwd='', charset=''):
 
         cnf = {'database': None,
                'user': None,
                'password': None,
                'default-character-set': None,
-               'local-infile': None,
-               'loose-local-infile': None
         }
 
         cnf = self.read_my_cnf_files(self.cnf_files, cnf.keys())
@@ -333,27 +330,16 @@ class LiteCli(object):
         passwd = passwd or cnf['password']
         charset = charset or cnf['default-character-set'] or 'utf8'
 
-        # Favor whichever local_infile option is set.
-        for local_infile_option in (local_infile, cnf['local-infile'],
-                                    cnf['loose-local-infile'], False):
-            try:
-                local_infile = str_to_bool(local_infile_option)
-                break
-            except (TypeError, ValueError):
-                pass
-
         # Connect to the database.
 
         def _connect():
             try:
-                self.sqlexecute = SQLExecute(database, user, passwd,
-                                             charset, local_infile)
+                self.sqlexecute = SQLExecute(database, user, passwd, charset)
             except OperationalError as e:
                 if ('Access denied for user' in e.args[1]):
                     new_passwd = click.prompt('Password', hide_input=True,
                                               show_default=False, type=str, err=True)
-                    self.sqlexecute = SQLExecute(database, user, new_passwd,
-                                                 charset, local_infile)
+                    self.sqlexecute = SQLExecute(database, user, new_passwd, charset)
                 else:
                     raise e
 
@@ -405,9 +391,6 @@ class LiteCli(object):
 
         if self.smart_completion:
             self.refresh_completions()
-
-        author_file = os.path.join(PACKAGE_ROOT, 'AUTHORS')
-        sponsor_file = os.path.join(PACKAGE_ROOT, 'SPONSORS')
 
         history_file = os.path.expanduser(
             os.environ.get('LITECLI_HISTFILE', '~/.litecli-history'))
@@ -888,8 +871,6 @@ class LiteCli(object):
               help='Display batch output in CSV format.')
 @click.option('--warn/--no-warn', default=None,
               help='Warn before running a destructive query.')
-@click.option('--local-infile', type=bool,
-              help='Enable/disable LOAD DATA LOCAL INFILE.')
 @click.option('--login-path', type=str,
               help='Read this path from the login file.')
 @click.option('-e', '--execute',  type=str,
@@ -897,7 +878,7 @@ class LiteCli(object):
 @click.argument('database', default='', nargs=1)
 def cli(database, user, password, dbname,
         version, verbose, prompt, logfile, defaults_group_suffix,
-        defaults_file, login_path, auto_vertical_output, local_infile,
+        defaults_file, login_path, auto_vertical_output,
         table, csv, warn, execute, liteclirc, dsn, list_dsn):
     """A SQLite terminal client with auto-completion and syntax highlighting.
 
@@ -946,7 +927,7 @@ def cli(database, user, password, dbname,
                         err=True, fg='red')
             exit(1)
 
-    litecli.connect(database, user, password, local_infile=local_infile)
+    litecli.connect(database, user, password)
 
     litecli.logger.debug('Launch Params: \n'
             '\tdatabase: %r'
