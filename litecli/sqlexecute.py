@@ -62,7 +62,7 @@ class SQLExecute(object):
                       '\tlocal_infile: %r',
                       database, user, charset, local_infile)
 
-        conn = sqlite3.connect(database=db)
+        conn = sqlite3.connect(database=db, isolation_level=None)
         if hasattr(self, 'conn'):
             self.conn.close()
 
