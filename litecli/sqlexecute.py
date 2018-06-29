@@ -22,17 +22,16 @@ class SQLExecute(object):
     tables_query = '''
         SELECT name
         FROM sqlite_master
-        WHERE type IN ('table','view')
-        AND name NOT LIKE 'sqlite_%'
+        WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
         ORDER BY 1
     '''
 
     table_columns_query = '''
-        SELECT name, sql
-        FROM sqlite_master
-        WHERE type IN ('table','view')
-        AND name NOT LIKE 'sqlite_%'
-        ORDER BY 1
+        SELECT m.name as tableName, p.name as columnName
+        FROM sqlite_master m
+        LEFT OUTER JOIN pragma_table_info((m.name)) p ON m.name <> p.name
+        WHERE m.type IN ('table','view') AND m.name NOT LIKE 'sqlite_%'
+        ORDER BY tableName, columnName
     '''
 
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
@@ -140,21 +139,9 @@ class SQLExecute(object):
         """Yields column names"""
         with closing(self.conn.cursor()) as cur:
             _logger.debug('Columns Query. sql: %r', self.table_columns_query)
-            cur.execute(self.table_columns_query % self.dbname)
+            cur.execute(self.table_columns_query)
             for row in cur:
                 yield row
-
-    def table_columns(self):
-        """Yields (table, column) pairs"""
-        with closing(self.conn.cursor()) as cur:
-            _logger.debug('Columns Query. sql: %r', self.table_columns_query)
-            for table, sql in cur.execute(self.table_columns_query):
-                for col in self._get_cols(sql):
-                    yield (table, col)
-
-    def _get_cols(self, sql):
-        index = sql.index('(')
-        return [col.split()[0] for col in sql[index + 1: len(sql) - 1].split(', ')]
 
     def databases(self):
         with closing(self.conn.cursor()) as cur:
