@@ -747,7 +747,7 @@ class LiteCli(object):
                 Document(text=text, cursor_position=cursor_positition), None)
 
     def get_prompt(self, string):
-        self.logger.info('Getting prompt')
+        self.logger.debug('Getting prompt')
         sqlexecute = self.sqlexecute
         now = datetime.now()
         string = string.replace('\\u', sqlexecute.user or '(none)')

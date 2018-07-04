@@ -45,6 +45,10 @@ class CompletionRefresher(object):
         return self._completer_thread and self._completer_thread.is_alive()
 
     def _bg_refresh(self, sqlexecute, callbacks, completer_options):
+        if not sqlexecute.conn:
+            # Not connected. Can't refresh anything.
+            return
+
         completer = SQLCompleter(**completer_options)
 
         # Create a new pgexecute method to popoulate the completions.

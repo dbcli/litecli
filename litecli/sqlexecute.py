@@ -1,8 +1,11 @@
-import uuid
 import logging
-from contextlib import closing
 import sqlite3
+import uuid
+from contextlib import closing
+from sqlite3 import OperationalError
+
 import sqlparse
+
 from .packages import special
 
 _logger = logging.getLogger(__name__)
@@ -44,6 +47,10 @@ class SQLExecute(object):
         self.charset = charset
         self._server_type = None
         self.connection_id = None
+        self.conn = None
+        if not database:
+            _logger.debug('Database is not specified. Skip connection.')
+            return
         self.connect()
 
     def connect(self, database=None, user=None, password=None, charset=None):
@@ -76,7 +83,6 @@ class SQLExecute(object):
         are a list of tuples. Each tuple has 4 values
         (title, rows, headers, status).
         """
-
         # Remove spaces and EOL
         statement = statement.strip()
         if not statement:  # Empty string
@@ -98,6 +104,12 @@ class SQLExecute(object):
             if sql.endswith('\\G'):
                 special.set_expanded_output(True)
                 sql = sql[:-2].strip()
+
+            if not self.conn and not sql.startswith('.open'):
+                _logger.debug('Not connected to database. Will not run statement: %s.', sql)
+                raise OperationalError('Not connected to database.')
+                # yield ('Not connected to database', None, None, None)
+                # return
 
             cur = self.conn.cursor()
             try:   # Special command
