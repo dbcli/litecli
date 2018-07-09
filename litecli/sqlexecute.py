@@ -65,7 +65,7 @@ class SQLExecute(object):
                       database, user, charset)
 
         conn = sqlite3.connect(database=db, isolation_level=None)
-        if hasattr(self, 'conn'):
+        if self.conn:
             self.conn.close()
 
         self.conn = conn

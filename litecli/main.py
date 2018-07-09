@@ -38,8 +38,7 @@ from .clistyle import style_factory
 from .sqlexecute import SQLExecute #, FIELD_TYPES
 from .clibuffer import CLIBuffer
 from .completion_refresher import CompletionRefresher
-from .config import (write_default_config, get_mylogin_cnf_path,
-                     open_mylogin_cnf, read_config_files, str_to_bool)
+from .config import (config_location, get_config, ensure_dir_exists)
 from .key_bindings import litecli_bindings
 from .encodingutils import utf8tounicode, text_type
 from .lexer import LiteCliLexer
@@ -76,41 +75,17 @@ class LiteCli(object):
     max_len_prompt = 45
     defaults_suffix = None
 
-    # In order of being loaded. Files lower in list override earlier ones.
-    cnf_files = [
-        '/etc/sqlite.cnf',
-        '/etc/sqlite/lite.cnf',
-        '/usr/local/etc/sqlite.cnf',
-        '~/.sqlite.cnf'
-    ]
-
-    system_config_files = [
-        '/etc/liteclirc',
-    ]
-
-    default_config_file = os.path.join(PACKAGE_ROOT, 'liteclirc')
-
-
     def __init__(self, sqlexecute=None, prompt=None,
-            logfile=None, defaults_suffix=None, defaults_file=None,
-            login_path=None, auto_vertical_output=False, warn=None,
-            liteclirc="~/.liteclirc"):
+            logfile=None, defaults_suffix=None,
+            auto_vertical_output=False, warn=None,
+            liteclirc=None):
         self.sqlexecute = sqlexecute
         self.logfile = logfile
         self.defaults_suffix = defaults_suffix
-        self.login_path = login_path
-
-        # self.cnf_files is a class variable that stores the list of mysql
-        # config files to read in at launch.
-        # If defaults_file is specified then override the class variable with
-        # defaults_file.
-        if defaults_file:
-            self.cnf_files = [defaults_file]
 
         # Load config.
-        config_files = ([self.default_config_file] + self.system_config_files +
-                        [liteclirc])
-        c = self.config = read_config_files(config_files)
+        c = self.config = get_config(liteclirc)
+
         self.multi_line = c['main'].as_bool('multi_line')
         self.key_bindings = c['main']['key_bindings']
         special.set_timing_enabled(c['main'].as_bool('timing'))
@@ -131,15 +106,11 @@ class LiteCli(object):
         self.auto_vertical_output = auto_vertical_output or \
                                 c['main'].as_bool('auto_vertical_output')
 
-        # Write user config if system config wasn't the last config loaded.
-        if c.filename not in self.system_config_files:
-            write_default_config(self.default_config_file, liteclirc)
-
         # audit log
         if self.logfile is None and 'audit_log' in c['main']:
             try:
                 self.logfile = open(os.path.expanduser(c['main']['audit_log']), 'a')
-            except (IOError, OSError) as e:
+            except (IOError, OSError):
                 self.echo('Error: Unable to open the audit log file. Your queries will not be logged.',
                           err=True, fg='red')
                 self.logfile = False
@@ -149,7 +120,7 @@ class LiteCli(object):
         self.logger = logging.getLogger(__name__)
         self.initialize_logging()
 
-        prompt_cnf = self.read_my_cnf_files(self.cnf_files, ['prompt'])['prompt']
+        prompt_cnf = self.read_my_cnf_files(['prompt'])['prompt']
         self.prompt_format = prompt or prompt_cnf or c['main']['prompt'] or \
                              self.default_prompt
         self.prompt_continuation_format = c['main']['prompt_continuation']
@@ -167,17 +138,6 @@ class LiteCli(object):
 
         # Register custom special commands.
         self.register_special_commands()
-
-        # Load .mylogin.cnf if it exists.
-        mylogin_cnf_path = get_mylogin_cnf_path()
-        if mylogin_cnf_path:
-            mylogin_cnf = open_mylogin_cnf(mylogin_cnf_path)
-            if mylogin_cnf_path and mylogin_cnf:
-                # .mylogin.cnf gets read last, even if defaults_file is specified.
-                self.cnf_files.append(mylogin_cnf)
-            elif mylogin_cnf_path and not mylogin_cnf:
-                # There was an error reading the login path file.
-                print('Error: Unable to read login path file.')
 
         self.cli = None
 
@@ -249,7 +209,11 @@ class LiteCli(object):
 
     def initialize_logging(self):
 
-        log_file = os.path.expanduser(self.config['main']['log_file'])
+        log_file = self.config['main']['log_file']
+        if log_file == 'default':
+            log_file = config_location() + 'log'
+        ensure_dir_exists(log_file)
+
         log_level = self.config['main']['log_level']
 
         level_map = {'CRITICAL': logging.CRITICAL,
@@ -287,18 +251,16 @@ class LiteCli(object):
         root_logger.debug('Initializing litecli logging.')
         root_logger.debug('Log file %r.', log_file)
 
-    def read_my_cnf_files(self, files, keys):
+    def read_my_cnf_files(self, keys):
         """
         Reads a list of config files and merges them. The last one will win.
         :param files: list of files to read
         :param keys: list of keys to retrieve
         :returns: tuple, with None for missing keys.
         """
-        cnf = read_config_files(files)
+        cnf = self.config
 
         sections = ['client']
-        if self.login_path and self.login_path != 'client':
-            sections.append(self.login_path)
 
         if self.defaults_suffix:
             sections.extend([sect + self.defaults_suffix for sect in sections])
@@ -320,7 +282,7 @@ class LiteCli(object):
                'default-character-set': None,
         }
 
-        cnf = self.read_my_cnf_files(self.cnf_files, cnf.keys())
+        cnf = self.read_my_cnf_files(cnf.keys())
 
         # Fall back to config values only if user did not specify a value.
 
@@ -702,7 +664,7 @@ class LiteCli(object):
         if not os.environ.get('LESS'):
             os.environ['LESS'] = '-RXF'
 
-        cnf = self.read_my_cnf_files(self.cnf_files, ['pager', 'skip-pager'])
+        cnf = self.read_my_cnf_files(['pager', 'skip-pager'])
         if cnf['pager']:
             special.set_pager(cnf['pager'])
             self.explicit_pager = True
@@ -848,10 +810,6 @@ class LiteCli(object):
 @click.option('-V', '--version', is_flag=True, help='Output litecli\'s version.')
 @click.option('-v', '--verbose', is_flag=True, help='Verbose output.')
 @click.option('-D', '--database', 'dbname', help='Database to use.')
-@click.option('-d', '--dsn', default='', envvar='DSN',
-              help='Use DSN configured into the [alias_dsn] section of liteclirc file.')
-@click.option('--list-dsn', 'list_dsn', is_flag=True,
-        help='list of DSN configured into the [alias_dsn] section of liteclirc file.')
 @click.option('-R', '--prompt', 'prompt',
               help='Prompt format (Default: "{0}").'.format(
                   LiteCli.default_prompt))
@@ -859,10 +817,8 @@ class LiteCli(object):
               help='Log every query and its results to a file.')
 @click.option('--defaults-group-suffix', type=str,
               help='Read MySQL config groups with the specified suffix.')
-@click.option('--defaults-file', type=click.Path(),
-              help='Only read MySQL options from the given file.')
-@click.option('--liteclirc', type=click.Path(), default="~/.liteclirc",
-              help='Location of liteclirc file.')
+@click.option('--liteclirc', default=config_location() + 'config',
+              help='Location of liteclirc file.', type=click.Path(dir_okay=False))
 @click.option('--auto-vertical-output', is_flag=True,
               help='Automatically switch to vertical output mode if the result is wider than the terminal width.')
 @click.option('-t', '--table', is_flag=True,
@@ -871,15 +827,13 @@ class LiteCli(object):
               help='Display batch output in CSV format.')
 @click.option('--warn/--no-warn', default=None,
               help='Warn before running a destructive query.')
-@click.option('--login-path', type=str,
-              help='Read this path from the login file.')
 @click.option('-e', '--execute',  type=str,
               help='Execute command and quit.')
 @click.argument('database', default='', nargs=1)
 def cli(database, user, password, dbname,
         version, verbose, prompt, logfile, defaults_group_suffix,
-        defaults_file, login_path, auto_vertical_output,
-        table, csv, warn, execute, liteclirc, dsn, list_dsn):
+        auto_vertical_output,
+        table, csv, warn, execute, liteclirc):
     """A SQLite terminal client with auto-completion and syntax highlighting.
 
     \b
@@ -895,37 +849,11 @@ def cli(database, user, password, dbname,
 
     litecli = LiteCli(prompt=prompt, logfile=logfile,
                   defaults_suffix=defaults_group_suffix,
-                  defaults_file=defaults_file, login_path=login_path,
-                  auto_vertical_output=auto_vertical_output, warn=warn,
-                  liteclirc=liteclirc)
-    if list_dsn:
-        try:
-            alias_dsn = litecli.config['alias_dsn']
-        except KeyError as err:
-            click.secho('Invalid DSNs found in the config file. '\
-                'Please check the "[alias_dsn]" section in liteclirc.',
-                 err=True, fg='red')
-            exit(1)
-        except Exception as e:
-            click.secho(str(e), err=True, fg='red')
-            exit(1)
-        for alias, value in alias_dsn.items():
-            if verbose:
-                click.secho("{} : {}".format(alias, value))
-            else:
-                click.secho(alias)
-        sys.exit(0)
+                  auto_vertical_output=auto_vertical_output,
+                  warn=warn, liteclirc=liteclirc)
+
     # Choose which ever one has a valid value.
     database = database or dbname
-
-    if dsn is not '':
-        try:
-            database = litecli.config['alias_dsn'][dsn]
-        except:
-            click.secho('Invalid DSNs found in the config file. '
-                        'Please check the "[alias_dsn]" section in liteclirc.',
-                        err=True, fg='red')
-            exit(1)
 
     litecli.connect(database, user, password)
 

@@ -17,7 +17,10 @@ multi_line = False
 destructive_warning = True
 
 # log_file location.
-log_file = ~/.litecli.log
+# In Unix/Linux: ~/.config/litecli/log
+# In Windows: %USERPROFILE%\AppData\Local\dbcli\litecli\log
+# %USERPROFILE% is typically C:\Users\{username}
+log_file = default
 
 # Default log level. Possible values: "CRITICAL", "ERROR", "WARNING", "INFO"
 # and "DEBUG". "NONE" disables logging.
@@ -118,7 +121,3 @@ Token.Toolbar.Arg.Text = 'nobold'
 
 # Favorite queries.
 [favorite_queries]
-
-# Use the -d option to reference a DSN.
-[alias_dsn]
-# example_dsn = mysql://[user[:password]@][host][:port][/dbname]
