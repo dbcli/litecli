@@ -111,7 +111,7 @@ class SQLExecute(object):
                 # yield ('Not connected to database', None, None, None)
                 # return
 
-            cur = self.conn.cursor()
+            cur = self.conn.cursor() if self.conn else None
             try:   # Special command
                 _logger.debug('Trying a dbspecial command. sql: %r', sql)
                 for result in special.execute(cur, sql):

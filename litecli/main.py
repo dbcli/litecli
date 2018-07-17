@@ -142,11 +142,8 @@ class LiteCli(object):
         self.cli = None
 
     def register_special_commands(self):
-        special.register_special_command(self.change_db, 'use',
-                '\\u', 'Change to a new database.', aliases=('\\u',))
-        special.register_special_command(self.change_db, 'connect',
-                '\\r', 'Reconnect to the database. Optional database argument.',
-                aliases=('\\r', ), case_sensitive=True)
+        special.register_special_command(self.change_db, '.open',
+                '.open', 'Change to a new database.')
         special.register_special_command(self.refresh_completions, 'rehash',
                 '\\#', 'Refresh auto-completions.', arg_type=NO_QUERY, aliases=('\\#',))
         special.register_special_command(
@@ -176,6 +173,7 @@ class LiteCli(object):
         else:
             self.sqlexecute.connect(database=arg)
 
+        self.refresh_completions()
         yield (None, None, None, 'You are now connected to database "%s" as '
                 'user "%s"' % (self.sqlexecute.dbname, self.sqlexecute.user))
 
