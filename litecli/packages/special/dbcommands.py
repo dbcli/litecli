@@ -11,8 +11,8 @@ from .main import special_command, RAW_QUERY, PARSED_QUERY
 log = logging.getLogger(__name__)
 
 
-@special_command('.tables', '.tables[+] [table]', 'List or describe tables.',
-                 arg_type=PARSED_QUERY, case_sensitive=True)
+@special_command('\\dt', '.tables[+] [table]', 'List or describe tables.',
+                 arg_type=PARSED_QUERY, case_sensitive=True, aliases=('.tables',))
 def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     if arg:
         args = ('{0}%'.format(arg),)
