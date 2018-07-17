@@ -130,13 +130,17 @@ class SQLExecute(object):
         if cursor.description is not None:
             headers = [x[0] for x in cursor.description]
             status = '{0} row{1} in set'
+            cursor = list(cursor)
+            rowcount = len(cursor)
         else:
             _logger.debug('No rows in result.')
             status = 'Query OK, {0} row{1} affected'
-        status = status.format(cursor.rowcount,
-                               '' if cursor.rowcount == 1 else 's')
+            rowcount = cursor.rowcount
+            cursor = None
 
-        return (title, cursor if cursor.description else None, headers, status)
+        status = status.format(rowcount, '' if rowcount == 1 else 's')
+
+        return (title, cursor, headers, status)
 
     def tables(self):
         """Yields table names"""
