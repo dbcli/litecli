@@ -32,14 +32,19 @@ class CompletionRefresher(object):
             self._restart_refresh.set()
             return [(None, None, None, 'Auto-completion refresh restarted.')]
         else:
-            self._completer_thread = threading.Thread(
-                target=self._bg_refresh,
-                args=(executor, callbacks, completer_options),
-                name='completion_refresh')
-            self._completer_thread.setDaemon(True)
-            self._completer_thread.start()
-            return [(None, None, None,
-                     'Auto-completion refresh started in the background.')]
+            if (executor.dbname == ':memory:'):
+                # if DB is memory, needed to use same connection
+                # So can't use same connection with different thread
+                self._bg_refresh(executor, callbacks, completer_options)
+            else:
+                self._completer_thread = threading.Thread(
+                    target=self._bg_refresh,
+                    args=(executor, callbacks, completer_options),
+                    name='completion_refresh')
+                self._completer_thread.setDaemon(True)
+                self._completer_thread.start()
+                return [(None, None, None,
+                        'Auto-completion refresh started in the background.')]
 
     def is_refreshing(self):
         return self._completer_thread and self._completer_thread.is_alive()
@@ -51,9 +56,13 @@ class CompletionRefresher(object):
 
         completer = SQLCompleter(**completer_options)
 
-        # Create a new pgexecute method to popoulate the completions.
         e = sqlexecute
-        executor = SQLExecute(e.dbname, e.user, e.password, e.charset)
+        if (e.dbname == ':memory:'):
+            # if DB is memory, needed to use same connection
+            executor = sqlexecute
+        else:
+            # Create a new sqlexecute method to popoulate the completions.
+            executor = SQLExecute(e.dbname, e.user, e.password, e.charset)
 
         # If callbacks is a single function then push it into a list.
         if callable(callbacks):
