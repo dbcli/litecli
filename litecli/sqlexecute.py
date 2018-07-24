@@ -160,6 +160,9 @@ class SQLExecute(object):
                 yield row
 
     def databases(self):
+        if not self.conn:
+            return
+
         with closing(self.conn.cursor()) as cur:
             _logger.debug('Databases Query. sql: %r', self.databases_query)
             for row in cur.execute(self.databases_query):
