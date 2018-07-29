@@ -135,7 +135,7 @@ class SQLExecute(object):
         else:
             _logger.debug('No rows in result.')
             status = 'Query OK, {0} row{1} affected'
-            rowcount = cursor.rowcount
+            rowcount = 0 if cursor.rowcount == -1 else cursor.rowcount
             cursor = None
 
         status = status.format(rowcount, '' if rowcount == 1 else 's')
