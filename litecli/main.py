@@ -174,8 +174,7 @@ class LiteCli(object):
             self.sqlexecute.connect(database=arg)
 
         self.refresh_completions()
-        yield (None, None, None, 'You are now connected to database "%s" as '
-                'user "%s"' % (self.sqlexecute.dbname, self.sqlexecute.user))
+        yield (None, None, None, 'You are now connected to database "%s"' % (self.sqlexecute.dbname))
 
     def execute_from_file(self, arg, **_):
         if not arg:
@@ -272,36 +271,20 @@ class LiteCli(object):
 
         return {x: get(x) for x in keys}
 
-    def connect(self, database='', user='', passwd='', charset=''):
+    def connect(self, database=''):
 
-        cnf = {'database': None,
-               'user': None,
-               'password': None,
-               'default-character-set': None,
-        }
+        cnf = {'database': None}
 
         cnf = self.read_my_cnf_files(cnf.keys())
 
         # Fall back to config values only if user did not specify a value.
 
         database = database or cnf['database']
-        user = user or cnf['user'] or os.getenv('USER')
-
-        passwd = passwd or cnf['password']
-        charset = charset or cnf['default-character-set'] or 'utf8'
 
         # Connect to the database.
 
         def _connect():
-            try:
-                self.sqlexecute = SQLExecute(database, user, passwd, charset)
-            except OperationalError as e:
-                if ('Access denied for user' in e.args[1]):
-                    new_passwd = click.prompt('Password', hide_input=True,
-                                              show_default=False, type=str, err=True)
-                    self.sqlexecute = SQLExecute(database, user, new_passwd, charset)
-                else:
-                    raise e
+            self.sqlexecute = SQLExecute(database)
 
         try:
             _connect()
@@ -710,7 +693,6 @@ class LiteCli(object):
         self.logger.debug('Getting prompt')
         sqlexecute = self.sqlexecute
         now = datetime.now()
-        string = string.replace('\\u', sqlexecute.user or '(none)')
         string = string.replace('\\d', sqlexecute.dbname or '(none)')
         string = string.replace('\\t', sqlexecute.server_type()[0] or 'litecli')
         string = string.replace('\\n', "\n")
@@ -798,13 +780,6 @@ class LiteCli(object):
 
 
 @click.command()
-@click.option('-u', '--user', help='User name to connect to the database.')
-@click.option('-p', '--password', 'password', envvar='MYSQL_PWD', type=str,
-              help='Password to connect to the database.')
-@click.option('--pass', 'password', envvar='MYSQL_PWD', type=str,
-              help='Password to connect to the database.')
-# as of 2016-02-15 revocation list is not supported by underling PyMySQL
-# library (--ssl-crl and --ssl-crlpath options in vanilla mysql client)
 @click.option('-V', '--version', is_flag=True, help='Output litecli\'s version.')
 @click.option('-v', '--verbose', is_flag=True, help='Verbose output.')
 @click.option('-D', '--database', 'dbname', help='Database to use.')
@@ -828,16 +803,14 @@ class LiteCli(object):
 @click.option('-e', '--execute',  type=str,
               help='Execute command and quit.')
 @click.argument('database', default='', nargs=1)
-def cli(database, user, password, dbname,
-        version, verbose, prompt, logfile, defaults_group_suffix,
-        auto_vertical_output,
+def cli(database, dbname, version, verbose, prompt, logfile,
+        defaults_group_suffix, auto_vertical_output,
         table, csv, warn, execute, liteclirc):
     """A SQLite terminal client with auto-completion and syntax highlighting.
 
     \b
     Examples:
       - litecli lite_database
-      - litecli -u lite_user lite_database
 
     """
 
@@ -853,11 +826,10 @@ def cli(database, user, password, dbname,
     # Choose which ever one has a valid value.
     database = database or dbname
 
-    litecli.connect(database, user, password)
+    litecli.connect(database)
 
     litecli.logger.debug('Launch Params: \n'
-            '\tdatabase: %r'
-            '\tuser: %r', database, user)
+            '\tdatabase: %r', database)
 
     #  --execute argument
     if execute:

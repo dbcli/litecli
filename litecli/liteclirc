@@ -66,8 +66,7 @@ wider_completion_menu = False
 # \r - The current time, standard 12-hour time (1–12)
 # \s - Seconds of the current time
 # \t - Product type (Percona, MySQL, MariaDB)
-# \u - Username
-prompt = '\t \u:\d> '
+prompt = '\t :\d> '
 prompt_continuation = '-> '
 
 # Skip intro info on startup and outro info on exit

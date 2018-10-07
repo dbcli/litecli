@@ -40,11 +40,8 @@ class SQLExecute(object):
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
 
-    def __init__(self, database, user, password, charset):
+    def __init__(self, database):
         self.dbname = database
-        self.user = user
-        self.password = password
-        self.charset = charset
         self._server_type = None
         self.connection_id = None
         self.conn = None
@@ -53,16 +50,10 @@ class SQLExecute(object):
             return
         self.connect()
 
-    def connect(self, database=None, user=None, password=None, charset=None):
+    def connect(self, database=None):
         db = (database or self.dbname)
-        user = (user or self.user)
-        password = (password or self.password)
-        charset = (charset or self.charset)
         _logger.debug('Connection DB Params: \n'
-                      '\tdatabase: %r'
-                      '\tuser: %r'
-                      '\tcharset: %r',
-                      database, user, charset)
+                      '\tdatabase: %r', database)
 
         conn = sqlite3.connect(database=db, isolation_level=None)
         if self.conn:
@@ -72,9 +63,6 @@ class SQLExecute(object):
         # Update them after the connection is made to ensure that it was a
         # successful connection.
         self.dbname = db
-        self.user = user
-        self.password = password
-        self.charset = charset
         # retrieve connection id
         self.reset_connection_id()
 

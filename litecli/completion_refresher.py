@@ -58,7 +58,7 @@ class CompletionRefresher(object):
             executor = sqlexecute
         else:
             # Create a new sqlexecute method to popoulate the completions.
-            executor = SQLExecute(e.dbname, e.user, e.password, e.charset)
+            executor = SQLExecute(e.dbname)
 
         # If callbacks is a single function then push it into a list.
         if callable(callbacks):
