@@ -1,3 +1,7 @@
+**Under development. Stable version has not been released yet.**
+
+Please be careful if you want to use it.
+
 ===========
 litecli
 ===========
