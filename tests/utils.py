@@ -5,6 +5,7 @@ import time
 import signal
 import platform
 import multiprocessing
+from contextlib import closing
 
 import sqlite3
 import pytest
@@ -14,7 +15,7 @@ from litecli.main import special
 DATABASE = os.getenv('PYTEST_DATABASE', 'test.sqlite3')
 
 
-def db_connection(dbname=None):
+def db_connection(dbname=':memory:'):
     conn = sqlite3.connect(database=dbname, isolation_level=None)
     return conn
 
@@ -31,10 +32,18 @@ dbtest = pytest.mark.skipif(
 
 
 def create_db(dbname):
-    with db_connection().cursor() as cur:
+    with closing(db_connection().cursor()) as cur:
         try:
             cur.execute('''DROP DATABASE IF EXISTS _test_db''')
             cur.execute('''CREATE DATABASE _test_db''')
+        except:
+            pass
+
+
+def drop_tables(dbname):
+    with closing(db_connection().cursor()) as cur:
+        try:
+            cur.execute('''DROP DATABASE IF EXISTS _test_db''')
         except:
             pass
 
