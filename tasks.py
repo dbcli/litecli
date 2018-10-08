@@ -85,8 +85,8 @@ class test(BaseCommand):
     ]
 
     unit_test_cmd = ('py.test{quiet: -q}{verbose: -v}{dry_run: --setup-only}'
-                     '{coverage: --cov-report= --cov=mycli}')
-    cli_test_cmd = 'behave{quiet: -q}{verbose: -v}{dry_run: -d} test/features'
+                     '{coverage: --cov-report= --cov=litecli}')
+    # cli_test_cmd = 'behave{quiet: -q}{verbose: -v}{dry_run: -d} test/features'
     test_all_cmd = 'tox{verbose: -v}{dry_run: --notest}'
     coverage_cmd = 'coverage combine && coverage report'
 
@@ -103,7 +103,8 @@ class test(BaseCommand):
             self.call_and_exit(cmd)
         else:
             cmds = (self.apply_options(self.unit_test_cmd, ('coverage', )),
-                    self.apply_options(self.cli_test_cmd))
+                    # self.apply_options(self.cli_test_cmd)
+                    )
             if self.coverage:
                 cmds += (self.apply_options(self.coverage_cmd), )
             self.call_in_sequence(cmds)
