@@ -5,6 +5,7 @@
 /src
 /test/behave.ini
 /litecli_env
+/.eggs
 
 .vagrant
 *.pyc
