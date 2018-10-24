@@ -4,7 +4,10 @@
 import ast
 from io import open
 import re
+import sys
+import subprocess
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
@@ -31,6 +34,23 @@ install_requirements = [
     'cli_helpers[styles] >= 1.0.1',
 ]
 
+class test(TestCommand):
+
+    user_options = [('pytest-args=', 'a', 'Arguments to pass to pytest')]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ''
+
+    def run_tests(self):
+        unit_test_errno = subprocess.call(
+            'pytest ' + self.pytest_args,
+            shell=True
+        )
+        # cli_errno = subprocess.call('behave test/features', shell=True)
+        # sys.exit(unit_test_errno or cli_errno)
+        sys.exit(unit_test_errno)
+
 setup(
     name='litecli',
     author='dbcli',
@@ -43,11 +63,12 @@ setup(
                 'highlighting.',
     long_description=readme,
     install_requires=install_requirements,
+    cmdclass={'test': test},
     entry_points={
         'console_scripts': ['litecli = litecli.main:cli'],
         'distutils.commands': [
             'lint = tasks:lint',
-            'test = tasks:test',
+            # 'test = tasks:test',
         ],
     },
     classifiers=[
