@@ -22,7 +22,7 @@ def open_file(filename):
         return f.read()
 
 
-readme = open_file('README.rst')
+readme = open_file('README.md')
 
 install_requirements = [
     'click >= 4.1',
