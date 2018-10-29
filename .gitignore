@@ -2,6 +2,7 @@
 /build
 /dist
 /litecli.egg-info
+/htmlcov
 /src
 /test/behave.ini
 /litecli_env
