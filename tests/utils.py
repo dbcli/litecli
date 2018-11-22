@@ -12,10 +12,10 @@ import pytest
 
 from litecli.main import special
 
-DATABASE = os.getenv('PYTEST_DATABASE', 'test.sqlite3')
+DATABASE = os.getenv("PYTEST_DATABASE", "test.sqlite3")
 
 
-def db_connection(dbname=':memory:'):
+def db_connection(dbname=":memory:"):
     conn = sqlite3.connect(database=dbname, isolation_level=None)
     return conn
 
@@ -28,14 +28,15 @@ except Exception as ex:
 
 dbtest = pytest.mark.skipif(
     not CAN_CONNECT_TO_DB,
-    reason="Need a mysql instance at localhost accessible by user 'root'")
+    reason="Need a mysql instance at localhost accessible by user 'root'",
+)
 
 
 def create_db(dbname):
     with closing(db_connection().cursor()) as cur:
         try:
-            cur.execute('''DROP DATABASE IF EXISTS _test_db''')
-            cur.execute('''CREATE DATABASE _test_db''')
+            cur.execute("""DROP DATABASE IF EXISTS _test_db""")
+            cur.execute("""CREATE DATABASE _test_db""")
         except:
             pass
 
@@ -43,7 +44,7 @@ def create_db(dbname):
 def drop_tables(dbname):
     with closing(db_connection().cursor()) as cur:
         try:
-            cur.execute('''DROP DATABASE IF EXISTS _test_db''')
+            cur.execute("""DROP DATABASE IF EXISTS _test_db""")
         except:
             pass
 
@@ -54,8 +55,9 @@ def run(executor, sql, rows_as_list=True):
 
     for title, rows, headers, status in executor.run(sql):
         rows = list(rows) if (rows_as_list and rows) else rows
-        result.append({'title': title, 'rows': rows, 'headers': headers,
-                       'status': status})
+        result.append(
+            {"title": title, "rows": rows, "headers": headers, "status": status}
+        )
 
     return result
 

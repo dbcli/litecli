@@ -5,17 +5,18 @@ from sqlparse.sql import IdentifierList, Identifier, Function
 from sqlparse.tokens import Keyword, DML, Punctuation
 
 cleanup_regex = {
-        # This matches only alphanumerics and underscores.
-        'alphanum_underscore': re.compile(r'(\w+)$'),
-        # This matches everything except spaces, parens, colon, and comma
-        'many_punctuations': re.compile(r'([^():,\s]+)$'),
-        # This matches everything except spaces, parens, colon, comma, and period
-        'most_punctuations': re.compile(r'([^\.():,\s]+)$'),
-        # This matches everything except a space.
-        'all_punctuations': re.compile('([^\s]+)$'),
-        }
+    # This matches only alphanumerics and underscores.
+    "alphanum_underscore": re.compile(r"(\w+)$"),
+    # This matches everything except spaces, parens, colon, and comma
+    "many_punctuations": re.compile(r"([^():,\s]+)$"),
+    # This matches everything except spaces, parens, colon, comma, and period
+    "most_punctuations": re.compile(r"([^\.():,\s]+)$"),
+    # This matches everything except a space.
+    "all_punctuations": re.compile("([^\s]+)$"),
+}
 
-def last_word(text, include='alphanum_underscore'):
+
+def last_word(text, include="alphanum_underscore"):
     """
     Find the last word in a sentence.
 
@@ -47,18 +48,18 @@ def last_word(text, include='alphanum_underscore'):
     'def'
     """
 
-    if not text:   # Empty string
-        return ''
+    if not text:  # Empty string
+        return ""
 
     if text[-1].isspace():
-        return ''
+        return ""
     else:
         regex = cleanup_regex[include]
         matches = regex.search(text)
         if matches:
             return matches.group(0)
         else:
-            return ''
+            return ""
 
 
 # This code is borrowed from sqlparse example script.
@@ -67,10 +68,16 @@ def is_subselect(parsed):
     if not parsed.is_group:
         return False
     for item in parsed.tokens:
-        if item.ttype is DML and item.value.upper() in ('SELECT', 'INSERT',
-                'UPDATE', 'CREATE', 'DELETE'):
+        if item.ttype is DML and item.value.upper() in (
+            "SELECT",
+            "INSERT",
+            "UPDATE",
+            "CREATE",
+            "DELETE",
+        ):
             return True
     return False
+
 
 def extract_from_part(parsed, stop_at_punctuation=True):
     tbl_prefix_seen = False
@@ -89,23 +96,26 @@ def extract_from_part(parsed, stop_at_punctuation=True):
             # Also 'SELECT * FROM abc JOIN def' will trigger this elif
             # condition. So we need to ignore the keyword JOIN and its variants
             # INNER JOIN, FULL OUTER JOIN, etc.
-            elif item.ttype is Keyword and (
-                    not item.value.upper() == 'FROM') and (
-                    not item.value.upper().endswith('JOIN')):
+            elif (
+                item.ttype is Keyword
+                and (not item.value.upper() == "FROM")
+                and (not item.value.upper().endswith("JOIN"))
+            ):
                 raise StopIteration
             else:
                 yield item
-        elif ((item.ttype is Keyword or item.ttype is Keyword.DML) and
-                item.value.upper() in ('COPY', 'FROM', 'INTO', 'UPDATE', 'TABLE', 'JOIN',)):
+        elif (
+            item.ttype is Keyword or item.ttype is Keyword.DML
+        ) and item.value.upper() in ("COPY", "FROM", "INTO", "UPDATE", "TABLE", "JOIN"):
             tbl_prefix_seen = True
         # 'SELECT a, FROM abc' will detect FROM as part of the column list.
         # So this check here is necessary.
         elif isinstance(item, IdentifierList):
             for identifier in item.get_identifiers():
-                if (identifier.ttype is Keyword and
-                        identifier.value.upper() == 'FROM'):
+                if identifier.ttype is Keyword and identifier.value.upper() == "FROM":
                     tbl_prefix_seen = True
                     break
+
 
 def extract_table_identifiers(token_stream):
     """yields tuples of (schema_name, table_name, table_alias)"""
@@ -134,6 +144,7 @@ def extract_table_identifiers(token_stream):
         elif isinstance(item, Function):
             yield (None, item.get_name(), item.get_name())
 
+
 # extract_tables is inspired from examples in the sqlparse lib.
 def extract_tables(sql):
     """Extract the table names from an SQL statment.
@@ -149,9 +160,10 @@ def extract_tables(sql):
     # Punctuation. eg: INSERT INTO abc (col1, col2) VALUES (1, 2)
     # abc is the table name, but if we don't stop at the first lparen, then
     # we'll identify abc, col1 and col2 as table names.
-    insert_stmt = parsed[0].token_first().value.lower() == 'insert'
+    insert_stmt = parsed[0].token_first().value.lower() == "insert"
     stream = extract_from_part(parsed[0], stop_at_punctuation=insert_stmt)
     return list(extract_table_identifiers(stream))
+
 
 def find_prev_keyword(sql):
     """ Find the last sql keyword in an SQL statement
@@ -160,16 +172,17 @@ def find_prev_keyword(sql):
     everything after the last keyword stripped
     """
     if not sql.strip():
-        return None, ''
+        return None, ""
 
     parsed = sqlparse.parse(sql)[0]
     flattened = list(parsed.flatten())
 
-    logical_operators = ('AND', 'OR', 'NOT', 'BETWEEN')
+    logical_operators = ("AND", "OR", "NOT", "BETWEEN")
 
     for t in reversed(flattened):
-        if t.value == '(' or (t.is_keyword and (
-                              t.value.upper() not in logical_operators)):
+        if t.value == "(" or (
+            t.is_keyword and (t.value.upper() not in logical_operators)
+        ):
             # Find the location of token t in the original parsed statement
             # We can't use parsed.token_index(t) because t may be a child token
             # inside a TokenList, in which case token_index thows an error
@@ -182,10 +195,10 @@ def find_prev_keyword(sql):
             # Combine the string values of all tokens in the original list
             # up to and including the target keyword token t, to produce a
             # query string with everything after the keyword token removed
-            text = ''.join(tok.value for tok in flattened[:idx+1])
+            text = "".join(tok.value for tok in flattened[: idx + 1])
             return t, text
 
-    return None, ''
+    return None, ""
 
 
 def query_starts_with(query, prefixes):
@@ -205,10 +218,10 @@ def queries_start_with(queries, prefixes):
 
 def is_destructive(queries):
     """Returns if any of the queries in *queries* is destructive."""
-    keywords = ('drop', 'shutdown', 'delete', 'truncate', 'alter')
+    keywords = ("drop", "shutdown", "delete", "truncate", "alter")
     return queries_start_with(queries, keywords)
 
 
-if __name__ == '__main__':
-    sql = 'select * from (select t. from tabl t'
-    print (extract_tables(sql))
+if __name__ == "__main__":
+    sql = "select * from (select t. from tabl t"
+    print(extract_tables(sql))

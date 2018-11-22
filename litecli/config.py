@@ -7,18 +7,18 @@ from configobj import ConfigObj
 
 
 def config_location():
-    if 'XDG_CONFIG_HOME' in os.environ:
-        return '%s/litecli/' % expanduser(os.environ['XDG_CONFIG_HOME'])
-    elif platform.system() == 'Windows':
-        return os.getenv('USERPROFILE') + '\\AppData\\Local\\dbcli\\litecli\\'
+    if "XDG_CONFIG_HOME" in os.environ:
+        return "%s/litecli/" % expanduser(os.environ["XDG_CONFIG_HOME"])
+    elif platform.system() == "Windows":
+        return os.getenv("USERPROFILE") + "\\AppData\\Local\\dbcli\\litecli\\"
     else:
-        return expanduser('~/.config/litecli/')
+        return expanduser("~/.config/litecli/")
 
 
 def load_config(usr_cfg, def_cfg=None):
     cfg = ConfigObj()
     cfg.merge(ConfigObj(def_cfg, interpolation=False))
-    cfg.merge(ConfigObj(expanduser(usr_cfg), interpolation=False, encoding='utf-8'))
+    cfg.merge(ConfigObj(expanduser(usr_cfg), interpolation=False, encoding="utf-8"))
     cfg.filename = expanduser(usr_cfg)
 
     return cfg
@@ -51,11 +51,12 @@ def upgrade_config(config, def_config):
 
 def get_config(liteclirc_file=None):
     from litecli import __file__ as package_root
+
     package_root = os.path.dirname(package_root)
 
-    liteclirc_file = liteclirc_file or '%sconfig' % config_location()
+    liteclirc_file = liteclirc_file or "%sconfig" % config_location()
 
-    default_config = os.path.join(package_root, 'liteclirc')
+    default_config = os.path.join(package_root, "liteclirc")
     write_default_config(default_config, liteclirc_file)
 
     return load_config(liteclirc_file, default_config)
