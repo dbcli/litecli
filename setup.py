@@ -58,7 +58,7 @@ setup(
     version=version,
     url="https://github.com/dbcli/litecli",
     packages=find_packages(),
-    package_data={"litecli": ["liteclirc", "AUTHORS", "SPONSORS"]},
+    package_data={"litecli": ["liteclirc", "AUTHORS"]},
     description="CLI for SQLite Databases with auto-completion and syntax "
     "highlighting.",
     long_description=readme,
