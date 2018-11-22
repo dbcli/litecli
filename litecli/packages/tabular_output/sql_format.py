@@ -4,8 +4,7 @@
 from cli_helpers.utils import filter_dict_by_key
 from litecli.packages.parseutils import extract_tables
 
-supported_formats = ('sql-insert', 'sql-update', 'sql-update-1',
-                     'sql-update-2', )
+supported_formats = ("sql-insert", "sql-update", "sql-update-1", "sql-update-2")
 
 preprocessors = ()
 
@@ -21,7 +20,7 @@ def adapter(data, headers, table_format=None, **kwargs):
     else:
         table_name = "`DUAL`"
     escape = formatter.litecli.sqlexecute.conn.escape
-    if table_format == 'sql-insert':
+    if table_format == "sql-insert":
         h = "`, `".join(headers)
         yield "INSERT INTO {} (`{}`) VALUES".format(table_name, h)
         prefix = "  "
@@ -31,8 +30,8 @@ def adapter(data, headers, table_format=None, **kwargs):
             if prefix == "  ":
                 prefix = ", "
         yield ";"
-    if table_format.startswith('sql-update'):
-        s = table_format.split('-')
+    if table_format.startswith("sql-update"):
+        s = table_format.split("-")
         keys = 1
         if len(s) > 2:
             keys = int(s[-1])
@@ -53,4 +52,5 @@ def register_new_formatter(TabularOutputFormatter):
     formatter = TabularOutputFormatter
     for sql_format in supported_formats:
         TabularOutputFormatter.register_new_formatter(
-            sql_format, adapter, preprocessors, {'table_format': sql_format})
+            sql_format, adapter, preprocessors, {"table_format": sql_format}
+        )

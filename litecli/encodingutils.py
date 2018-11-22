@@ -20,7 +20,7 @@ def unicode2utf8(arg):
     """
 
     if PY2 and isinstance(arg, text_type):
-        return arg.encode('utf-8')
+        return arg.encode("utf-8")
     return arg
 
 
@@ -32,5 +32,5 @@ def utf8tounicode(arg):
     """
 
     if PY2 and isinstance(arg, binary_type):
-        return arg.decode('utf-8')
+        return arg.decode("utf-8")
     return arg

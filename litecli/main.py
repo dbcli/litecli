@@ -21,8 +21,10 @@ from prompt_toolkit.shortcuts import PromptSession, CompleteStyle
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit.document import Document
 from prompt_toolkit.filters import HasFocus, IsDone
-from prompt_toolkit.layout.processors import (HighlightMatchingBracketProcessor,
-                                              ConditionalProcessor)
+from prompt_toolkit.layout.processors import (
+    HighlightMatchingBracketProcessor,
+    ConditionalProcessor,
+)
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -53,6 +55,7 @@ click.disable_unicode_literals_warning = True
 try:
     from urlparse import urlparse
     from urlparse import unquote
+
     FileNotFoundError = OSError
 except ImportError:
     from urllib.parse import urlparse
@@ -61,21 +64,27 @@ from sqlite3 import OperationalError
 
 
 # Query tuples are used for maintaining history
-Query = namedtuple('Query', ['query', 'successful', 'mutating'])
+Query = namedtuple("Query", ["query", "successful", "mutating"])
 
 PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 class LiteCli(object):
 
-    default_prompt = '\\t :\\d> '
+    default_prompt = "\\t :\\d> "
     max_len_prompt = 45
     defaults_suffix = None
 
-    def __init__(self, sqlexecute=None, prompt=None,
-            logfile=None, defaults_suffix=None,
-            auto_vertical_output=False, warn=None,
-            liteclirc=None):
+    def __init__(
+        self,
+        sqlexecute=None,
+        prompt=None,
+        logfile=None,
+        defaults_suffix=None,
+        auto_vertical_output=False,
+        warn=None,
+        liteclirc=None,
+    ):
         self.sqlexecute = sqlexecute
         self.logfile = logfile
         self.defaults_suffix = defaults_suffix
@@ -83,33 +92,36 @@ class LiteCli(object):
         # Load config.
         c = self.config = get_config(liteclirc)
 
-        self.multi_line = c['main'].as_bool('multi_line')
-        self.key_bindings = c['main']['key_bindings']
-        special.set_timing_enabled(c['main'].as_bool('timing'))
-        self.formatter = TabularOutputFormatter(
-            format_name=c['main']['table_format'])
+        self.multi_line = c["main"].as_bool("multi_line")
+        self.key_bindings = c["main"]["key_bindings"]
+        special.set_timing_enabled(c["main"].as_bool("timing"))
+        self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
         sql_format.register_new_formatter(self.formatter)
         self.formatter.litecli = self
-        self.syntax_style = c['main']['syntax_style']
-        self.less_chatty = c['main'].as_bool('less_chatty')
-        self.cli_style = c['colors']
+        self.syntax_style = c["main"]["syntax_style"]
+        self.less_chatty = c["main"].as_bool("less_chatty")
+        self.cli_style = c["colors"]
         self.output_style = style_factory_output(self.syntax_style, self.cli_style)
-        self.wider_completion_menu = c['main'].as_bool('wider_completion_menu')
-        c_dest_warning = c['main'].as_bool('destructive_warning')
+        self.wider_completion_menu = c["main"].as_bool("wider_completion_menu")
+        c_dest_warning = c["main"].as_bool("destructive_warning")
         self.destructive_warning = c_dest_warning if warn is None else warn
-        self.login_path_as_host = c['main'].as_bool('login_path_as_host')
+        self.login_path_as_host = c["main"].as_bool("login_path_as_host")
 
         # read from cli argument or user config file
-        self.auto_vertical_output = auto_vertical_output or \
-                                c['main'].as_bool('auto_vertical_output')
+        self.auto_vertical_output = auto_vertical_output or c["main"].as_bool(
+            "auto_vertical_output"
+        )
 
         # audit log
-        if self.logfile is None and 'audit_log' in c['main']:
+        if self.logfile is None and "audit_log" in c["main"]:
             try:
-                self.logfile = open(os.path.expanduser(c['main']['audit_log']), 'a')
+                self.logfile = open(os.path.expanduser(c["main"]["audit_log"]), "a")
             except (IOError, OSError):
-                self.echo('Error: Unable to open the audit log file. Your queries will not be logged.',
-                          err=True, fg='red')
+                self.echo(
+                    "Error: Unable to open the audit log file. Your queries will not be logged.",
+                    err=True,
+                    fg="red",
+                )
                 self.logfile = False
 
         self.completion_refresher = CompletionRefresher()
@@ -117,20 +129,22 @@ class LiteCli(object):
         self.logger = logging.getLogger(__name__)
         self.initialize_logging()
 
-        prompt_cnf = self.read_my_cnf_files(['prompt'])['prompt']
-        self.prompt_format = prompt or prompt_cnf or c['main']['prompt'] or \
-                             self.default_prompt
-        self.prompt_continuation_format = c['main']['prompt_continuation']
-        keyword_casing = c['main'].get('keyword_casing', 'auto')
+        prompt_cnf = self.read_my_cnf_files(["prompt"])["prompt"]
+        self.prompt_format = (
+            prompt or prompt_cnf or c["main"]["prompt"] or self.default_prompt
+        )
+        self.prompt_continuation_format = c["main"]["prompt_continuation"]
+        keyword_casing = c["main"].get("keyword_casing", "auto")
 
         self.query_history = []
 
         # Initialize completer.
-        self.smart_completion = c['main'].as_bool('smart_completion')
+        self.smart_completion = c["main"].as_bool("smart_completion")
         self.completer = SQLCompleter(
             self.smart_completion,
             supported_formats=self.formatter.supported_formats,
-            keyword_casing=keyword_casing)
+            keyword_casing=keyword_casing,
+        )
         self._completer_lock = threading.Lock()
 
         # Register custom special commands.
@@ -139,27 +153,47 @@ class LiteCli(object):
         self.prompt_app = None
 
     def register_special_commands(self):
-        special.register_special_command(self.change_db, '.open',
-                '.open', 'Change to a new database.')
-        special.register_special_command(self.refresh_completions, 'rehash',
-                '\\#', 'Refresh auto-completions.', arg_type=NO_QUERY, aliases=('\\#',))
         special.register_special_command(
-            self.change_table_format, 'tableformat', '\\T',
-            'Change the table format used to output results.',
-            aliases=('\\T',), case_sensitive=True)
-        special.register_special_command(self.execute_from_file, 'source', '\\. filename',
-                              'Execute commands from file.', aliases=('\\.',))
-        special.register_special_command(self.change_prompt_format, 'prompt',
-                '\\R', 'Change prompt format.', aliases=('\\R',), case_sensitive=True)
+            self.change_db, ".open", ".open", "Change to a new database."
+        )
+        special.register_special_command(
+            self.refresh_completions,
+            "rehash",
+            "\\#",
+            "Refresh auto-completions.",
+            arg_type=NO_QUERY,
+            aliases=("\\#",),
+        )
+        special.register_special_command(
+            self.change_table_format,
+            "tableformat",
+            "\\T",
+            "Change the table format used to output results.",
+            aliases=("\\T",),
+            case_sensitive=True,
+        )
+        special.register_special_command(
+            self.execute_from_file,
+            "source",
+            "\\. filename",
+            "Execute commands from file.",
+            aliases=("\\.",),
+        )
+        special.register_special_command(
+            self.change_prompt_format,
+            "prompt",
+            "\\R",
+            "Change prompt format.",
+            aliases=("\\R",),
+            case_sensitive=True,
+        )
 
     def change_table_format(self, arg, **_):
         try:
             self.formatter.format_name = arg
-            yield (None, None, None,
-                   'Changed table format to {}'.format(arg))
+            yield (None, None, None, "Changed table format to {}".format(arg))
         except ValueError:
-            msg = 'Table format {} not recognized. Allowed formats:'.format(
-                arg)
+            msg = "Table format {} not recognized. Allowed formats:".format(arg)
             for table_type in self.formatter.supported_formats:
                 msg += "\n\t{}".format(table_type)
             yield (None, None, None, msg)
@@ -171,21 +205,25 @@ class LiteCli(object):
             self.sqlexecute.connect(database=arg)
 
         self.refresh_completions()
-        yield (None, None, None, 'You are now connected to database "%s"' % (self.sqlexecute.dbname))
+        yield (
+            None,
+            None,
+            None,
+            'You are now connected to database "%s"' % (self.sqlexecute.dbname),
+        )
 
     def execute_from_file(self, arg, **_):
         if not arg:
-            message = 'Missing required argument, filename.'
+            message = "Missing required argument, filename."
             return [(None, None, None, message)]
         try:
-            with open(os.path.expanduser(arg), encoding='utf-8') as f:
+            with open(os.path.expanduser(arg), encoding="utf-8") as f:
                 query = f.read()
         except IOError as e:
             return [(None, None, None, str(e))]
 
-        if (self.destructive_warning and
-                confirm_destructive_query(query) is False):
-            message = 'Wise choice. Command execution stopped.'
+        if self.destructive_warning and confirm_destructive_query(query) is False:
+            message = "Wise choice. Command execution stopped."
             return [(None, None, None, message)]
 
         return self.sqlexecute.run(query)
@@ -195,7 +233,7 @@ class LiteCli(object):
         Change the prompt format.
         """
         if not arg:
-            message = 'Missing required argument, format.'
+            message = "Missing required argument, format."
             return [(None, None, None, message)]
 
         self.prompt_format = self.get_prompt(arg)
@@ -203,19 +241,20 @@ class LiteCli(object):
 
     def initialize_logging(self):
 
-        log_file = self.config['main']['log_file']
-        if log_file == 'default':
-            log_file = config_location() + 'log'
+        log_file = self.config["main"]["log_file"]
+        if log_file == "default":
+            log_file = config_location() + "log"
         ensure_dir_exists(log_file)
 
-        log_level = self.config['main']['log_level']
+        log_level = self.config["main"]["log_level"]
 
-        level_map = {'CRITICAL': logging.CRITICAL,
-                     'ERROR': logging.ERROR,
-                     'WARNING': logging.WARNING,
-                     'INFO': logging.INFO,
-                     'DEBUG': logging.DEBUG
-                     }
+        level_map = {
+            "CRITICAL": logging.CRITICAL,
+            "ERROR": logging.ERROR,
+            "WARNING": logging.WARNING,
+            "INFO": logging.INFO,
+            "DEBUG": logging.DEBUG,
+        }
 
         # Disable logging if value is NONE by switching to a no-op handler
         # Set log level to a high value so it doesn't even waste cycles getting called.
@@ -227,23 +266,26 @@ class LiteCli(object):
         else:
             self.echo(
                 'Error: Unable to open the log file "{}".'.format(log_file),
-                err=True, fg='red')
+                err=True,
+                fg="red",
+            )
             return
 
         formatter = logging.Formatter(
-            '%(asctime)s (%(process)d/%(threadName)s) '
-            '%(name)s %(levelname)s - %(message)s')
+            "%(asctime)s (%(process)d/%(threadName)s) "
+            "%(name)s %(levelname)s - %(message)s"
+        )
 
         handler.setFormatter(formatter)
 
-        root_logger = logging.getLogger('litecli')
+        root_logger = logging.getLogger("litecli")
         root_logger.addHandler(handler)
         root_logger.setLevel(level_map[log_level.upper()])
 
         logging.captureWarnings(True)
 
-        root_logger.debug('Initializing litecli logging.')
-        root_logger.debug('Log file %r.', log_file)
+        root_logger.debug("Initializing litecli logging.")
+        root_logger.debug("Log file %r.", log_file)
 
     def read_my_cnf_files(self, keys):
         """
@@ -254,7 +296,7 @@ class LiteCli(object):
         """
         cnf = self.config
 
-        sections = ['client']
+        sections = ["client"]
 
         if self.defaults_suffix:
             sections.extend([sect + self.defaults_suffix for sect in sections])
@@ -268,15 +310,15 @@ class LiteCli(object):
 
         return {x: get(x) for x in keys}
 
-    def connect(self, database=''):
+    def connect(self, database=""):
 
-        cnf = {'database': None}
+        cnf = {"database": None}
 
         cnf = self.read_my_cnf_files(cnf.keys())
 
         # Fall back to config values only if user did not specify a value.
 
-        database = database or cnf['database']
+        database = database or cnf["database"]
 
         # Connect to the database.
 
@@ -286,9 +328,9 @@ class LiteCli(object):
         try:
             _connect()
         except Exception as e:  # Connecting to a database could fail.
-            self.logger.debug('Database connection failed: %r.', e)
+            self.logger.debug("Database connection failed: %r.", e)
             self.logger.error("traceback: %r", traceback.format_exc())
-            self.echo(str(e), err=True, fg='red')
+            self.echo(str(e), err=True, fg="red")
             exit(1)
 
     def handle_editor_command(self, text):
@@ -306,8 +348,7 @@ class LiteCli(object):
 
         while special.editor_command(text):
             filename = special.get_filename(text)
-            query = (special.get_editor_query(text) or
-                     self.get_last_query())
+            query = special.get_editor_query(text) or self.get_last_query()
             sql, message = special.open_external_editor(filename, sql=query)
             if message:
                 # Something went wrong. Raise an exception and bail.
@@ -332,33 +373,39 @@ class LiteCli(object):
             self.refresh_completions()
 
         history_file = os.path.expanduser(
-            os.environ.get('LITECLI_HISTFILE', '~/.litecli-history'))
+            os.environ.get("LITECLI_HISTFILE", "~/.litecli-history")
+        )
         if dir_path_exists(history_file):
             history = FileHistory(history_file)
         else:
             history = None
             self.echo(
                 'Error: Unable to open the history file "{}". '
-                'Your query history will not be saved.'.format(history_file),
-                err=True, fg='red')
+                "Your query history will not be saved.".format(history_file),
+                err=True,
+                fg="red",
+            )
 
         key_bindings = cli_bindings(self)
 
         if not self.less_chatty:
-            print('Version:', __version__)
-            print('Chat: https://gitter.im/dbcli/litecli')
-            print('Mail: https://groups.google.com/forum/#!forum/litecli-users')
-            print('Home: http://litecli.net')
+            print("Version:", __version__)
+            print("Chat: https://gitter.im/dbcli/litecli")
+            print("Mail: https://groups.google.com/forum/#!forum/litecli-users")
+            print("Home: http://litecli.net")
 
         def get_message():
             prompt = self.get_prompt(self.prompt_format)
-            if self.prompt_format == self.default_prompt and len(prompt) > self.max_len_prompt:
-                prompt = self.get_prompt('\\d> ')
-            return [('class:prompt', prompt)]
+            if (
+                self.prompt_format == self.default_prompt
+                and len(prompt) > self.max_len_prompt
+            ):
+                prompt = self.get_prompt("\\d> ")
+            return [("class:prompt", prompt)]
 
         def get_continuation(width, line_number, is_soft_wrap):
-            continuation = ' ' * (width - 1) + ' '
-            return [('class:continuation', continuation)]
+            continuation = " " * (width - 1) + " "
+            return [("class:continuation", continuation)]
 
         def show_suggestion_tip():
             return iterations < 2
@@ -377,7 +424,7 @@ class LiteCli(object):
                 except RuntimeError as e:
                     logger.error("sql: %r, error: %r", text, e)
                     logger.error("traceback: %r", traceback.format_exc())
-                    self.echo(str(e), err=True, fg='red')
+                    self.echo(str(e), err=True, fg="red")
                     return
 
             if not text.strip():
@@ -388,9 +435,9 @@ class LiteCli(object):
                 if destroy is None:
                     pass  # Query was not destructive. Nothing to do here.
                 elif destroy is True:
-                    self.echo('Your call!')
+                    self.echo("Your call!")
                 else:
-                    self.echo('Wise choice!')
+                    self.echo("Wise choice!")
                     return
 
             # Keep track of whether or not the query is mutating. In case
@@ -399,13 +446,13 @@ class LiteCli(object):
             mutating = False
 
             try:
-                logger.debug('sql: %r', text)
+                logger.debug("sql: %r", text)
 
                 special.write_tee(self.get_prompt(self.prompt_format) + text)
                 if self.logfile:
-                    self.logfile.write('\n# %s\n' % datetime.now())
+                    self.logfile.write("\n# %s\n" % datetime.now())
                     self.logfile.write(text)
-                    self.logfile.write('\n')
+                    self.logfile.write("\n")
 
                 successful = False
                 start = time()
@@ -418,12 +465,13 @@ class LiteCli(object):
                     logger.debug("rows: %r", cur)
                     logger.debug("status: %r", status)
                     threshold = 1000
-                    if (is_select(status) and
-                            cur and cur.rowcount > threshold):
-                        self.echo('The result set has more than {} rows.'.format(
-                            threshold), fg='red')
-                        if not confirm('Do you want to continue?'):
-                            self.echo("Aborted!", err=True, fg='red')
+                    if is_select(status) and cur and cur.rowcount > threshold:
+                        self.echo(
+                            "The result set has more than {} rows.".format(threshold),
+                            fg="red",
+                        )
+                        if not confirm("Do you want to continue?"):
+                            self.echo("Aborted!", err=True, fg="red")
                             break
 
                     if self.auto_vertical_output:
@@ -432,19 +480,19 @@ class LiteCli(object):
                         max_width = None
 
                     formatted = self.format_output(
-                        title, cur, headers, special.is_expanded_output(),
-                        max_width)
+                        title, cur, headers, special.is_expanded_output(), max_width
+                    )
 
                     t = time() - start
                     try:
                         if result_count > 0:
-                            self.echo('')
+                            self.echo("")
                         try:
                             self.output(formatted, status)
                         except KeyboardInterrupt:
                             pass
                         if special.is_timing_enabled():
-                            self.echo('Time: %0.03fs' % t)
+                            self.echo("Time: %0.03fs" % t)
                     except KeyboardInterrupt:
                         pass
 
@@ -461,40 +509,48 @@ class LiteCli(object):
                 # Restart connection to the database
                 sqlexecute.connect()
                 try:
-                    for title, cur, headers, status in sqlexecute.run('kill %s' % connection_id_to_kill):
+                    for title, cur, headers, status in sqlexecute.run(
+                        "kill %s" % connection_id_to_kill
+                    ):
                         status_str = str(status).lower()
-                        if status_str.find('ok') > -1:
-                            logger.debug("cancelled query, connection id: %r, sql: %r",
-                                         connection_id_to_kill, text)
-                            self.echo("cancelled query", err=True, fg='red')
+                        if status_str.find("ok") > -1:
+                            logger.debug(
+                                "cancelled query, connection id: %r, sql: %r",
+                                connection_id_to_kill,
+                                text,
+                            )
+                            self.echo("cancelled query", err=True, fg="red")
                 except Exception as e:
-                    self.echo('Encountered error while cancelling query: {}'.format(e),
-                              err=True, fg='red')
+                    self.echo(
+                        "Encountered error while cancelling query: {}".format(e),
+                        err=True,
+                        fg="red",
+                    )
             except NotImplementedError:
-                self.echo('Not Yet Implemented.', fg="yellow")
+                self.echo("Not Yet Implemented.", fg="yellow")
             except OperationalError as e:
                 logger.debug("Exception: %r", e)
-                if (e.args[0] in (2003, 2006, 2013)):
-                    logger.debug('Attempting to reconnect.')
-                    self.echo('Reconnecting...', fg='yellow')
+                if e.args[0] in (2003, 2006, 2013):
+                    logger.debug("Attempting to reconnect.")
+                    self.echo("Reconnecting...", fg="yellow")
                     try:
                         sqlexecute.connect()
-                        logger.debug('Reconnected successfully.')
+                        logger.debug("Reconnected successfully.")
                         one_iteration(text)
                         return  # OK to just return, cuz the recursion call runs to the end.
                     except OperationalError as e:
-                        logger.debug('Reconnect failed. e: %r', e)
-                        self.echo(str(e), err=True, fg='red')
+                        logger.debug("Reconnect failed. e: %r", e)
+                        self.echo(str(e), err=True, fg="red")
                         # If reconnection failed, don't proceed further.
                         return
                 else:
                     logger.error("sql: %r, error: %r", text, e)
                     logger.error("traceback: %r", traceback.format_exc())
-                    self.echo(str(e), err=True, fg='red')
+                    self.echo(str(e), err=True, fg="red")
             except Exception as e:
                 logger.error("sql: %r, error: %r", text, e)
                 logger.error("traceback: %r", traceback.format_exc())
-                self.echo(str(e), err=True, fg='red')
+                self.echo(str(e), err=True, fg="red")
             else:
                 if is_dropping_database(text, self.sqlexecute.dbname):
                     self.sqlexecute.dbname = None
@@ -502,17 +558,14 @@ class LiteCli(object):
 
                 # Refresh the table names and column names if necessary.
                 if need_completion_refresh(text):
-                    self.refresh_completions(
-                            reset=need_completion_reset(text))
+                    self.refresh_completions(reset=need_completion_reset(text))
             finally:
                 if self.logfile is False:
-                    self.echo("Warning: This query was not logged.",
-                              err=True, fg='red')
+                    self.echo("Warning: This query was not logged.", err=True, fg="red")
             query = Query(text, successful, mutating)
             self.query_history.append(query)
 
-        get_toolbar_tokens = create_toolbar_tokens_func(
-            self, show_suggestion_tip)
+        get_toolbar_tokens = create_toolbar_tokens_func(self, show_suggestion_tip)
 
         if self.wider_completion_menu:
             complete_style = CompleteStyle.MULTI_COLUMN
@@ -521,7 +574,7 @@ class LiteCli(object):
 
         with self._completer_lock:
 
-            if self.key_bindings == 'vi':
+            if self.key_bindings == "vi":
                 editing_mode = EditingMode.VI
             else:
                 editing_mode = EditingMode.EMACS
@@ -533,12 +586,13 @@ class LiteCli(object):
                 prompt_continuation=get_continuation,
                 bottom_toolbar=get_toolbar_tokens,
                 complete_style=complete_style,
-                input_processors=[ConditionalProcessor(
-                    processor=HighlightMatchingBracketProcessor(
-                        chars='[](){}'),
-                    filter=HasFocus(DEFAULT_BUFFER) & ~IsDone()
-                )],
-                tempfile_suffix='.sql',
+                input_processors=[
+                    ConditionalProcessor(
+                        processor=HighlightMatchingBracketProcessor(chars="[](){}"),
+                        filter=HasFocus(DEFAULT_BUFFER) & ~IsDone(),
+                    )
+                ],
+                tempfile_suffix=".sql",
                 completer=DynamicCompleter(lambda: self.completer),
                 history=history,
                 auto_suggest=AutoSuggestFromHistory(),
@@ -551,7 +605,7 @@ class LiteCli(object):
                 enable_system_prompt=True,
                 enable_suspend=True,
                 editing_mode=editing_mode,
-                search_ignore_case=True
+                search_ignore_case=True,
             )
 
         try:
@@ -561,7 +615,7 @@ class LiteCli(object):
         except EOFError:
             special.close_tee()
             if not self.less_chatty:
-                self.echo('Goodbye!')
+                self.echo("Goodbye!")
 
     def log_output(self, output):
         """Log the output in the audit log, if it's enabled."""
@@ -582,14 +636,17 @@ class LiteCli(object):
     def get_output_margin(self, status=None):
         """Get the output margin (number of rows for the prompt, footer and
         timing message."""
-        margin = self.get_reserved_space() + self.get_prompt(self.prompt_format).count('\n') + 1
+        margin = (
+            self.get_reserved_space()
+            + self.get_prompt(self.prompt_format).count("\n")
+            + 1
+        )
         if special.is_timing_enabled():
             margin += 1
         if status:
-            margin += 1 + status.count('\n')
+            margin += 1 + status.count("\n")
 
         return margin
-
 
     def output(self, output, status=None):
         """Output text to stdout or a pager command.
@@ -645,17 +702,17 @@ class LiteCli(object):
 
     def configure_pager(self):
         # Provide sane defaults for less if they are empty.
-        if not os.environ.get('LESS'):
-            os.environ['LESS'] = '-RXF'
+        if not os.environ.get("LESS"):
+            os.environ["LESS"] = "-RXF"
 
-        cnf = self.read_my_cnf_files(['pager', 'skip-pager'])
-        if cnf['pager']:
-            special.set_pager(cnf['pager'])
+        cnf = self.read_my_cnf_files(["pager", "skip-pager"])
+        if cnf["pager"]:
+            special.set_pager(cnf["pager"])
             self.explicit_pager = True
         else:
             self.explicit_pager = False
 
-        if cnf['skip-pager'] or not self.config['main'].as_bool('enable_pager'):
+        if cnf["skip-pager"] or not self.config["main"].as_bool("enable_pager"):
             special.disable_pager()
 
     def refresh_completions(self, reset=False):
@@ -663,13 +720,18 @@ class LiteCli(object):
             with self._completer_lock:
                 self.completer.reset_completions()
         self.completion_refresher.refresh(
-            self.sqlexecute, self._on_completions_refreshed,
-            {'smart_completion': self.smart_completion,
-             'supported_formats': self.formatter.supported_formats,
-             'keyword_casing': self.completer.keyword_casing})
+            self.sqlexecute,
+            self._on_completions_refreshed,
+            {
+                "smart_completion": self.smart_completion,
+                "supported_formats": self.formatter.supported_formats,
+                "keyword_casing": self.completer.keyword_casing,
+            },
+        )
 
-        return [(None, None, None,
-                'Auto-completion refresh started in the background.')]
+        return [
+            (None, None, None, "Auto-completion refresh started in the background.")
+        ]
 
     def _on_completions_refreshed(self, new_completer):
         """Swap the completer object in cli with the newly created completer.
@@ -685,22 +747,23 @@ class LiteCli(object):
     def get_completions(self, text, cursor_positition):
         with self._completer_lock:
             return self.completer.get_completions(
-                Document(text=text, cursor_position=cursor_positition), None)
+                Document(text=text, cursor_position=cursor_positition), None
+            )
 
     def get_prompt(self, string):
-        self.logger.debug('Getting prompt')
+        self.logger.debug("Getting prompt")
         sqlexecute = self.sqlexecute
         now = datetime.now()
-        string = string.replace('\\d', sqlexecute.dbname or '(none)')
-        string = string.replace('\\t', sqlexecute.server_type()[0] or 'litecli')
-        string = string.replace('\\n', "\n")
-        string = string.replace('\\D', now.strftime('%a %b %d %H:%M:%S %Y'))
-        string = string.replace('\\m', now.strftime('%M'))
-        string = string.replace('\\P', now.strftime('%p'))
-        string = string.replace('\\R', now.strftime('%H'))
-        string = string.replace('\\r', now.strftime('%I'))
-        string = string.replace('\\s', now.strftime('%S'))
-        string = string.replace('\\_', ' ')
+        string = string.replace("\\d", sqlexecute.dbname or "(none)")
+        string = string.replace("\\t", sqlexecute.server_type()[0] or "litecli")
+        string = string.replace("\\n", "\n")
+        string = string.replace("\\D", now.strftime("%a %b %d %H:%M:%S %Y"))
+        string = string.replace("\\m", now.strftime("%M"))
+        string = string.replace("\\P", now.strftime("%p"))
+        string = string.replace("\\R", now.strftime("%H"))
+        string = string.replace("\\r", now.strftime("%I"))
+        string = string.replace("\\s", now.strftime("%S"))
+        string = string.replace("\\_", " ")
         return string
 
     def run_query(self, query, new_line=True):
@@ -713,17 +776,16 @@ class LiteCli(object):
             for line in output:
                 click.echo(line, nl=new_line)
 
-    def format_output(self, title, cur, headers, expanded=False,
-                      max_width=None):
-        expanded = expanded or self.formatter.format_name == 'vertical'
+    def format_output(self, title, cur, headers, expanded=False, max_width=None):
+        expanded = expanded or self.formatter.format_name == "vertical"
         output = []
 
         output_kwargs = {
-            'dialect': 'unix',
-            'disable_numparse': True,
-            'preserve_whitespace': True,
-            'preprocessors': (preprocessors.align_decimals, ),
-            'style': self.output_style
+            "dialect": "unix",
+            "disable_numparse": True,
+            "preserve_whitespace": True,
+            "preprocessors": (preprocessors.align_decimals,),
+            "style": self.output_style,
         }
 
         if title:  # Only print the title if it's not None.
@@ -731,20 +793,25 @@ class LiteCli(object):
 
         if cur:
             column_types = None
-            if hasattr(cur, 'description'):
+            if hasattr(cur, "description"):
+
                 def get_col_type(col):
                     # col_type = FIELD_TYPES.get(col[1], text_type)
                     # return col_type if type(col_type) is type else text_type
                     return text_type
+
                 column_types = [get_col_type(col) for col in cur.description]
 
             if max_width is not None:
                 cur = list(cur)
 
             formatted = self.formatter.format_output(
-                cur, headers, format_name='vertical' if expanded else None,
+                cur,
+                headers,
+                format_name="vertical" if expanded else None,
                 column_types=column_types,
-                **output_kwargs)
+                **output_kwargs
+            )
 
             if isinstance(formatted, (text_type)):
                 formatted = formatted.splitlines()
@@ -753,15 +820,24 @@ class LiteCli(object):
             first_line = next(formatted)
             formatted = itertools.chain([first_line], formatted)
 
-            if (not expanded and max_width and headers and cur and
-                    len(first_line) > max_width):
+            if (
+                not expanded
+                and max_width
+                and headers
+                and cur
+                and len(first_line) > max_width
+            ):
                 formatted = self.formatter.format_output(
-                    cur, headers, format_name='vertical', column_types=column_types, **output_kwargs)
+                    cur,
+                    headers,
+                    format_name="vertical",
+                    column_types=column_types,
+                    **output_kwargs
+                )
                 if isinstance(formatted, (text_type)):
                     formatted = iter(formatted.splitlines())
 
             output = itertools.chain(output, formatted)
-
 
         return output
 
@@ -778,32 +854,61 @@ class LiteCli(object):
 
 
 @click.command()
-@click.option('-V', '--version', is_flag=True, help='Output litecli\'s version.')
-@click.option('-v', '--verbose', is_flag=True, help='Verbose output.')
-@click.option('-D', '--database', 'dbname', help='Database to use.')
-@click.option('-R', '--prompt', 'prompt',
-              help='Prompt format (Default: "{0}").'.format(
-                  LiteCli.default_prompt))
-@click.option('-l', '--logfile', type=click.File(mode='a', encoding='utf-8'),
-              help='Log every query and its results to a file.')
-@click.option('--defaults-group-suffix', type=str,
-              help='Read MySQL config groups with the specified suffix.')
-@click.option('--liteclirc', default=config_location() + 'config',
-              help='Location of liteclirc file.', type=click.Path(dir_okay=False))
-@click.option('--auto-vertical-output', is_flag=True,
-              help='Automatically switch to vertical output mode if the result is wider than the terminal width.')
-@click.option('-t', '--table', is_flag=True,
-              help='Display batch output in table format.')
-@click.option('--csv', is_flag=True,
-              help='Display batch output in CSV format.')
-@click.option('--warn/--no-warn', default=None,
-              help='Warn before running a destructive query.')
-@click.option('-e', '--execute',  type=str,
-              help='Execute command and quit.')
-@click.argument('database', default='', nargs=1)
-def cli(database, dbname, version, verbose, prompt, logfile,
-        defaults_group_suffix, auto_vertical_output,
-        table, csv, warn, execute, liteclirc):
+@click.option("-V", "--version", is_flag=True, help="Output litecli's version.")
+@click.option("-v", "--verbose", is_flag=True, help="Verbose output.")
+@click.option("-D", "--database", "dbname", help="Database to use.")
+@click.option(
+    "-R",
+    "--prompt",
+    "prompt",
+    help='Prompt format (Default: "{0}").'.format(LiteCli.default_prompt),
+)
+@click.option(
+    "-l",
+    "--logfile",
+    type=click.File(mode="a", encoding="utf-8"),
+    help="Log every query and its results to a file.",
+)
+@click.option(
+    "--defaults-group-suffix",
+    type=str,
+    help="Read MySQL config groups with the specified suffix.",
+)
+@click.option(
+    "--liteclirc",
+    default=config_location() + "config",
+    help="Location of liteclirc file.",
+    type=click.Path(dir_okay=False),
+)
+@click.option(
+    "--auto-vertical-output",
+    is_flag=True,
+    help="Automatically switch to vertical output mode if the result is wider than the terminal width.",
+)
+@click.option(
+    "-t", "--table", is_flag=True, help="Display batch output in table format."
+)
+@click.option("--csv", is_flag=True, help="Display batch output in CSV format.")
+@click.option(
+    "--warn/--no-warn", default=None, help="Warn before running a destructive query."
+)
+@click.option("-e", "--execute", type=str, help="Execute command and quit.")
+@click.argument("database", default="", nargs=1)
+def cli(
+    database,
+    dbname,
+    version,
+    verbose,
+    prompt,
+    logfile,
+    defaults_group_suffix,
+    auto_vertical_output,
+    table,
+    csv,
+    warn,
+    execute,
+    liteclirc,
+):
     """A SQLite terminal client with auto-completion and syntax highlighting.
 
     \b
@@ -813,62 +918,67 @@ def cli(database, dbname, version, verbose, prompt, logfile,
     """
 
     if version:
-        print('Version:', __version__)
+        print("Version:", __version__)
         sys.exit(0)
 
-    litecli = LiteCli(prompt=prompt, logfile=logfile,
-                  defaults_suffix=defaults_group_suffix,
-                  auto_vertical_output=auto_vertical_output,
-                  warn=warn, liteclirc=liteclirc)
+    litecli = LiteCli(
+        prompt=prompt,
+        logfile=logfile,
+        defaults_suffix=defaults_group_suffix,
+        auto_vertical_output=auto_vertical_output,
+        warn=warn,
+        liteclirc=liteclirc,
+    )
 
     # Choose which ever one has a valid value.
     database = database or dbname
 
     litecli.connect(database)
 
-    litecli.logger.debug('Launch Params: \n'
-            '\tdatabase: %r', database)
+    litecli.logger.debug("Launch Params: \n" "\tdatabase: %r", database)
 
     #  --execute argument
     if execute:
         try:
             if csv:
-                litecli.formatter.format_name = 'csv'
+                litecli.formatter.format_name = "csv"
             elif not table:
-                litecli.formatter.format_name = 'tsv'
+                litecli.formatter.format_name = "tsv"
 
             litecli.run_query(execute)
             exit(0)
         except Exception as e:
-            click.secho(str(e), err=True, fg='red')
+            click.secho(str(e), err=True, fg="red")
             exit(1)
 
     if sys.stdin.isatty():
         litecli.run_cli()
     else:
-        stdin = click.get_text_stream('stdin')
+        stdin = click.get_text_stream("stdin")
         stdin_text = stdin.read()
 
         try:
-            sys.stdin = open('/dev/tty')
+            sys.stdin = open("/dev/tty")
         except FileNotFoundError:
-            litecli.logger.warning('Unable to open TTY as stdin.')
+            litecli.logger.warning("Unable to open TTY as stdin.")
 
-        if (litecli.destructive_warning and
-                confirm_destructive_query(stdin_text) is False):
+        if (
+            litecli.destructive_warning
+            and confirm_destructive_query(stdin_text) is False
+        ):
             exit(0)
         try:
             new_line = True
 
             if csv:
-                litecli.formatter.format_name = 'csv'
+                litecli.formatter.format_name = "csv"
             elif not table:
-                litecli.formatter.format_name = 'tsv'
+                litecli.formatter.format_name = "tsv"
 
             litecli.run_query(stdin_text, new_line=new_line)
             exit(0)
         except Exception as e:
-            click.secho(str(e), err=True, fg='red')
+            click.secho(str(e), err=True, fg="red")
             exit(1)
 
 
@@ -878,8 +988,15 @@ def need_completion_refresh(queries):
     for query in sqlparse.split(queries):
         try:
             first_token = query.split()[0]
-            if first_token.lower() in ('alter', 'create', 'use', '\\r',
-                    '\\u', 'connect', 'drop'):
+            if first_token.lower() in (
+                "alter",
+                "create",
+                "use",
+                "\\r",
+                "\\u",
+                "connect",
+                "drop",
+            ):
                 return True
         except Exception:
             return False
@@ -902,9 +1019,11 @@ def is_dropping_database(queries, dbname):
         first_token = query.token_first(skip_cm=True)
         _, second_token = query.token_next(0, skip_cm=True)
         database_name = normalize_db_name(query.get_name())
-        if (first_token.value.lower() == 'drop' and
-                second_token.value.lower() in ('database', 'schema') and
-                database_name == dbname):
+        if (
+            first_token.value.lower() == "drop"
+            and second_token.value.lower() in ("database", "schema")
+            and database_name == dbname
+        ):
             return True
 
 
@@ -916,7 +1035,7 @@ def need_completion_reset(queries):
     for query in sqlparse.split(queries):
         try:
             first_token = query.split()[0]
-            if first_token.lower() in ('use', '\\u'):
+            if first_token.lower() in ("use", "\\u"):
                 return True
         except Exception:
             return False
@@ -927,15 +1046,28 @@ def is_mutating(status):
     if not status:
         return False
 
-    mutating = set(['insert', 'update', 'delete', 'alter', 'create', 'drop',
-                    'replace', 'truncate', 'load'])
+    mutating = set(
+        [
+            "insert",
+            "update",
+            "delete",
+            "alter",
+            "create",
+            "drop",
+            "replace",
+            "truncate",
+            "load",
+        ]
+    )
     return status.split(None, 1)[0].lower() in mutating
+
 
 def is_select(status):
     """Returns true if the first word in status is 'select'."""
     if not status:
         return False
-    return status.split(None, 1)[0].lower() == 'select'
+    return status.split(None, 1)[0].lower() == "select"
+
 
 if __name__ == "__main__":
     cli()

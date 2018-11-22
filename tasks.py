@@ -13,7 +13,7 @@ class BaseCommand(Command, object):
 
     user_options = []
 
-    default_cmd_options = ('verbose', 'quiet', 'dry_run')
+    default_cmd_options = ("verbose", "quiet", "dry_run")
 
     def __init__(self, *args, **kwargs):
         super(BaseCommand, self).__init__(*args, **kwargs)
@@ -40,43 +40,49 @@ class BaseCommand(Command, object):
 
     def apply_options(self, cmd, options=()):
         """Apply command-line options."""
-        for option in (self.default_cmd_options + options):
-            cmd = self.apply_option(cmd, option,
-                                    active=getattr(self, option, False))
+        for option in self.default_cmd_options + options:
+            cmd = self.apply_option(cmd, option, active=getattr(self, option, False))
         return cmd
 
     def apply_option(self, cmd, option, active=True):
         """Apply a command-line option."""
-        return re.sub(r'{{{}\:(?P<option>[^}}]*)}}'.format(option),
-                      r'\g<option>' if active else '', cmd)
+        return re.sub(
+            r"{{{}\:(?P<option>[^}}]*)}}".format(option),
+            r"\g<option>" if active else "",
+            cmd,
+        )
 
 
 class lint(BaseCommand):
     """Use black to check for violation of code formatting."""
 
-    description = 'Checks the code using black code formatter.'
+    description = "Checks the code using black code formatter."
 
     def run(self):
         """Run the linter."""
-        cmd = 'black --check . || echo "Run \'black .\' to fix the violations." && exit 1'
+        cmd = (
+            "black --check . || echo \"Run 'black .' to fix the violations.\" && exit 1"
+        )
         self.call_and_exit(cmd)
 
 
 class test(BaseCommand):
     """Run the test suites for this project."""
 
-    description = 'run the test suite'
+    description = "run the test suite"
 
     user_options = [
-        ('all', 'a', 'test against all supported versions of Python'),
-        ('coverage', 'c', 'measure test coverage')
+        ("all", "a", "test against all supported versions of Python"),
+        ("coverage", "c", "measure test coverage"),
     ]
 
-    unit_test_cmd = ('py.test{quiet: -q}{verbose: -v}{dry_run: --setup-only}'
-                     '{coverage: --cov-report= --cov=litecli}')
+    unit_test_cmd = (
+        "py.test{quiet: -q}{verbose: -v}{dry_run: --setup-only}"
+        "{coverage: --cov-report= --cov=litecli}"
+    )
     # cli_test_cmd = 'behave{quiet: -q}{verbose: -v}{dry_run: -d} test/features'
-    test_all_cmd = 'tox{verbose: -v}{dry_run: --notest}'
-    coverage_cmd = 'coverage combine && coverage report'
+    test_all_cmd = "tox{verbose: -v}{dry_run: --notest}"
+    coverage_cmd = "coverage combine && coverage report"
 
     def initialize_options(self):
         """Set the default options."""
@@ -90,9 +96,10 @@ class test(BaseCommand):
             cmd = self.apply_options(self.test_all_cmd)
             self.call_and_exit(cmd)
         else:
-            cmds = (self.apply_options(self.unit_test_cmd, ('coverage', )),
-                    # self.apply_options(self.cli_test_cmd)
-                    )
+            cmds = (
+                self.apply_options(self.unit_test_cmd, ("coverage",)),
+                # self.apply_options(self.cli_test_cmd)
+            )
             if self.coverage:
-                cmds += (self.apply_options(self.coverage_cmd), )
+                cmds += (self.apply_options(self.coverage_cmd),)
             self.call_in_sequence(cmds)

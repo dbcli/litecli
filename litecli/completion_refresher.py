@@ -5,6 +5,7 @@ from collections import OrderedDict
 from .sqlcompleter import SQLCompleter
 from .sqlexecute import SQLExecute
 
+
 class CompletionRefresher(object):
 
     refreshers = OrderedDict()
@@ -30,9 +31,9 @@ class CompletionRefresher(object):
 
         if self.is_refreshing():
             self._restart_refresh.set()
-            return [(None, None, None, 'Auto-completion refresh restarted.')]
+            return [(None, None, None, "Auto-completion refresh restarted.")]
         else:
-            if (executor.dbname == ':memory:'):
+            if executor.dbname == ":memory:":
                 # if DB is memory, needed to use same connection
                 # So can't use same connection with different thread
                 self._bg_refresh(executor, callbacks, completer_options)
@@ -40,11 +41,18 @@ class CompletionRefresher(object):
                 self._completer_thread = threading.Thread(
                     target=self._bg_refresh,
                     args=(executor, callbacks, completer_options),
-                    name='completion_refresh')
+                    name="completion_refresh",
+                )
                 self._completer_thread.setDaemon(True)
                 self._completer_thread.start()
-                return [(None, None, None,
-                        'Auto-completion refresh started in the background.')]
+                return [
+                    (
+                        None,
+                        None,
+                        None,
+                        "Auto-completion refresh started in the background.",
+                    )
+                ]
 
     def is_refreshing(self):
         return self._completer_thread and self._completer_thread.is_alive()
@@ -53,7 +61,7 @@ class CompletionRefresher(object):
         completer = SQLCompleter(**completer_options)
 
         e = sqlexecute
-        if (e.dbname == ':memory:'):
+        if e.dbname == ":memory:":
             # if DB is memory, needed to use same connection
             executor = sqlexecute
         else:
@@ -82,35 +90,43 @@ class CompletionRefresher(object):
         for callback in callbacks:
             callback(completer)
 
+
 def refresher(name, refreshers=CompletionRefresher.refreshers):
     """Decorator to add the decorated function to the dictionary of
     refreshers. Any function decorated with a @refresher will be executed as
     part of the completion refresh routine."""
+
     def wrapper(wrapped):
         refreshers[name] = wrapped
         return wrapped
+
     return wrapper
 
-@refresher('databases')
+
+@refresher("databases")
 def refresh_databases(completer, executor):
     completer.extend_database_names(executor.databases())
 
-@refresher('schemata')
+
+@refresher("schemata")
 def refresh_schemata(completer, executor):
     # schemata - In MySQL Schema is the same as database. But for mycli
     # schemata will be the name of the current database.
     completer.extend_schemata(executor.dbname)
     completer.set_dbname(executor.dbname)
 
-@refresher('tables')
-def refresh_tables(completer, executor):
-    completer.extend_relations(executor.tables(), kind='tables')
-    completer.extend_columns(executor.table_columns(), kind='tables')
 
-@refresher('functions')
+@refresher("tables")
+def refresh_tables(completer, executor):
+    completer.extend_relations(executor.tables(), kind="tables")
+    completer.extend_columns(executor.table_columns(), kind="tables")
+
+
+@refresher("functions")
 def refresh_functions(completer, executor):
     completer.extend_functions(executor.functions())
 
-@refresher('special_commands')
+
+@refresher("special_commands")
 def refresh_special(completer, executor):
     completer.extend_special_commands(COMMANDS.keys())
