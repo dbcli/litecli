@@ -52,26 +52,14 @@ class BaseCommand(Command, object):
 
 
 class lint(BaseCommand):
-    """A PEP 8 lint command that optionally fixes violations."""
+    """Use black to check for violation of code formatting."""
 
-    description = 'check code against PEP 8 (and fix violations)'
-
-    user_options = [
-        ('branch=', 'b', 'branch or revision to compare against (e.g. master)'),
-        ('fix', 'f', 'fix the violations in place')
-    ]
-
-    def initialize_options(self):
-        """Set the default options."""
-        self.branch = 'master'
-        self.fix = False
-        super(lint, self).initialize_options()
+    description = 'Checks the code using black code formatter.'
 
     def run(self):
         """Run the linter."""
-        cmd = 'pep8radius {branch} {{fix: --in-place}}{{verbose: -vv}}'
-        cmd = cmd.format(branch=self.branch)
-        self.call_and_exit(self.apply_options(cmd, ('fix', )))
+        cmd = 'black --check . || echo "Run \'black .\' to fix the violations."'
+        self.call_and_exit(cmd)
 
 
 class test(BaseCommand):
