@@ -7,13 +7,14 @@ python:
 
 install:
   - pip install -r requirements-dev.txt
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install black; fi
   - pip install -e .
 
 script:
   - ./setup.py test --pytest-args="--cov-report= --cov=litecli"
   - coverage combine
   - coverage report
-  - ./setup.py lint
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then ./setup.py lint; fi
 
 after_success:
   - codecov
