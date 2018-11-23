@@ -60,9 +60,7 @@ class lint(BaseCommand):
 
     def run(self):
         """Run the linter."""
-        cmd = (
-            "black --check . || echo \"Run 'black .' to fix the violations.\" && exit 1"
-        )
+        cmd = "black --check ."
         self.call_and_exit(cmd)
 
 
