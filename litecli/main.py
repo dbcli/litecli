@@ -10,6 +10,7 @@ from time import time
 from datetime import datetime
 from io import open
 from collections import namedtuple
+from sqlite3 import OperationalError
 
 from cli_helpers.tabular_output import TabularOutputFormatter
 from cli_helpers.tabular_output import preprocessors
@@ -44,24 +45,11 @@ from .key_bindings import cli_bindings
 from .encodingutils import utf8tounicode, text_type
 from .lexer import LiteCliLexer
 from .__init__ import __version__
-from .compat import WIN
 from .packages.filepaths import dir_path_exists
 
 import itertools
 
 click.disable_unicode_literals_warning = True
-
-
-try:
-    from urlparse import urlparse
-    from urlparse import unquote
-
-    FileNotFoundError = OSError
-except ImportError:
-    from urllib.parse import urlparse
-    from urllib.parse import unquote
-from sqlite3 import OperationalError
-
 
 # Query tuples are used for maintaining history
 Query = namedtuple("Query", ["query", "successful", "mutating"])
