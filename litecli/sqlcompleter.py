@@ -347,7 +347,7 @@ class SQLCompleter(Completer):
         yields prompt_toolkit Completion instances for any matches found
         in the collection of available completions.
         """
-        last = last_word(text, include="many_punctuations")
+        last = last_word(text, include="most_punctuations")
         text = last.lower()
 
         completions = []
