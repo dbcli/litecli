@@ -831,7 +831,7 @@ class LiteCli(object):
 
     def get_reserved_space(self):
         """Get the number of lines to reserve for the completion menu."""
-        reserved_space_ratio = .45
+        reserved_space_ratio = 0.45
         max_reserved_space = 8
         _, height = click.get_terminal_size()
         return min(int(round(height * reserved_space_ratio)), max_reserved_space)
