@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 import re
 import locale
@@ -165,7 +166,7 @@ def open_external_editor(filename=None, sql=None):
     # Populate the editor buffer with the partial sql (if available) and a
     # placeholder comment.
     query = click.edit(
-        u"{sql}\n\n{marker}".format(sql=sql, marker=MARKER),
+        "{sql}\n\n{marker}".format(sql=sql, marker=MARKER),
         filename=filename,
         extension=".sql",
     )
@@ -375,7 +376,7 @@ def write_tee(output):
     global tee_file
     if tee_file:
         click.echo(output, file=tee_file, nl=False)
-        click.echo(u"\n", file=tee_file, nl=False)
+        click.echo("\n", file=tee_file, nl=False)
         tee_file.flush()
 
 
@@ -407,7 +408,7 @@ def write_once(output):
 
         with f:
             click.echo(output, file=f, nl=False)
-            click.echo(u"\n", file=f, nl=False)
+            click.echo("\n", file=f, nl=False)
         written_to_once_file = True
 
 
