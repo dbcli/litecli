@@ -6,7 +6,7 @@ from io import open
 import re
 import sys
 import subprocess
-from setuptools import setup, find_packages
+from setuptools import Command, setup, find_packages
 from setuptools.command.test import test as TestCommand
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
@@ -50,6 +50,26 @@ class test(TestCommand):
         sys.exit(unit_test_errno)
 
 
+class lint(Command):
+    description = "check code using black (and fix violations)"
+
+    user_options = [("fix", "f", "fix the violations in place")]
+
+    def initialize_options(self):
+        """Set the default options."""
+        self.fix = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        cmd = "black"
+        if not self.fix:
+            cmd += " --check"
+        cmd += " ."
+        sys.exit(subprocess.call(cmd, shell=True))
+
+
 setup(
     name="litecli",
     author="dbcli",
@@ -62,7 +82,7 @@ setup(
     "highlighting.",
     long_description=readme,
     install_requires=install_requirements,
-    cmdclass={"test": test},
+    cmdclass={"test": test, "lint": lint},
     entry_points={
         "console_scripts": ["litecli = litecli.main:cli"],
         "distutils.commands": [
