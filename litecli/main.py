@@ -59,7 +59,7 @@ PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 class LiteCli(object):
 
-    default_prompt = "\\t :\\d> "
+    default_prompt = "\\d> "
     max_len_prompt = 45
     defaults_suffix = None
 
@@ -743,7 +743,6 @@ class LiteCli(object):
         sqlexecute = self.sqlexecute
         now = datetime.now()
         string = string.replace("\\d", sqlexecute.dbname or "(none)")
-        string = string.replace("\\t", sqlexecute.server_type()[0] or "litecli")
         string = string.replace("\\n", "\n")
         string = string.replace("\\D", now.strftime("%a %b %d %H:%M:%S %Y"))
         string = string.replace("\\m", now.strftime("%M"))
