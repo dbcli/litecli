@@ -199,27 +199,6 @@ class SQLCompleter(Completer):
         "trim"
     ]
 
-    change_items = [
-        "MASTER_BIND",
-        "MASTER_HOST",
-        "MASTER_USER",
-        "MASTER_PASSWORD",
-        "MASTER_PORT",
-        "MASTER_CONNECT_RETRY",
-        "MASTER_HEARTBEAT_PERIOD",
-        "MASTER_LOG_FILE",
-        "MASTER_LOG_POS",
-        "RELAY_LOG_FILE",
-        "RELAY_LOG_POS",
-        "MASTER_SSL",
-        "MASTER_SSL_CA",
-        "MASTER_SSL_CAPATH",
-        "MASTER_SSL_CERT",
-        "MASTER_SSL_KEY",
-        "MASTER_SSL_CIPHER",
-        "MASTER_SSL_VERIFY_SERVER_CERT",
-        "IGNORE_SERVER_IDS",
-    ]
 
     def __init__(
         self, smart_completion=True, supported_formats=(), keyword_casing="auto"
@@ -269,11 +248,6 @@ class SQLCompleter(Completer):
     def extend_keywords(self, additional_keywords):
         self.keywords.extend(additional_keywords)
         self.all_completions.update(additional_keywords)
-
-    def extend_change_items(self, change_items):
-        for change_item in change_items:
-            self.change_items.extend(change_item)
-            self.all_completions.update(change_item)
 
     def extend_schemata(self, schema):
         if schema is None:
@@ -497,11 +471,6 @@ class SQLCompleter(Completer):
                 )
                 completions.extend(keywords)
 
-            elif suggestion["type"] == "change":
-                change_items = self.find_matches(
-                    word_before_cursor, self.change_items, start_only=False, fuzzy=True
-                )
-                completions.extend(change_items)
             elif suggestion["type"] == "special":
                 special = self.find_matches(
                     word_before_cursor,
