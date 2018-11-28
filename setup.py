@@ -31,7 +31,6 @@ install_requirements = [
     "prompt_toolkit>=2.0.0,<2.1.0",
     "sqlparse>=0.2.2,<0.3.0",
     "configobj >= 5.0.5",
-    "cryptography >= 1.0.0",
     "cli_helpers[styles] >= 1.0.1",
 ]
 
