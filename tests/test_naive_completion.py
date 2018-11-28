@@ -51,7 +51,7 @@ def test_function_name_completion(completer, complete_event):
     assert result == set(
         [
             Completion(text="MAX", start_position=-2),
-            Completion(text="MASTER", start_position=-2),
+            Completion(text="MATCH", start_position=-2),
         ]
     )
 

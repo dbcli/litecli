@@ -86,7 +86,7 @@ def test_function_name_completion(completer, complete_event):
     assert set(result) == set(
         [
             Completion(text="MAX", start_position=-2),
-            Completion(text="MASTER", start_position=-2),
+            Completion(text="MATCH", start_position=-2),
         ]
     )
 
@@ -106,7 +106,7 @@ def test_suggested_column_names(completer, complete_event):
             Document(text=text, cursor_position=position), complete_event
         )
     )
-    assert set(result) == set(
+    expected = set(
         [
             Completion(text="users", start_position=0),
             Completion(text="*", start_position=0),
@@ -118,6 +118,8 @@ def test_suggested_column_names(completer, complete_event):
         + list(map(Completion, completer.functions))
         + list(map(Completion, completer.keywords))
     )
+
+    assert set(result) == expected
 
 
 def test_suggested_column_names_in_function(completer, complete_event):
