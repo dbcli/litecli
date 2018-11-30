@@ -92,7 +92,11 @@ class SQLExecute(object):
                 special.set_expanded_output(True)
                 sql = sql[:-2].strip()
 
-            if not self.conn and not sql.startswith(".open"):
+            if not self.conn and not (
+                sql.startswith(".open")
+                or sql.lower().startswith("use")
+                or sql.startswith("\\u")
+            ):
                 _logger.debug(
                     "Not connected to database. Will not run statement: %s.", sql
                 )

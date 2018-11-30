@@ -60,6 +60,7 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     "The complete schema for the database or a single table",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
+    aliases=("\\d",),
 )
 def show_schema(cur, arg=None, **_):
     if arg:
@@ -94,6 +95,7 @@ def show_schema(cur, arg=None, **_):
     "List databases.",
     arg_type=RAW_QUERY,
     case_sensitive=True,
+    aliases=("\\l",),
 )
 def list_databases(cur, **_):
     query = "PRAGMA database_list"

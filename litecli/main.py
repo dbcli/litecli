@@ -142,7 +142,11 @@ class LiteCli(object):
 
     def register_special_commands(self):
         special.register_special_command(
-            self.change_db, ".open", ".open", "Change to a new database."
+            self.change_db,
+            ".open",
+            ".open",
+            "Change to a new database.",
+            aliases=("use", "\\u"),
         )
         special.register_special_command(
             self.refresh_completions,
