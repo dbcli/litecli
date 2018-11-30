@@ -1,4 +1,5 @@
-include *.txt *.rst *.py
-include AUTHORS CHANGELOG LICENSE
+include *.txt *.py
+include CHANGELOG LICENSE
 include tox.ini
-recursive-include test *.py
+recursive-include tests *.py
+recursive-include litecli AUTHORS
