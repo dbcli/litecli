@@ -73,7 +73,8 @@ class lint(Command):
 setup(
     name="litecli",
     author="dbcli",
-    author_email="thomas@roten.us",
+    author_email="litecli-users@googlegroups.com",
+    license="BSD",
     version=version,
     url="https://github.com/dbcli/litecli",
     packages=find_packages(),
@@ -101,6 +102,7 @@ setup(
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: SQL",
         "Topic :: Database",
         "Topic :: Database :: Front-Ends",
