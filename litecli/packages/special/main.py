@@ -111,7 +111,7 @@ def execute(cur, sql):
             raise CommandNotFound("Command not found: %s" % command)
 
     # "help <SQL KEYWORD> is a special case. We want built-in help, not
-    # mycli help here.
+    # litecli help here.
     if command == "help" and arg:
         return show_keyword_help(cur=cur, arg=arg)
 

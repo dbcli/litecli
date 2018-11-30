@@ -78,8 +78,8 @@ def suggest_path(root_dir):
 def dir_path_exists(path):
     """Check if the directory path exists for a given file.
 
-    For example, for a file /home/user/.cache/mycli/log, check if
-    /home/user/.cache/mycli exists.
+    For example, for a file /home/user/.cache/litecli/log, check if
+    /home/user/.cache/litecli exists.
 
     :param str path: The file path.
     :return: Whether or not the directory path exists.
