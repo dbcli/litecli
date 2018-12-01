@@ -11,12 +11,6 @@ def cli_bindings(cli):
     """Custom key bindings for cli."""
     kb = KeyBindings()
 
-    @kb.add("f2")
-    def _(event):
-        """Enable/Disable SmartCompletion Mode."""
-        _logger.debug("Detected F2 key.")
-        cli.completer.smart_completion = not cli.completer.smart_completion
-
     @kb.add("f3")
     def _(event):
         """Enable/Disable Multiline Mode."""

@@ -127,9 +127,7 @@ class LiteCli(object):
         self.query_history = []
 
         # Initialize completer.
-        self.smart_completion = c["main"].as_bool("smart_completion")
         self.completer = SQLCompleter(
-            self.smart_completion,
             supported_formats=self.formatter.supported_formats,
             keyword_casing=keyword_casing,
         )
@@ -360,9 +358,7 @@ class LiteCli(object):
         sqlexecute = self.sqlexecute
         logger = self.logger
         self.configure_pager()
-
-        if self.smart_completion:
-            self.refresh_completions()
+        self.refresh_completions()
 
         history_file = os.path.expanduser(
             os.environ.get("LITECLI_HISTFILE", "~/.litecli-history")
@@ -715,7 +711,6 @@ class LiteCli(object):
             self.sqlexecute,
             self._on_completions_refreshed,
             {
-                "smart_completion": self.smart_completion,
                 "supported_formats": self.formatter.supported_formats,
                 "keyword_casing": self.completer.keyword_casing,
             },

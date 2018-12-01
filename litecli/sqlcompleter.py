@@ -199,11 +199,8 @@ class SQLCompleter(Completer):
         "TRIM",
     ]
 
-    def __init__(
-        self, smart_completion=True, supported_formats=(), keyword_casing="auto"
-    ):
+    def __init__(self, supported_formats=(), keyword_casing="auto"):
         super(self.__class__, self).__init__()
-        self.smart_completion = smart_completion
         self.reserved_words = set()
         for x in self.keywords:
             self.reserved_words.update(x.split())
@@ -385,18 +382,8 @@ class SQLCompleter(Completer):
             for x, y, z in sorted(completions)
         )
 
-    def get_completions(self, document, complete_event, smart_completion=None):
+    def get_completions(self, document, complete_event):
         word_before_cursor = document.get_word_before_cursor(WORD=True)
-        if smart_completion is None:
-            smart_completion = self.smart_completion
-
-        # If smart_completion is off then match any word that starts with
-        # 'word_before_cursor'.
-        if not smart_completion:
-            return self.find_matches(
-                word_before_cursor, self.all_completions, start_only=True, fuzzy=False
-            )
-
         completions = []
         suggestions = suggest_type(document.text, document.text_before_cursor)
 
