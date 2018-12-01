@@ -7,4 +7,3 @@ pexpect
 coverage
 codecov
 click
-black
