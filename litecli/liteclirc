@@ -51,7 +51,7 @@ key_bindings = emacs
 # Enabling this option will show the suggestions in a wider menu. Thus more items are suggested.
 wider_completion_menu = False
 
-# MySQL prompt
+# litecli prompt
 # \D - The full current date
 # \d - Database name
 # \m - Minutes of the current time

@@ -110,8 +110,7 @@ def refresh_databases(completer, executor):
 
 @refresher("schemata")
 def refresh_schemata(completer, executor):
-    # schemata - In MySQL Schema is the same as database. But for mycli
-    # schemata will be the name of the current database.
+    # name of the current database.
     completer.extend_schemata(executor.dbname)
     completer.set_dbname(executor.dbname)
 

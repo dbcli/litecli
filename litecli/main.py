@@ -61,21 +61,18 @@ class LiteCli(object):
 
     default_prompt = "\\d> "
     max_len_prompt = 45
-    defaults_suffix = None
 
     def __init__(
         self,
         sqlexecute=None,
         prompt=None,
         logfile=None,
-        defaults_suffix=None,
         auto_vertical_output=False,
         warn=None,
         liteclirc=None,
     ):
         self.sqlexecute = sqlexecute
         self.logfile = logfile
-        self.defaults_suffix = defaults_suffix
 
         # Load config.
         c = self.config = get_config(liteclirc)
@@ -288,9 +285,6 @@ class LiteCli(object):
         cnf = self.config
 
         sections = ["client"]
-
-        if self.defaults_suffix:
-            sections.extend([sect + self.defaults_suffix for sect in sections])
 
         def get(key):
             result = None
@@ -857,11 +851,6 @@ class LiteCli(object):
     help="Log every query and its results to a file.",
 )
 @click.option(
-    "--defaults-group-suffix",
-    type=str,
-    help="Read MySQL config groups with the specified suffix.",
-)
-@click.option(
     "--liteclirc",
     default=config_location() + "config",
     help="Location of liteclirc file.",
@@ -888,7 +877,6 @@ def cli(
     verbose,
     prompt,
     logfile,
-    defaults_group_suffix,
     auto_vertical_output,
     table,
     csv,
@@ -911,7 +899,6 @@ def cli(
     litecli = LiteCli(
         prompt=prompt,
         logfile=logfile,
-        defaults_suffix=defaults_group_suffix,
         auto_vertical_output=auto_vertical_output,
         warn=warn,
         liteclirc=liteclirc,
