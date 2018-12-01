@@ -13,12 +13,12 @@ log = logging.getLogger(__name__)
 
 
 @special_command(
-    "\\dt",
+    ".tables",
     "\\dt[+] [table]",
     "List or describe tables.",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
-    aliases=(".tables",),
+    aliases=("\\dt",),
 )
 def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     if arg:

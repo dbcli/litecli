@@ -339,7 +339,14 @@ class SQLCompleter(Completer):
         self.all_completions = set(self.keywords + self.functions)
 
     @staticmethod
-    def find_matches(text, collection, start_only=False, fuzzy=True, casing=None):
+    def find_matches(
+        text,
+        collection,
+        start_only=False,
+        fuzzy=True,
+        casing=None,
+        punctuations="most_punctuations",
+    ):
         """Find completion matches for the given text.
 
         Given the user's input text and a collection of available
@@ -353,7 +360,7 @@ class SQLCompleter(Completer):
         yields prompt_toolkit Completion instances for any matches found
         in the collection of available completions.
         """
-        last = last_word(text, include="most_punctuations")
+        last = last_word(text, include=punctuations)
         text = last.lower()
 
         completions = []
@@ -467,6 +474,7 @@ class SQLCompleter(Completer):
                     start_only=True,
                     fuzzy=False,
                     casing=self.keyword_casing,
+                    punctuations="many_punctuations",
                 )
                 completions.extend(keywords)
 
@@ -476,6 +484,7 @@ class SQLCompleter(Completer):
                     self.special_commands,
                     start_only=True,
                     fuzzy=False,
+                    punctuations="many_punctuations",
                 )
                 completions.extend(special)
             elif suggestion["type"] == "favoritequery":
