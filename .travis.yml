@@ -13,7 +13,6 @@ install:
 
 script:
   - ./setup.py test --pytest-args="--cov-report= --cov=litecli"
-  - coverage combine
   - coverage report
   - if [[ $TRAVIS_PYTHON_VERSION == '3.7' ]]; then ./setup.py lint; fi
 
