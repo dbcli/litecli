@@ -863,7 +863,7 @@ class LiteCli(object):
 @click.option(
     "--defaults-group-suffix",
     type=str,
-    help="Read MySQL config groups with the specified suffix.",
+    help="Read config groups with the specified suffix.",
 )
 @click.option(
     "--liteclirc",

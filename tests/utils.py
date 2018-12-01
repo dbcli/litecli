@@ -28,7 +28,7 @@ except Exception as ex:
 
 dbtest = pytest.mark.skipif(
     not CAN_CONNECT_TO_DB,
-    reason="Need a mysql instance at localhost accessible by user 'root'",
+    reason="Error creating sqlite connection",
 )
 
 
