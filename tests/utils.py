@@ -27,8 +27,7 @@ except Exception as ex:
     CAN_CONNECT_TO_DB = False
 
 dbtest = pytest.mark.skipif(
-    not CAN_CONNECT_TO_DB,
-    reason="Error creating sqlite connection",
+    not CAN_CONNECT_TO_DB, reason="Error creating sqlite connection"
 )
 
 
