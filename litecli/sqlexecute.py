@@ -96,6 +96,8 @@ class SQLExecute(object):
                 sql.startswith(".open")
                 or sql.lower().startswith("use")
                 or sql.startswith("\\u")
+                or sql.startswith("\\?")
+                or sql.startswith("help")
             ):
                 _logger.debug(
                     "Not connected to database. Will not run statement: %s.", sql
