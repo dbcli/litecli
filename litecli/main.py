@@ -32,7 +32,6 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
 from .packages.special.main import NO_QUERY
 from .packages.prompt_utils import confirm, confirm_destructive_query
-from .packages.tabular_output import sql_format
 from .packages import special
 from .sqlcompleter import SQLCompleter
 from .clitoolbar import create_toolbar_tokens_func
@@ -84,7 +83,6 @@ class LiteCli(object):
         self.key_bindings = c["main"]["key_bindings"]
         special.set_timing_enabled(c["main"].as_bool("timing"))
         self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
-        sql_format.register_new_formatter(self.formatter)
         self.formatter.litecli = self
         self.syntax_style = c["main"]["syntax_style"]
         self.less_chatty = c["main"].as_bool("less_chatty")
