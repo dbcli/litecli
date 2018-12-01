@@ -83,6 +83,8 @@ def suggest_type(full_text, text_before_cursor):
         tok1 = statement.token_first()
         if tok1 and tok1.value in ["\\", "source"]:
             return suggest_special(text_before_cursor)
+        elif text_before_cursor and text_before_cursor.startswith(".open "):
+            return suggest_special(text_before_cursor)
 
     last_token = statement and statement.token_prev(len(statement.tokens))[1] or ""
 
@@ -114,7 +116,7 @@ def suggest_special(text):
             {"type": "view", "schema": []},
             {"type": "schema"},
         ]
-    elif cmd in ["\\.", "source"]:
+    elif cmd in ["\\.", "source", ".open"]:
         return [{"type": "file_name"}]
 
     return [{"type": "keyword"}, {"type": "special"}]
