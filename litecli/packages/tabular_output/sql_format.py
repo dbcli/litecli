@@ -4,7 +4,7 @@
 from cli_helpers.utils import filter_dict_by_key
 from litecli.packages.parseutils import extract_tables
 
-supported_formats = ("sql-insert", "sql-update", "sql-update-1", "sql-update-2")
+supported_formats = ()
 
 preprocessors = ()
 
