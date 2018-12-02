@@ -30,9 +30,6 @@ log_level = INFO
 # line below.
 # audit_log = ~/.litecli-audit.log
 
-# Timing of sql statments and table rendering.
-timing = True
-
 # Table format. Possible values: ascii, double, github,
 # psql, plain, simple, grid, fancy_grid, pipe, orgtbl, rst, mediawiki, html,
 # latex, latex_booktabs, textile, moinmoin, jira, vertical, tsv, csv.
@@ -54,7 +51,7 @@ key_bindings = emacs
 # Enabling this option will show the suggestions in a wider menu. Thus more items are suggested.
 wider_completion_menu = False
 
-# MySQL prompt
+# litecli prompt
 # \D - The full current date
 # \d - Database name
 # \m - Minutes of the current time

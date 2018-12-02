@@ -61,28 +61,24 @@ class LiteCli(object):
 
     default_prompt = "\\d> "
     max_len_prompt = 45
-    defaults_suffix = None
 
     def __init__(
         self,
         sqlexecute=None,
         prompt=None,
         logfile=None,
-        defaults_suffix=None,
         auto_vertical_output=False,
         warn=None,
         liteclirc=None,
     ):
         self.sqlexecute = sqlexecute
         self.logfile = logfile
-        self.defaults_suffix = defaults_suffix
 
         # Load config.
         c = self.config = get_config(liteclirc)
 
         self.multi_line = c["main"].as_bool("multi_line")
         self.key_bindings = c["main"]["key_bindings"]
-        special.set_timing_enabled(c["main"].as_bool("timing"))
         self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
         sql_format.register_new_formatter(self.formatter)
         self.formatter.litecli = self
@@ -290,9 +286,6 @@ class LiteCli(object):
 
         sections = ["client"]
 
-        if self.defaults_suffix:
-            sections.extend([sect + self.defaults_suffix for sect in sections])
-
         def get(key):
             result = None
             for sect in cnf:
@@ -483,8 +476,7 @@ class LiteCli(object):
                             self.output(formatted, status)
                         except KeyboardInterrupt:
                             pass
-                        if special.is_timing_enabled():
-                            self.echo("Time: %0.03fs" % t)
+                        self.echo("Time: %0.03fs" % t)
                     except KeyboardInterrupt:
                         pass
 
@@ -631,10 +623,8 @@ class LiteCli(object):
         margin = (
             self.get_reserved_space()
             + self.get_prompt(self.prompt_format).count("\n")
-            + 1
+            + 2
         )
-        if special.is_timing_enabled():
-            margin += 1
         if status:
             margin += 1 + status.count("\n")
 
@@ -861,11 +851,6 @@ class LiteCli(object):
     help="Log every query and its results to a file.",
 )
 @click.option(
-    "--defaults-group-suffix",
-    type=str,
-    help="Read MySQL config groups with the specified suffix.",
-)
-@click.option(
     "--liteclirc",
     default=config_location() + "config",
     help="Location of liteclirc file.",
@@ -892,7 +877,6 @@ def cli(
     verbose,
     prompt,
     logfile,
-    defaults_group_suffix,
     auto_vertical_output,
     table,
     csv,
@@ -915,7 +899,6 @@ def cli(
     litecli = LiteCli(
         prompt=prompt,
         logfile=logfile,
-        defaults_suffix=defaults_group_suffix,
         auto_vertical_output=auto_vertical_output,
         warn=warn,
         liteclirc=liteclirc,

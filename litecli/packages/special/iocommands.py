@@ -17,17 +17,10 @@ from .favoritequeries import favoritequeries
 from .utils import handle_cd_command
 from litecli.packages.prompt_utils import confirm_destructive_query
 
-TIMING_ENABLED = False
 use_expanded_output = False
 PAGER_ENABLED = True
 tee_file = None
 once_file = written_to_once_file = None
-
-
-@export
-def set_timing_enabled(val):
-    global TIMING_ENABLED
-    TIMING_ENABLED = val
 
 
 @export
@@ -78,27 +71,6 @@ def set_pager(arg, **_):
 def disable_pager():
     set_pager_enabled(False)
     return [(None, None, None, "Pager disabled.")]
-
-
-@special_command(
-    "\\timing",
-    "\\t",
-    "Toggle timing of commands.",
-    arg_type=NO_QUERY,
-    aliases=("\\t",),
-    case_sensitive=True,
-)
-def toggle_timing():
-    global TIMING_ENABLED
-    TIMING_ENABLED = not TIMING_ENABLED
-    message = "Timing is "
-    message += "on." if TIMING_ENABLED else "off."
-    return [(None, None, None, message)]
-
-
-@export
-def is_timing_enabled():
-    return TIMING_ENABLED
 
 
 @export
