@@ -18,7 +18,7 @@ def completer():
 
     import litecli.sqlcompleter as sqlcompleter
 
-    comp = sqlcompleter.SQLCompleter(smart_completion=True)
+    comp = sqlcompleter.SQLCompleter()
 
     tables, columns = [], []
 
