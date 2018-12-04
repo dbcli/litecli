@@ -50,15 +50,15 @@ def test_bools(executor):
     assert_result_equal(results, headers=["a"], rows=[(1,)])
 
 
-@dbtest
-def test_binary(executor):
-    run(executor, """create table foo(blb BLOB NOT NULL)""")
-    run(executor, """INSERT INTO foo VALUES ('\x01\x01\x01\n')""")
-    results = run(executor, """select * from foo""")
+# @dbtest
+# def test_binary(executor):
+#     run(executor, """create table foo(blb BLOB NOT NULL)""")
+#     run(executor, """INSERT INTO foo VALUES ('\x01\x01\x01\n')""")
+#     results = run(executor, """select * from foo""")
 
-    expected = "\x01\x01\x01\n"
+#     expected = "\x01\x01\x01\n"
 
-    assert_result_equal(results, headers=["blb"], rows=[(expected,)])
+#     assert_result_equal(results, headers=["blb"], rows=[(expected,)])
 
 
 @dbtest
