@@ -53,8 +53,8 @@ wider_completion_menu = False
 # \m - Minutes of the current time
 # \n - Newline
 # \P - AM/PM
-# \R - The current time, in 24-hour military time (0–23)
-# \r - The current time, standard 12-hour time (1–12)
+# \R - The current time, in 24-hour military time (0-23)
+# \r - The current time, standard 12-hour time (1-12)
 # \s - Seconds of the current time
 prompt = '\d> '
 prompt_continuation = '-> '
