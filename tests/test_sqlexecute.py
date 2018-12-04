@@ -56,7 +56,7 @@ def test_binary(executor):
     run(executor, """INSERT INTO foo VALUES ('\x01\x01\x01\n')""")
     results = run(executor, """select * from foo""")
 
-    expected = b"\x01\x01\x01\n"
+    expected = "\x01\x01\x01\n"
 
     assert_result_equal(results, headers=["blb"], rows=[(expected,)])
 
