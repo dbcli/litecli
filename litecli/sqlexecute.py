@@ -5,6 +5,7 @@ from contextlib import closing
 from sqlite3 import OperationalError
 
 import sqlparse
+import os.path
 
 from .packages import special
 
@@ -54,7 +55,7 @@ class SQLExecute(object):
         db = database or self.dbname
         _logger.debug("Connection DB Params: \n" "\tdatabase: %r", database)
 
-        conn = sqlite3.connect(database=db, isolation_level=None)
+        conn = sqlite3.connect(database=os.path.expanduser(db), isolation_level=None)
         if self.conn:
             self.conn.close()
 
