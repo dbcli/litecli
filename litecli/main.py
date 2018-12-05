@@ -829,7 +829,6 @@ class LiteCli(object):
 
 @click.command()
 @click.option("-V", "--version", is_flag=True, help="Output litecli's version.")
-@click.option("-v", "--verbose", is_flag=True, help="Verbose output.")
 @click.option("-D", "--database", "dbname", help="Database to use.")
 @click.option(
     "-R",
@@ -867,7 +866,6 @@ def cli(
     database,
     dbname,
     version,
-    verbose,
     prompt,
     logfile,
     auto_vertical_output,
