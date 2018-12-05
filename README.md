@@ -1,15 +1,33 @@
-**Under development. Stable version has not been released yet.**
-
-Please be careful if you want to use it.
-
 # litecli
 
 [![Build Status](https://travis-ci.org/dbcli/litecli.svg?branch=master)](https://travis-ci.org/dbcli/litecli)
 
 A command-line client for SQLite databases that has auto-completion and syntax highlighting.
 
-Postgres Equivalent: `http://pgcli.com <http://pgcli.com/>`\_
+## Installation
 
-MySQL Equivalent: `http://mycli.net <http://mycli.net>`\_
+If you already know how to install python packages, then you can install it via pip:
 
-SQL Server Equivalent: `https://github.com/dbcli/mssql-cli <https://github.com/dbcli/mssql-cli>`\_
+You might need sudo on linux.
+
+```
+$ pip install -U litecli
+```
+
+For MacOS users, you can also use Homebrew to install it:
+
+```
+$ brew tap dbcli/tap
+$ brew install litecli
+```
+
+## Usage
+
+    $ litecli --help
+    
+    Usage: litecli [OPTIONS] [DATABASE]
+
+    Examples:
+      - litecli sqlite_db_name
+
+A config file is automatically created at `~/.config/litecli/config` at first launch. See the file itself for a description of all available options.
