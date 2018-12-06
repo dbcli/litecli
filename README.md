@@ -4,6 +4,9 @@
 
 A command-line client for SQLite databases that has auto-completion and syntax highlighting.
 
+![Completion](screenshots/litecli.png)
+![CompletionGif](screenshots/litecli.gif)
+
 ## Installation
 
 If you already know how to install python packages, then you can install it via pip:
