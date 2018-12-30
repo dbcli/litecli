@@ -353,10 +353,10 @@ def write_tee(output):
 
 
 @special_command(
-    "\\once",
+    ".once",
     "\\o [-o] filename",
     "Append next result to an output file (overwrite using -o).",
-    aliases=("\\o",),
+    aliases=("\\o", "\\once"),
 )
 def set_once(arg, **_):
     global once_file

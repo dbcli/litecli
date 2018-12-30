@@ -154,7 +154,7 @@ def show_keyword_help(cur, arg):
         return [(None, None, None, "No help found for {0}.".format(keyword))]
 
 
-@special_command("exit", "\\q", "Exit.", arg_type=NO_QUERY, aliases=("\\q",))
+@special_command(".exit", "\\q", "Exit.", arg_type=NO_QUERY, aliases=("\\q", "exit"))
 @special_command("quit", "\\q", "Quit.", arg_type=NO_QUERY)
 def quit(*_args):
     raise EOFError
