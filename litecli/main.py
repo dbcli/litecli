@@ -150,10 +150,10 @@ class LiteCli(object):
         )
         special.register_special_command(
             self.change_table_format,
-            "tableformat",
+            ".mode",
             "\\T",
             "Change the table format used to output results.",
-            aliases=("\\T",),
+            aliases=("tableformat", "\\T"),
             case_sensitive=True,
         )
         special.register_special_command(
