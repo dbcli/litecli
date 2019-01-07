@@ -1,6 +1,7 @@
 # litecli
 
 [![Build Status](https://travis-ci.org/dbcli/litecli.svg?branch=master)](https://travis-ci.org/dbcli/litecli)
+
 [Docs](https://litecli.com)
 
 A command-line client for SQLite databases that has auto-completion and syntax highlighting.
