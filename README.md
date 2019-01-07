@@ -50,4 +50,4 @@ A config file is automatically created at `~/.config/litecli/config` at first la
 
 ## Docs
 
-Visit: [litecli.com/docs](https://litecli.com/features)
+Visit: [litecli.com/features](https://litecli.com/features)
