@@ -1,6 +1,7 @@
 # litecli
 
 [![Build Status](https://travis-ci.org/dbcli/litecli.svg?branch=master)](https://travis-ci.org/dbcli/litecli)
+[Docs](https://litecli.com)
 
 A command-line client for SQLite databases that has auto-completion and syntax highlighting.
 
@@ -45,3 +46,7 @@ $ brew install litecli
       - litecli sqlite_db_name
 
 A config file is automatically created at `~/.config/litecli/config` at first launch. See the file itself for a description of all available options.
+
+## Docs
+
+Visit: [litecli.com/docs](https://litecli.com/features)
