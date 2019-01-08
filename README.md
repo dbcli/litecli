@@ -51,3 +51,12 @@ A config file is automatically created at `~/.config/litecli/config` at first la
 ## Docs
 
 Visit: [litecli.com/features](https://litecli.com/features)
+
+### Code Visualization:
+
+Here is a cool visualization of the code evolution
+
+ [![Watch the video](https://img.youtube.com/vi/sRPiZbg8yd0/0.jpg)](https://www.youtube.com/watch?v=sRPiZbg8yd0)
+
+ [https://www.youtube.com/watch?v=sRPiZbg8yd0](https://www.youtube.com/watch?v=sRPiZbg8yd0)
+
