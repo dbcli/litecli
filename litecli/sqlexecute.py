@@ -55,7 +55,12 @@ class SQLExecute(object):
         db = database or self.dbname
         _logger.debug("Connection DB Params: \n" "\tdatabase: %r", database)
 
-        conn = sqlite3.connect(database=os.path.expanduser(db), isolation_level=None)
+        db_name = os.path.expanduser(db)
+        db_dir_name = os.path.dirname(os.path.abspath(db_name))
+        if not os.path.exists(db_dir_name):
+            raise Exception("Path does not exist: {}".format(db_dir_name))
+
+        conn = sqlite3.connect(database=db_name, isolation_level=None)
         if self.conn:
             self.conn.close()
 
