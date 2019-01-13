@@ -4,7 +4,7 @@ TBD
 Bug Fixes:
 ----------
 
-* 
+* Clear error message when directory does not exist.
 
 Features:
 ---------
