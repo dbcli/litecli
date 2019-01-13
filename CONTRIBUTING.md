@@ -102,7 +102,7 @@ $ readlink -f $(which ex)
 
 ## Coding Style
 
-litecli [black](https://github.com/ambv/black) to format the source code. Make sure to install black.
+litecli uses [black](https://github.com/ambv/black) to format the source code. Make sure to install black.
 
 It's easy to check the style of your code, just run:
 
