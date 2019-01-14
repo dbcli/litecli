@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import platform
+import shlex
 from sqlite3 import ProgrammingError
 
 from litecli import __version__
@@ -149,3 +150,21 @@ def status(cur, **_):
 
     footer.append("--------------")
     return [(None, None, "", "\n".join(footer))]
+
+
+@special_command(
+    ".load",
+    ".load path",
+    "Load an extension library.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+)
+def load_extension(cur, arg, **_):
+    args = shlex.split(arg)
+    if len(args) != 1:
+        raise TypeError(".load accepts exactly one path")
+    path = args[0]
+    conn = cur.connection
+    conn.enable_load_extension(True)
+    conn.load_extension(path)
+    return [(None, None, None, "")]
