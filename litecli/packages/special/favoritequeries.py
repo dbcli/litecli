@@ -57,8 +57,3 @@ Examples:
             return "%s: Not Found." % name
         self.config.write()
         return "%s: Deleted" % name
-
-
-from ...config import get_config
-
-favoritequeries = FavoriteQueries(get_config())
