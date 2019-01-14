@@ -110,11 +110,6 @@ def execute(cur, sql):
         if special_cmd.case_sensitive:
             raise CommandNotFound("Command not found: %s" % command)
 
-    # "help <SQL KEYWORD> is a special case. We want built-in help, not
-    # litecli help here.
-    if command == "help" and arg:
-        return show_keyword_help(cur=cur, arg=arg)
-
     if special_cmd.arg_type == NO_QUERY:
         return special_cmd.handler()
     elif special_cmd.arg_type == PARSED_QUERY:
@@ -134,24 +129,6 @@ def show_help():  # All the parameters are ignored.
         if not value.hidden:
             result.append((value.command, value.shortcut, value.description))
     return [(None, result, headers, None)]
-
-
-def show_keyword_help(cur, arg):
-    """
-    Call the built-in "show <command>", to display help for an SQL keyword.
-    :param cur: cursor
-    :param arg: string
-    :return: list
-    """
-    keyword = arg.strip('"').strip("'")
-    query = "help '{0}'".format(keyword)
-    log.debug(query)
-    cur.execute(query)
-    if cur.description and cur.rowcount > 0:
-        headers = [x[0] for x in cur.description]
-        return [(None, cur, headers, "")]
-    else:
-        return [(None, None, None, "No help found for {0}.".format(keyword))]
 
 
 @special_command(".exit", "\\q", "Exit.", arg_type=NO_QUERY, aliases=("\\q", "exit"))
