@@ -78,6 +78,7 @@ class LiteCli(object):
 
         self.multi_line = c["main"].as_bool("multi_line")
         self.key_bindings = c["main"]["key_bindings"]
+        special.set_favorite_queries(self.config)
         self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
         self.formatter.litecli = self
         self.syntax_style = c["main"]["syntax_style"]
