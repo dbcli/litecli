@@ -153,6 +153,74 @@ def test_favorite_query(executor):
 
 
 @dbtest
+def test_parameterized_favorite_query(executor):
+    set_expanded_output(False)
+    run(executor, "create table test(a text, id integer)")
+    run(executor, "insert into test values('abc', 1)")
+    run(executor, "insert into test values('def', 2)")
+
+    results = run(executor, "\\fs sh_param select * from test where id=$1")
+    assert_result_equal(results, status="Saved.")
+
+    results = run(executor, "\\fs q_param select * from test where id=?")
+    assert_result_equal(results, status="Saved.")
+
+    results = run(executor, "\\f sh_param 1")
+    assert_result_equal(
+        results,
+        title="> select * from test where id=1",
+        headers=["a", "id"],
+        rows=[("abc", 1)],
+        auto_status=False,
+    )
+
+    results = run(executor, "\\f sh_param")
+    assert_result_equal(
+        results,
+        title=None,
+        headers=None,
+        rows=None,
+        status="missing substitution for $1 in query:\n  select * from test where id=$1",
+    )
+
+    results = run(executor, "\\f sh_param 1 2")
+    assert_result_equal(
+        results,
+        title=None,
+        headers=None,
+        rows=None,
+        status="Too many arguments.\nQuery does not have enough place holders to substitute.\nselect * from test where id=1",
+    )
+
+    results = run(executor, "\\f q_param 2")
+    assert_result_equal(
+        results,
+        title="> select * from test where id=2",
+        headers=["a", "id"],
+        rows=[("def", 2)],
+        auto_status=False,
+    )
+
+    results = run(executor, "\\f q_param")
+    assert_result_equal(
+        results,
+        title=None,
+        headers=None,
+        rows=None,
+        status="missing substitution for ? in query:\n  select * from test where id=?",
+    )
+
+    results = run(executor, "\\f q_param 1 2")
+    assert_result_equal(
+        results,
+        title=None,
+        headers=None,
+        rows=None,
+        status="Too many arguments.\nQuery does not have enough place holders to substitute.\nselect * from test where id=1",
+    )
+
+
+@dbtest
 def test_favorite_query_multiple_statement(executor):
     set_expanded_output(False)
     run(executor, "create table test(a text)")
