@@ -222,19 +222,20 @@ def list_favorite_queries():
 def subst_favorite_query_args(query, args):
     """replace positional parameters ($1...$N) in query."""
     for idx, val in enumerate(args):
-        subst_var = "$" + str(idx + 1)
-        if subst_var not in query:
+        shell_subst_var = "$" + str(idx + 1)
+        question_subst_var = "?"
+        if shell_subst_var in query:
+            query = query.replace(shell_subst_var, val)
+        elif question_subst_var in query:
+            query = query.replace(question_subst_var, val, 1)
+        else:
             return [
                 None,
-                "query does not have substitution parameter "
-                + subst_var
-                + ":\n  "
+                "Too many arguments.\nQuery does not have enough place holders to substitute.\n"
                 + query,
             ]
 
-        query = query.replace(subst_var, val)
-
-    match = re.search("\\$\d+", query)
+    match = re.search("\\?|\\$\d+", query)
     if match:
         return [
             None,
