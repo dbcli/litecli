@@ -281,7 +281,7 @@ class LiteCli(object):
         """
         cnf = self.config
 
-        sections = ["client"]
+        sections = ["main"]
 
         def get(key):
             result = None
