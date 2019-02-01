@@ -923,7 +923,7 @@ def cli(
 
         try:
             sys.stdin = open("/dev/tty")
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             litecli.logger.warning("Unable to open TTY as stdin.")
 
         if (
