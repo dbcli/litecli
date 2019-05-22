@@ -11,6 +11,7 @@ Features:
 
 * Added `.load` command for loading extension libraries. (Thanks: [Zhiming Wang])
 * Add support for using `?` as a placeholder in the favorite queries. (Thanks: [Amjith])
+* Added shift-tab to select the previous entry in the completion menu. [Amjith]
 
 1.0.0
 =====
@@ -20,5 +21,8 @@ Features:
 
 
 [Amjith]: https://blog.amjith.com
+<<<<<<< HEAD
 [Zhiming Wang]: https://github.com/zmwangx
 [Irina Truong]: https://github.com/j-bennet
+=======
+>>>>>>> master

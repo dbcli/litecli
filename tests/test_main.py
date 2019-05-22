@@ -27,14 +27,14 @@ def test_execute_arg(executor):
     result = runner.invoke(cli, args=CLI_ARGS + ["-e", sql])
 
     assert result.exit_code == 0
-    assert '"abc"' in result.output
+    assert "abc" in result.output
 
     result = runner.invoke(cli, args=CLI_ARGS + ["--execute", sql])
 
     assert result.exit_code == 0
-    assert '"abc"' in result.output
+    assert "abc" in result.output
 
-    expected = '"a"\n"abc"\n'
+    expected = "a\nabc\n"
 
     assert expected in result.output
 
@@ -78,7 +78,7 @@ def test_batch_mode(executor):
     result = runner.invoke(cli, args=CLI_ARGS, input=sql)
 
     assert result.exit_code == 0
-    assert '"count(*)"\n"3"\n"a"\n"abc"\n' in "".join(result.output)
+    assert "count(*)\n3\na\nabc\n" in "".join(result.output)
 
 
 @dbtest
