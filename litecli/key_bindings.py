@@ -38,6 +38,16 @@ def cli_bindings(cli):
         else:
             b.start_completion(select_first=True)
 
+    @kb.add("s-tab")
+    def _(event):
+        """Force autocompletion at cursor."""
+        _logger.debug("Detected <Tab> key.")
+        b = event.app.current_buffer
+        if b.complete_state:
+            b.complete_previous()
+        else:
+            b.start_completion(select_first=True)
+
     @kb.add("c-space")
     def _(event):
         """
