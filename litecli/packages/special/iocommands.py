@@ -183,7 +183,7 @@ def execute_favorite_query(cur, arg, **_):
 
     """Parse out favorite name and optional substitution parameters"""
     name, _, arg_str = arg.partition(" ")
-    args = shlex.split(arg_str)
+    args = shlex.split(arg_str, posix=False)
 
     query = favoritequeries.get(name)
     if query is None:
