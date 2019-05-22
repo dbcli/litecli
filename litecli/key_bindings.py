@@ -46,7 +46,7 @@ def cli_bindings(cli):
         if b.complete_state:
             b.complete_previous()
         else:
-            b.start_completion(select_first=True)
+            b.start_completion(select_last=True)
 
     @kb.add("c-space")
     def _(event):
