@@ -5,7 +5,7 @@ import os
 import pytest
 
 from utils import run, dbtest, set_expanded_output, is_expanded_output
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError, ProgrammingError
 
 
 def assert_result_equal(
@@ -153,16 +153,48 @@ def test_favorite_query(executor):
 
 
 @dbtest
-def test_parameterized_favorite_query(executor):
+def test_bind_parameterized_favorite_query(executor):
+    set_expanded_output(False)
+    run(executor, "create table test(name text, id integer)")
+    run(executor, "insert into test values('def', 2)")
+    run(executor, "insert into test values('two words', 3)")
+
+    results = run(executor, "\\fs q_param select * from test where name=?")
+    assert_result_equal(results, status="Saved.")
+
+    results = run(executor, "\\f q_param def")
+    assert_result_equal(
+        results,
+        title="> select * from test where name=?",
+        headers=["name", "id"],
+        rows=[("def", 2)],
+        auto_status=False,
+    )
+
+    results = run(executor, "\\f q_param 'two words'")
+    assert_result_equal(
+        results,
+        title="> select * from test where name=?",
+        headers=["name", "id"],
+        rows=[("two words", 3)],
+        auto_status=False,
+    )
+
+    with pytest.raises(ProgrammingError):
+        results = run(executor, "\\f q_param")
+
+    with pytest.raises(ProgrammingError):
+        results = run(executor, "\\f q_param 1 2")
+
+
+@dbtest
+def test_shell_parameterized_favorite_query(executor):
     set_expanded_output(False)
     run(executor, "create table test(a text, id integer)")
     run(executor, "insert into test values('abc', 1)")
     run(executor, "insert into test values('def', 2)")
 
     results = run(executor, "\\fs sh_param select * from test where id=$1")
-    assert_result_equal(results, status="Saved.")
-
-    results = run(executor, "\\fs q_param select * from test where id=?")
     assert_result_equal(results, status="Saved.")
 
     results = run(executor, "\\f sh_param 1")
@@ -184,33 +216,6 @@ def test_parameterized_favorite_query(executor):
     )
 
     results = run(executor, "\\f sh_param 1 2")
-    assert_result_equal(
-        results,
-        title=None,
-        headers=None,
-        rows=None,
-        status="Too many arguments.\nQuery does not have enough place holders to substitute.\nselect * from test where id=1",
-    )
-
-    results = run(executor, "\\f q_param 2")
-    assert_result_equal(
-        results,
-        title="> select * from test where id=2",
-        headers=["a", "id"],
-        rows=[("def", 2)],
-        auto_status=False,
-    )
-
-    results = run(executor, "\\f q_param")
-    assert_result_equal(
-        results,
-        title=None,
-        headers=None,
-        rows=None,
-        status="missing substitution for ? in query:\n  select * from test where id=?",
-    )
-
-    results = run(executor, "\\f q_param 1 2")
     assert_result_equal(
         results,
         title=None,
