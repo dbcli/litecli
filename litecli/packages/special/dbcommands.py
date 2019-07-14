@@ -15,8 +15,8 @@ log = logging.getLogger(__name__)
 
 @special_command(
     ".tables",
-    "\\dt[+] [table]",
-    "List or describe tables.",
+    "\\dt",
+    "List tables.",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
     aliases=("\\dt",),
@@ -61,7 +61,7 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     "The complete schema for the database or a single table",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
-    aliases=("\\d",),
+    aliases=("\\d", "describe", "desc"),
 )
 def show_schema(cur, arg=None, **_):
     if arg:
