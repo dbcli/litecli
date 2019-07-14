@@ -11,6 +11,7 @@ Features:
 
 * Added `.load` command for loading extension libraries.
 * Added shift-tab to select the previous entry in the completion menu. [Amjith]
+* Added `describe` and `desc` keywords.
 
 1.0.0
 =====
