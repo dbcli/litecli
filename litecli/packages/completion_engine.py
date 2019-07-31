@@ -81,7 +81,7 @@ def suggest_type(full_text, text_before_cursor):
         # Be careful here because trivial whitespace is parsed as a statement,
         # but the statement won't have a first token
         tok1 = statement.token_first()
-        if tok1 and tok1.value in ["\\", "source"]:
+        if tok1 and tok1.value in [".", "\\", "source"]:
             return suggest_special(text_before_cursor)
         elif text_before_cursor and text_before_cursor.startswith(".open "):
             return suggest_special(text_before_cursor)
@@ -110,7 +110,7 @@ def suggest_special(text):
     if cmd in ["\\f", "\\fs", "\\fd"]:
         return [{"type": "favoritequery"}]
 
-    if cmd in ["\\dt", "\\dt+"]:
+    if cmd in ["\\d", "\\dt", "\\dt+", ".schema"]:
         return [
             {"type": "table", "schema": []},
             {"type": "view", "schema": []},
