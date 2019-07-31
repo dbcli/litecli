@@ -8,7 +8,7 @@ from sqlite3 import ProgrammingError
 from litecli import __version__
 from litecli.packages.special import iocommands
 from litecli.packages.special.utils import format_uptime
-from .main import special_command, RAW_QUERY, PARSED_QUERY
+from .main import special_command, RAW_QUERY, PARSED_QUERY, ArgumentMissing
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +61,6 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     "The complete schema for the database or a single table",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
-    aliases=("\\d", "describe", "desc"),
 )
 def show_schema(cur, arg=None, **_):
     if arg:
@@ -168,3 +167,34 @@ def load_extension(cur, arg, **_):
     conn.enable_load_extension(True)
     conn.load_extension(path)
     return [(None, None, None, "")]
+
+
+@special_command(
+    "describe",
+    "\\d [table]",
+    "Description of a table",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\d", "describe", "desc"),
+)
+def describe(cur, arg, **_):
+    if arg:
+        args = (arg,)
+        query = """
+            PRAGMA table_info({})
+        """.format(
+            arg
+        )
+    else:
+        raise ArgumentMissing("Table name required.")
+
+    log.debug(query)
+    cur.execute(query)
+    tables = cur.fetchall()
+    status = ""
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, "")]
+
+    return [(None, tables, headers, status)]
