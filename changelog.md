@@ -1,3 +1,17 @@
+TBD
+===
+
+Bug Fixes:
+----------
+
+*
+
+Features:
+---------
+
+* 
+
+
 1.1.0
 =====
 
@@ -22,8 +36,5 @@ Features:
 
 
 [Amjith]: https://blog.amjith.com
-<<<<<<< HEAD
 [Zhiming Wang]: https://github.com/zmwangx
 [Irina Truong]: https://github.com/j-bennet
-=======
->>>>>>> master
