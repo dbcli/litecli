@@ -168,3 +168,21 @@ def load_extension(cur, arg, **_):
     conn.enable_load_extension(True)
     conn.load_extension(path)
     return [(None, None, None, "")]
+
+
+@special_command(
+    ".read",
+    ".read path",
+    "Read input from path",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+)
+def read_script(cur, arg, **_):
+    args = shlex.split(arg)
+    if len(args) != 1:
+        raise TypeError(".read accepts exactly one path")
+    path = args[0]
+    with open(path, "r") as f:
+        script = f.read()
+        cur.executescript(script)
+    return [(None, None, None, "")]

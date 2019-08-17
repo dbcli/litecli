@@ -23,6 +23,7 @@ Bug Fixes:
 Features:
 ---------
 
+* Added `.read` command for reading scripts.
 * Added `.load` command for loading extension libraries. (Thanks: [Zhiming Wang])
 * Add support for using `?` as a placeholder in the favorite queries. (Thanks: [Amjith])
 * Added shift-tab to select the previous entry in the completion menu. [Amjith]
