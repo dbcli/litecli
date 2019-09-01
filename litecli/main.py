@@ -369,7 +369,7 @@ class LiteCli(object):
         if not self.less_chatty:
             print("Version:", __version__)
             print("Mail: https://groups.google.com/forum/#!forum/litecli-users")
-            print("Github: https://github.com/dbcli/litecli")
+            print("GitHub: https://github.com/dbcli/litecli")
             # print("Home: https://litecli.com")
 
         def get_message():
