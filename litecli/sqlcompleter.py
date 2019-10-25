@@ -60,7 +60,6 @@ class SQLCompleter(Completer):
         "DEFERRABLE",
         "DEFERRED",
         "DELETE",
-        "DESC",
         "DETACH",
         "DISTINCT",
         "DO",

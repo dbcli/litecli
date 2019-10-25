@@ -27,6 +27,11 @@ COMMANDS = {}
 
 
 @export
+class ArgumentMissing(Exception):
+    pass
+
+
+@export
 class CommandNotFound(Exception):
     pass
 
