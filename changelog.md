@@ -1,16 +1,12 @@
-TBD
-===
-
-Bug Fixes:
-----------
-
-*
+1.2.0
+=====
 
 Features:
 ---------
 
-* 
-
+* Enhance the describe command. (Thanks: [Amjith])
+* Autocomplete table names for special commands. (Thanks: [Amjith])
+* Add .read command. (Thanks: [Shawn Chapla])
 
 1.1.0
 =====
@@ -39,3 +35,4 @@ Features:
 [Amjith]: https://blog.amjith.com
 [Zhiming Wang]: https://github.com/zmwangx
 [Irina Truong]: https://github.com/j-bennet
+[Shawn Chapla]: https://github.com/shwnchpl 
