@@ -6,7 +6,6 @@ Features:
 
 * Enhance the describe command. (Thanks: [Amjith])
 * Autocomplete table names for special commands. (Thanks: [Amjith])
-* Add .read command. (Thanks: [Shawn Chapla])
 
 1.1.0
 =====
