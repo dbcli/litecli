@@ -6,6 +6,7 @@
 /src
 /test/behave.ini
 /litecli_env
+/.venv
 /.eggs
 
 .vagrant

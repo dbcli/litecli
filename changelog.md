@@ -1,3 +1,10 @@
+Upcomming:
+==========
+
+Features:
+---------
+* Added `.import` command for importing data from file into table. (Thanks: [Zhaolong Zhu])
+
 1.2.0
 =====
 
@@ -34,4 +41,5 @@ Features:
 [Amjith]: https://blog.amjith.com
 [Zhiming Wang]: https://github.com/zmwangx
 [Irina Truong]: https://github.com/j-bennet
-[Shawn Chapla]: https://github.com/shwnchpl 
+[Shawn Chapla]: https://github.com/shwnchpl
+[Zhaolong Zhu]: https://github.com/zzl0
