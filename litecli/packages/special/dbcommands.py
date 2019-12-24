@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 import csv
 import logging
 import os
@@ -235,7 +235,7 @@ def import_file(cur, arg=None, **_):
     filename, table = args
     cur.execute("PRAGMA table_info(%s)" % table)
     ncols = len(cur.fetchall())
-    insert_tmpl = 'INSERT INTO "%s" VALUES (?%s)' % (table, ',?' * (ncols - 1))
+    insert_tmpl = 'INSERT INTO "%s" VALUES (?%s)' % (table, ",?" * (ncols - 1))
 
     with open(filename, "r") as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read(1024))
@@ -247,10 +247,9 @@ def import_file(cur, arg=None, **_):
         for i, row in enumerate(reader):
             if len(row) != ncols:
                 print(
-                    "%s:%d expected %d columns but found %d - ignored" % (
-                        filename, i, ncols, len(row)
-                    ),
-                    file=sys.stderr
+                    "%s:%d expected %d columns but found %d - ignored"
+                    % (filename, i, ncols, len(row)),
+                    file=sys.stderr,
                 )
                 nignored += 1
                 continue
