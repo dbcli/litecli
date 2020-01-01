@@ -223,7 +223,7 @@ def read_script(cur, arg, **_):
 @special_command(
     ".import",
     ".import filename table",
-    "Import data from filename into table",
+    "Import data from filename into an existing table",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )

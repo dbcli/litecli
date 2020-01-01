@@ -238,3 +238,24 @@ def test_reserved_space_is_integer():
     lc = LiteCli()
     assert isinstance(lc.get_reserved_space(), int)
     click.get_terminal_size = old_func
+
+
+@dbtest
+def test_import_command(executor):
+    data_file = os.path.join(project_dir, "tests", "data", "import_data.csv")
+    run(executor, """create table tbl1(one varchar(10), two smallint)""")
+
+    # execute
+    run(executor, """.import %s tbl1""" % data_file)
+
+    # verify
+    sql = "select * from tbl1;"
+    runner = CliRunner()
+    result = runner.invoke(cli, args=CLI_ARGS + ["--csv"], input=sql)
+
+    expected = """one","two"
+"t1","11"
+"t2","22"
+"""
+    assert result.exit_code == 0
+    assert expected in "".join(result.output)
