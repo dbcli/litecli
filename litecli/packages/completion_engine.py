@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+import shlex
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where
 from sqlparse.compat import text_type
@@ -110,16 +111,40 @@ def suggest_special(text):
     if cmd in ["\\f", "\\fs", "\\fd"]:
         return [{"type": "favoritequery"}]
 
-    if cmd in ["\\d", "\\dt", "\\dt+", ".schema", ".import"]:
+    if cmd in ["\\d", "\\dt", "\\dt+", ".schema"]:
         return [
             {"type": "table", "schema": []},
             {"type": "view", "schema": []},
             {"type": "schema"},
         ]
-    elif cmd in ["\\.", "source", ".open"]:
+
+    if cmd in ["\\.", "source", ".open"]:
         return [{"type": "file_name"}]
 
+    if cmd in [".import"]:
+        # Usage: .import filename table
+        if _expecting_arg_idx(arg, text) == 1:
+            return [{"type": "file_name"}]
+        else:
+            return [{"type": "table", "schema": []}]
+
     return [{"type": "keyword"}, {"type": "special"}]
+
+
+def _expecting_arg_idx(arg, text):
+    """Return the index of expecting argument.
+
+    >>> _expecting_arg_idx("./da", ".import ./da")
+    1
+    >>> _expecting_arg_idx("./data.csv", ".import ./data.csv")
+    1
+    >>> _expecting_arg_idx("./data.csv", ".import ./data.csv ")
+    2
+    >>> _expecting_arg_idx("./data.csv t", ".import ./data.csv t")
+    2
+    """
+    args = shlex.split(arg)
+    return len(args) + int(text[-1].isspace())
 
 
 def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier):

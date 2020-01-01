@@ -3,6 +3,22 @@ from test_completion_engine import sorted_dicts
 from litecli.packages.special.utils import format_uptime
 
 
+def test_import_first_argument():
+    test_cases = [
+        # text, expecting_arg_idx
+        [".import ", 1],
+        [".import ./da", 1],
+        [".import ./data.csv ", 2],
+        [".import ./data.csv t", 2],
+    ]
+    for text, expecting_arg_idx in test_cases:
+        suggestions = suggest_type(text, text)
+        if expecting_arg_idx == 1:
+            assert suggestions == [{"type": "file_name"}]
+        else:
+            assert suggestions == [{"type": "table", "schema": []}]
+
+
 def test_u_suggests_databases():
     suggestions = suggest_type("\\u ", "\\u ")
     assert sorted_dicts(suggestions) == sorted_dicts([{"type": "database"}])
