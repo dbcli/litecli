@@ -235,7 +235,7 @@ def import_file(cur, arg=None, **_):
     filename, table = args
     cur.execute("PRAGMA table_info(%s)" % table)
     ncols = len(cur.fetchall())
-    insert_tmpl = 'INSERT INTO "%s" VALUES (?%s)' % (table, ",?" * (ncols - 1))
+    insert_tmpl = "INSERT INTO %s VALUES (?%s)" % (table, ",?" * (ncols - 1))
 
     with open(filename, "r") as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.read(1024))
