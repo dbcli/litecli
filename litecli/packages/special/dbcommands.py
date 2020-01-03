@@ -228,12 +228,22 @@ def read_script(cur, arg, **_):
     case_sensitive=True,
 )
 def import_file(cur, arg=None, **_):
-    args = shlex.split(arg)
+    def split(s):
+        # this is a modification of shlex.split function, just to make it support '`',
+        # because table name might contain '`' character.
+        lex = shlex.shlex(s, posix=True)
+        lex.whitespace_split = True
+        lex.commenters = ""
+        lex.quotes += "`"
+        return list(lex)
+
+    args = split(arg)
+    log.debug("[arg = %r], [args = %r]", arg, args)
     if len(args) != 2:
         raise TypeError("Usage: .import filename table")
 
     filename, table = args
-    cur.execute("PRAGMA table_info(%s)" % table)
+    cur.execute('PRAGMA table_info("%s")' % table)
     ncols = len(cur.fetchall())
     insert_tmpl = 'INSERT INTO "%s" VALUES (?%s)' % (table, ",?" * (ncols - 1))
 

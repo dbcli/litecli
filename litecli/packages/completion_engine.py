@@ -1,7 +1,6 @@
 from __future__ import print_function
 import os
 import sys
-import shlex
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where
 from sqlparse.compat import text_type
@@ -143,7 +142,7 @@ def _expecting_arg_idx(arg, text):
     >>> _expecting_arg_idx("./data.csv t", ".import ./data.csv t")
     2
     """
-    args = shlex.split(arg)
+    args = arg.split()
     return len(args) + int(text[-1].isspace())
 
 

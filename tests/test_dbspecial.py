@@ -10,6 +10,8 @@ def test_import_first_argument():
         [".import ./da", 1],
         [".import ./data.csv ", 2],
         [".import ./data.csv t", 2],
+        [".import ./data.csv `t", 2],
+        ['.import ./data.csv "t', 2],
     ]
     for text, expecting_arg_idx in test_cases:
         suggestions = suggest_type(text, text)
