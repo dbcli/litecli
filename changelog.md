@@ -1,9 +1,16 @@
-Upcomming:
-==========
+Upcoming:
+=========
+
+Features:
+---------
+
+1.3.0:
+======
 
 Features:
 ---------
 * Added `.import` command for importing data from file into table. (Thanks: [Zhaolong Zhu])
+* Upgraded to prompt-toolkit 3.x.
 
 1.2.0
 =====
