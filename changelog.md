@@ -1,6 +1,12 @@
 Upcoming:
 =========
 
+1.3.1:
+======
+
+* Remove the version pinning of sqlparse package. 
+
+
 Features:
 ---------
 
