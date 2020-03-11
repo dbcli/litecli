@@ -1,5 +1,4 @@
 from __future__ import print_function
-import os
 import sys
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where
@@ -81,7 +80,11 @@ def suggest_type(full_text, text_before_cursor):
         # Be careful here because trivial whitespace is parsed as a statement,
         # but the statement won't have a first token
         tok1 = statement.token_first()
-        if tok1 and tok1.value in [".", "\\", "source"]:
+        if tok1 and tok1.value.startswith("."):
+            return suggest_special(text_before_cursor)
+        elif tok1 and tok1.value.startswith("\\"):
+            return suggest_special(text_before_cursor)
+        elif tok1 and tok1.value.startswith("source"):
             return suggest_special(text_before_cursor)
         elif text_before_cursor and text_before_cursor.startswith(".open "):
             return suggest_special(text_before_cursor)
