@@ -529,10 +529,6 @@ class LiteCli(object):
                 logger.error("traceback: %r", traceback.format_exc())
                 self.echo(str(e), err=True, fg="red")
             else:
-                if is_dropping_database(text, self.sqlexecute.dbname):
-                    self.sqlexecute.dbname = None
-                    self.sqlexecute.connect()
-
                 # Refresh the table names and column names if necessary.
                 if need_completion_refresh(text):
                     self.refresh_completions(reset=need_completion_reset(text))
@@ -964,31 +960,6 @@ def need_completion_refresh(queries):
                 return True
         except Exception:
             return False
-
-
-def is_dropping_database(queries, dbname):
-    """Determine if the query is dropping a specific database."""
-    if dbname is None:
-        return False
-
-    def normalize_db_name(db):
-        return db.lower().strip('`"')
-
-    dbname = normalize_db_name(dbname)
-
-    for query in sqlparse.parse(queries):
-        if query.get_name() is None:
-            continue
-
-        first_token = query.token_first(skip_cm=True)
-        _, second_token = query.token_next(0, skip_cm=True)
-        database_name = normalize_db_name(query.get_name())
-        if (
-            first_token.value.lower() == "drop"
-            and second_token.value.lower() in ("database", "schema")
-            and database_name == dbname
-        ):
-            return True
 
 
 def need_completion_reset(queries):
