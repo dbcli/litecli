@@ -4,9 +4,7 @@
 import ast
 from io import open
 import re
-import sys
-import subprocess
-from setuptools import Command, setup, find_packages
+from setuptools import setup, find_packages
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 

@@ -3,4 +3,6 @@ include LICENSE changelog.md
 include tox.ini
 recursive-include tests *.py
 recursive-include tests *.txt
+recursive-include tests *.csv
+recursive-include tests liteclirc
 recursive-include litecli AUTHORS
