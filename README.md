@@ -33,18 +33,19 @@ $ yay -S litecli-git
 For MacOS users, you can also use Homebrew to install it:
 
 ```
-$ brew tap dbcli/tap
 $ brew install litecli
 ```
 
 ## Usage
 
-    $ litecli --help
-    
-    Usage: litecli [OPTIONS] [DATABASE]
+```
+$ litecli --help
 
-    Examples:
-      - litecli sqlite_db_name
+Usage: litecli [OPTIONS] [DATABASE]
+
+Examples:
+  - litecli sqlite_db_name
+```
 
 A config file is automatically created at `~/.config/litecli/config` at first launch. See the file itself for a description of all available options.
 
