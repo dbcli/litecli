@@ -1,4 +1,13 @@
-1.3.3:
+1.4.1:
+======
+
+Bug Fixes:
+----------
+
+* Fix setup.py to set long_description_content_type as markdown.
+
+
+1.4.0:
 ======
 
 Features:
@@ -6,11 +15,8 @@ Features:
 
 * Add NULLS FIRST and NULLS LAST to keywords. (Thanks: [Amjith])
 
-Bug Fixes:
-----------
 
-
-1.4.0:
+1.3.2:
 ======
 
 * Fix the completion engine to work with newer sqlparse. 

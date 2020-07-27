@@ -44,6 +44,7 @@ setup(
     description="CLI for SQLite Databases with auto-completion and syntax "
     "highlighting.",
     long_description=readme,
+    long_description_content_type="text/markdown",
     install_requires=install_requirements,
     # cmdclass={"test": test, "lint": lint},
     entry_points={
@@ -55,8 +56,6 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: Unix",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
