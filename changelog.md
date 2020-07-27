@@ -1,5 +1,14 @@
-Upcoming:
-=========
+1.3.3:
+======
+
+Features:
+---------
+
+* Add NULLS FIRST and NULLS LAST to keywords. (Thanks: [Amjith])
+
+Bug Fixes:
+----------
+
 
 1.3.2:
 ======

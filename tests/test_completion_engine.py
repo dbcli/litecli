@@ -31,6 +31,15 @@ def test_select_suggests_cols_with_qualified_table_scope():
     )
 
 
+def test_order_by_suggests_cols_with_qualified_table_scope():
+    suggestions = suggest_type(
+        "SELECT * FROM sch.tabl ORDER BY ", "SELECT * FROM sch.tabl ORDER BY "
+    )
+    assert sorted_dicts(suggestions) == sorted_dicts(
+        [{"type": "column", "tables": [("sch", "tabl", None)]},]
+    )
+
+
 @pytest.mark.parametrize(
     "expression",
     [
