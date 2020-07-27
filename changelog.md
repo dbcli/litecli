@@ -1,7 +1,7 @@
 Upcoming:
 =========
 
-1.3.2:
+1.4.0:
 ======
 
 * Fix the completion engine to work with newer sqlparse. 
