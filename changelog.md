@@ -1,3 +1,11 @@
+1.4.2:
+======
+
+Bug Fixes:
+----------
+
+* Fix package upload failures. 
+
 1.4.1:
 ======
 
