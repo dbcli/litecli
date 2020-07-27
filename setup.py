@@ -20,7 +20,7 @@ def open_file(filename):
         return f.read()
 
 
-readme = open_file("README.md")
+readme = open_file("README.md").read()
 
 install_requirements = [
     "click >= 4.1",
