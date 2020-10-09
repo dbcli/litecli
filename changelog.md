@@ -1,3 +1,13 @@
+
+(Unreleased; add upcoming change notes here)
+=============================================
+
+Features:
+---------
+* Add verbose feature to favorite_query command. (Thanks: [Zhaolong Zhu])
+	* > `\f query` will not show the full SQL.
+	* > `\f+ query` will show the full SQL.
+
 1.4.1:
 ======
 

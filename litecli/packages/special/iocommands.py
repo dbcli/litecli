@@ -175,7 +175,7 @@ def open_external_editor(filename=None, sql=None):
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def execute_favorite_query(cur, arg, **_):
+def execute_favorite_query(cur, arg, verbose=False, **_):
     """Returns (title, rows, headers, status)"""
     if arg == "":
         for result in list_favorite_queries():
@@ -192,7 +192,7 @@ def execute_favorite_query(cur, arg, **_):
     elif "?" in query:
         for sql in sqlparse.split(query):
             sql = sql.rstrip(";")
-            title = "> %s" % (sql)
+            title = "> %s" % (sql) if verbose else None
             cur.execute(sql, args)
             if cur.description:
                 headers = [x[0] for x in cur.description]
@@ -206,7 +206,7 @@ def execute_favorite_query(cur, arg, **_):
         else:
             for sql in sqlparse.split(query):
                 sql = sql.rstrip(";")
-                title = "> %s" % (sql)
+                title = "> %s" % (sql) if verbose else None
                 cur.execute(sql)
                 if cur.description:
                     headers = [x[0] for x in cur.description]

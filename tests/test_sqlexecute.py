@@ -139,7 +139,7 @@ def test_favorite_query(executor):
     results = run(executor, "\\fs test-a select * from test where a like 'a%'")
     assert_result_equal(results, status="Saved.")
 
-    results = run(executor, "\\f test-a")
+    results = run(executor, "\\f+ test-a")
     assert_result_equal(
         results,
         title="> select * from test where a like 'a%'",
@@ -162,7 +162,7 @@ def test_bind_parameterized_favorite_query(executor):
     results = run(executor, "\\fs q_param select * from test where name=?")
     assert_result_equal(results, status="Saved.")
 
-    results = run(executor, "\\f q_param def")
+    results = run(executor, "\\f+ q_param def")
     assert_result_equal(
         results,
         title="> select * from test where name=?",
@@ -171,7 +171,7 @@ def test_bind_parameterized_favorite_query(executor):
         auto_status=False,
     )
 
-    results = run(executor, "\\f q_param 'two words'")
+    results = run(executor, "\\f+ q_param 'two words'")
     assert_result_equal(
         results,
         title="> select * from test where name=?",
@@ -181,14 +181,13 @@ def test_bind_parameterized_favorite_query(executor):
     )
 
     with pytest.raises(ProgrammingError):
-        results = run(executor, "\\f q_param")
+        results = run(executor, "\\f+ q_param")
 
     with pytest.raises(ProgrammingError):
-        results = run(executor, "\\f q_param 1 2")
-
+        results = run(executor, "\\f+ q_param 1 2")
 
 @dbtest
-def test_shell_parameterized_favorite_query(executor):
+def test_verbose_feature_of_favorite_query(executor):
     set_expanded_output(False)
     run(executor, "create table test(a text, id integer)")
     run(executor, "insert into test values('abc', 1)")
@@ -200,13 +199,41 @@ def test_shell_parameterized_favorite_query(executor):
     results = run(executor, "\\f sh_param 1")
     assert_result_equal(
         results,
+        title=None,
+        headers=["a", "id"],
+        rows=[("abc", 1)],
+        auto_status=False,
+    )
+
+    results = run(executor, "\\f+ sh_param 1")
+    assert_result_equal(
+        results,
         title="> select * from test where id=1",
         headers=["a", "id"],
         rows=[("abc", 1)],
         auto_status=False,
     )
 
-    results = run(executor, "\\f sh_param")
+@dbtest
+def test_shell_parameterized_favorite_query(executor):
+    set_expanded_output(False)
+    run(executor, "create table test(a text, id integer)")
+    run(executor, "insert into test values('abc', 1)")
+    run(executor, "insert into test values('def', 2)")
+
+    results = run(executor, "\\fs sh_param select * from test where id=$1")
+    assert_result_equal(results, status="Saved.")
+
+    results = run(executor, "\\f+ sh_param 1")
+    assert_result_equal(
+        results,
+        title="> select * from test where id=1",
+        headers=["a", "id"],
+        rows=[("abc", 1)],
+        auto_status=False,
+    )
+
+    results = run(executor, "\\f+ sh_param")
     assert_result_equal(
         results,
         title=None,
@@ -215,7 +242,7 @@ def test_shell_parameterized_favorite_query(executor):
         status="missing substitution for $1 in query:\n  select * from test where id=$1",
     )
 
-    results = run(executor, "\\f sh_param 1 2")
+    results = run(executor, "\\f+ sh_param 1 2")
     assert_result_equal(
         results,
         title=None,
@@ -239,7 +266,7 @@ def test_favorite_query_multiple_statement(executor):
     )
     assert_result_equal(results, status="Saved.")
 
-    results = run(executor, "\\f test-ad")
+    results = run(executor, "\\f+ test-ad")
     expected = [
         {
             "title": "> select * from test where a like 'a%'",
@@ -269,7 +296,7 @@ def test_favorite_query_expanded_output(executor):
     results = run(executor, "\\fs test-ae select * from test")
     assert_result_equal(results, status="Saved.")
 
-    results = run(executor, "\\f test-ae \G")
+    results = run(executor, "\\f+ test-ae \G")
     assert is_expanded_output() is True
     assert_result_equal(
         results,
