@@ -15,6 +15,7 @@ Bug Fixes:
 ----------
 
 * Fix setup.py to set long_description_content_type as markdown.
+* Fix compatibility with sqlparse >= 0.4.0.
 
 
 1.4.0:
@@ -29,12 +30,12 @@ Features:
 1.3.2:
 ======
 
-* Fix the completion engine to work with newer sqlparse. 
+* Fix the completion engine to work with newer sqlparse.
 
 1.3.1:
 ======
 
-* Remove the version pinning of sqlparse package. 
+* Remove the version pinning of sqlparse package.
 
 
 Features:
