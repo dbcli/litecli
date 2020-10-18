@@ -5,11 +5,13 @@ from litecli.compat import PY2
 
 
 if PY2:
-    text_type = unicode
     binary_type = str
+    string_types = basestring
+    text_type = unicode
 else:
-    text_type = str
     binary_type = bytes
+    string_types = str
+    text_type = str
 
 
 def unicode2utf8(arg):
