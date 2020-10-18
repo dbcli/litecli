@@ -1,5 +1,5 @@
 include *.txt *.py
-include LICENSE changelog.md
+include LICENSE CHANGELOG.md
 include tox.ini
 recursive-include tests *.py
 recursive-include tests *.txt
