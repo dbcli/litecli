@@ -725,6 +725,7 @@ class LiteCli(object):
         sqlexecute = self.sqlexecute
         now = datetime.now()
         string = string.replace("\\d", sqlexecute.dbname or "(none)")
+        string = string.replace("\\f", os.path.basename(sqlexecute.dbname or "(none)"))
         string = string.replace("\\n", "\n")
         string = string.replace("\\D", now.strftime("%a %b %d %H:%M:%S %Y"))
         string = string.replace("\\m", now.strftime("%M"))

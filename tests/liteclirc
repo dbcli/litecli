@@ -53,7 +53,8 @@ wider_completion_menu = False
 
 # litecli prompt
 # \D - The full current date
-# \d - Database name
+# \d - Database full path
+# \f - Database base-name
 # \m - Minutes of the current time
 # \n - Newline
 # \P - AM/PM
