@@ -7,6 +7,7 @@
 - Add verbose feature to `favorite_query` command. (Thanks: [Zhaolong Zhu])
   - `\f query` does not show the full SQL.
   - `\f+ query` shows the full SQL.
+- Add prompt format of file's basename. (Thanks: [elig0n])
 
 ### Bug Fixes
 
