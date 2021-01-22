@@ -36,7 +36,9 @@ def test_order_by_suggests_cols_with_qualified_table_scope():
         "SELECT * FROM sch.tabl ORDER BY ", "SELECT * FROM sch.tabl ORDER BY "
     )
     assert sorted_dicts(suggestions) == sorted_dicts(
-        [{"type": "column", "tables": [("sch", "tabl", None)]},]
+        [
+            {"type": "column", "tables": [("sch", "tabl", None)]},
+        ]
     )
 
 

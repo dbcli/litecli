@@ -166,7 +166,7 @@ def extract_tables(sql):
 
 
 def find_prev_keyword(sql):
-    """ Find the last sql keyword in an SQL statement
+    """Find the last sql keyword in an SQL statement
 
     Returns the value of the last keyword, and the text of the query with
     everything after the last keyword stripped

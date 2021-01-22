@@ -186,6 +186,7 @@ def test_bind_parameterized_favorite_query(executor):
     with pytest.raises(ProgrammingError):
         results = run(executor, "\\f+ q_param 1 2")
 
+
 @dbtest
 def test_verbose_feature_of_favorite_query(executor):
     set_expanded_output(False)
@@ -213,6 +214,7 @@ def test_verbose_feature_of_favorite_query(executor):
         rows=[("abc", 1)],
         auto_status=False,
     )
+
 
 @dbtest
 def test_shell_parameterized_favorite_query(executor):

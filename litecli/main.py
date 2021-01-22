@@ -704,8 +704,7 @@ class LiteCli(object):
         ]
 
     def _on_completions_refreshed(self, new_completer):
-        """Swap the completer object in cli with the newly created completer.
-        """
+        """Swap the completer object in cli with the newly created completer."""
         with self._completer_lock:
             self.completer = new_completer
 
