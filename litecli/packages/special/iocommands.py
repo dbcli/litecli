@@ -276,8 +276,7 @@ def save_favorite_query(arg, **_):
 
 @special_command("\\fd", "\\fd [name]", "Delete a favorite query.")
 def delete_favorite_query(arg, **_):
-    """Delete an existing favorite query.
-    """
+    """Delete an existing favorite query."""
     usage = "Syntax: \\fd name.\n\n" + favoritequeries.usage
     if not arg:
         return [(None, None, None, usage)]
