@@ -1,0 +1,44 @@
+name: litecli
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: |
+          python -m pip install -U pip setuptools
+          pip install --no-cache-dir -e .
+          pip install -r requirements-dev.txt -U --upgrade-strategy=only-if-needed
+
+      - name: Run unit tests
+        env:
+          PYTEST_PASSWORD: root
+        run: |
+          ./setup.py test --pytest-args="--cov-report= --cov=litecli"
+
+      - name: Run Black
+        run: |
+          ./setup.py lint
+        if: matrix.python-version == '3.6'
+
+      - name: Coverage
+        run: |
+          coverage report
+          codecov
