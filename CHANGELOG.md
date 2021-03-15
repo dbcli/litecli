@@ -2,6 +2,13 @@
 
 ### Features
 
+### Bug Fixes
+
+
+## 1.6.0 - 2021-03-15
+
+### Features
+
 - Add verbose feature to `favorite_query` command. (Thanks: [Zhaolong Zhu])
   - `\f query` does not show the full SQL.
   - `\f+ query` shows the full SQL.
