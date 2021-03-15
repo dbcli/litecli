@@ -102,6 +102,17 @@ def test_unicode_support_in_output(executor):
 
 
 @dbtest
+def test_invalid_unicode_values_dont_choke(executor):
+    run(executor, "create table unicodechars(t text)")
+    # \xc3 is not a valid utf-8 char. But we can insert it into the database
+    # which can break querying if not handled correctly.
+    run(executor, u"insert into unicodechars (t) values (cast(x'c3' as text))")
+
+    results = run(executor, u"select * from unicodechars")
+    assert_result_equal(results, headers=["t"], rows=[(u"Ã",)])
+
+
+@dbtest
 def test_multiple_queries_same_line(executor):
     results = run(executor, "select 'foo'; select 'bar'")
 
@@ -199,11 +210,7 @@ def test_verbose_feature_of_favorite_query(executor):
 
     results = run(executor, "\\f sh_param 1")
     assert_result_equal(
-        results,
-        title=None,
-        headers=["a", "id"],
-        rows=[("abc", 1)],
-        auto_status=False,
+        results, title=None, headers=["a", "id"], rows=[("abc", 1)], auto_status=False,
     )
 
     results = run(executor, "\\f+ sh_param 1")

@@ -1,7 +1,5 @@
 ## Unreleased - TBD
 
-<!-- add upcoming change notes here -->
-
 ### Features
 
 - Add verbose feature to `favorite_query` command. (Thanks: [Zhaolong Zhu])
@@ -12,6 +10,7 @@
 ### Bug Fixes
 
 - Fix compatibility with sqlparse >= 0.4.0. (Thanks: [chocolateboy])
+- Fix invalid utf-8 exception. (Thanks: [Amjith])
 
 ## 1.4.1 - 2020-07-27
 
