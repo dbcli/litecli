@@ -17,13 +17,6 @@ _logger = logging.getLogger(__name__)
 # })
 
 
-def utf8_resilient_decoder(s):
-    try:
-        return s.decode("utf-8")
-    except UnicodeDecodeError:
-        return s.decode("latin-1")
-
-
 class SQLExecute(object):
 
     databases_query = """
@@ -68,7 +61,7 @@ class SQLExecute(object):
             raise Exception("Path does not exist: {}".format(db_dir_name))
 
         conn = sqlite3.connect(database=db_name, isolation_level=None)
-        conn.text_factory = utf8_resilient_decoder
+        conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
         if self.conn:
             self.conn.close()
 

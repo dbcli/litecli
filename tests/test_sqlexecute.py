@@ -109,7 +109,7 @@ def test_invalid_unicode_values_dont_choke(executor):
     run(executor, u"insert into unicodechars (t) values (cast(x'c3' as text))")
 
     results = run(executor, u"select * from unicodechars")
-    assert_result_equal(results, headers=["t"], rows=[(u"Ã",)])
+    assert_result_equal(results, headers=["t"], rows=[("\\xc3",)])
 
 
 @dbtest
