@@ -83,6 +83,7 @@ class LiteCli(object):
         self.formatter.litecli = self
         self.syntax_style = c["main"]["syntax_style"]
         self.less_chatty = c["main"].as_bool("less_chatty")
+        self.show_bottom_toolbar = c["main"].as_bool("show_bottom_toolbar")
         self.cli_style = c["colors"]
         self.output_style = style_factory_output(self.syntax_style, self.cli_style)
         self.wider_completion_menu = c["main"].as_bool("wider_completion_menu")
@@ -557,7 +558,7 @@ class LiteCli(object):
                 reserve_space_for_menu=self.get_reserved_space(),
                 message=get_message,
                 prompt_continuation=get_continuation,
-                bottom_toolbar=get_toolbar_tokens,
+                bottom_toolbar=get_toolbar_tokens if self.show_bottom_toolbar else None,
                 complete_style=complete_style,
                 input_processors=[
                     ConditionalProcessor(

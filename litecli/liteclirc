@@ -65,6 +65,9 @@ wider_completion_menu = False
 prompt = '\d> '
 prompt_continuation = '-> '
 
+# Show/hide the informational toolbar with function keymap at the footer.
+show_bottom_toolbar = True
+
 # Skip intro info on startup and outro info on exit
 less_chatty = False
 
