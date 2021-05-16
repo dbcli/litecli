@@ -210,7 +210,11 @@ def test_verbose_feature_of_favorite_query(executor):
 
     results = run(executor, "\\f sh_param 1")
     assert_result_equal(
-        results, title=None, headers=["a", "id"], rows=[("abc", 1)], auto_status=False,
+        results,
+        title=None,
+        headers=["a", "id"],
+        rows=[("abc", 1)],
+        auto_status=False,
     )
 
     results = run(executor, "\\f+ sh_param 1")
