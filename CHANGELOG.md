@@ -2,6 +2,8 @@
 
 ### Features
 
+* Add config option show_bottom_toolbar.
+
 ### Bug Fixes
 
 
