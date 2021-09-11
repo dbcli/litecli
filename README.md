@@ -47,7 +47,7 @@ Examples:
   - litecli sqlite_db_name
 ```
 
-A config file is automatically created at `~/.config/litecli/config` at first launch. See the file itself for a description of all available options.
+A config file is automatically created at `~/.config/litecli/config` at first launch. For Windows machines a config file is created at `~\AppData\Local\dbcli\litecli\config` at first launch. See the file itself for a description of all available options.
 
 ## Docs
 
