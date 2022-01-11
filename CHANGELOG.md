@@ -1,4 +1,4 @@
-## Unreleased - TBD
+## 1.7.0 - 2022-01-11
 
 ### Features
 
@@ -6,6 +6,7 @@
 
 ### Bug Fixes
 
+* Pin pygments version to prevent breaking change.
 
 ## 1.6.0 - 2021-03-15
 
