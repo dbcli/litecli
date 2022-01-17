@@ -3,6 +3,7 @@
 ### Features
 
 - Update compatible Python versions. (Thanks: [blazewicz])
+- Add support for Python 3.10. (Thanks: [blazewicz])
 
 ## 1.7.0 - 2022-01-11
 
