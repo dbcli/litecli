@@ -79,7 +79,7 @@ hasn't broken any existing functionality. To run the tests, just type in:
 $ ./setup.py test
 ```
 
-litecli supports Python 2.7 and 3.4+. You can test against multiple versions of
+litecli supports Python 3.6+. You can test against multiple versions of
 Python by running tox:
 
 ```bash

@@ -1,3 +1,9 @@
+## Unreleased - TBD
+
+### Features
+
+- Update compatible Python versions. (Thanks: [blazewicz])
+
 ## 1.7.0 - 2022-01-11
 
 ### Features
