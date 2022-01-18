@@ -1,3 +1,10 @@
+## TBD
+
+### Bug Fixes
+
+* Upgrade cli_helpers to workaround Pygments regression.
+
+
 ## 1.7.0 - 2022-01-11
 
 ### Features
