@@ -1,9 +1,14 @@
-## TBD
+## Unreleased - TBD
+
+### Features
+
+* Update compatible Python versions. (Thanks: [blazewicz])
+* Add support for Python 3.10. (Thanks: [blazewicz])
+* Drop support for Python 3.6. (Thanks: [blazewicz])
 
 ### Bug Fixes
 
 * Upgrade cli_helpers to workaround Pygments regression.
-
 
 ## 1.7.0 - 2022-01-11
 

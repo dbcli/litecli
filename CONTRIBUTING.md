@@ -1,6 +1,6 @@
 # Development Guide
 
-This is a guide for developers who would like to contribute to this project. It is recommended to use Python 3.6 and above for development.
+This is a guide for developers who would like to contribute to this project. It is recommended to use Python 3.7 and above for development.
 
 If you're interested in contributing to litecli, thank you. We'd love your help!
 You'll always get credit for your work.
@@ -79,7 +79,7 @@ hasn't broken any existing functionality. To run the tests, just type in:
 $ ./setup.py test
 ```
 
-litecli supports Python 2.7 and 3.4+. You can test against multiple versions of
+litecli supports Python 3.7+. You can test against multiple versions of
 Python by running tox:
 
 ```bash
