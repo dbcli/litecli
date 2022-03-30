@@ -1,4 +1,4 @@
-## Unreleased - TBD
+## 1.8.0 - 2022-03-29
 
 ### Features
 
@@ -9,6 +9,7 @@
 ### Bug Fixes
 
 * Upgrade cli_helpers to workaround Pygments regression.
+* Use get_terminal_size from shutil instead of click. 
 
 ## 1.7.0 - 2022-01-11
 
