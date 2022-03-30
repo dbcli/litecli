@@ -93,7 +93,9 @@ class LiteCli(object):
         self.login_path_as_host = c["main"].as_bool("login_path_as_host")
 
         # read from cli argument or user config file
-        self.auto_vertical_output = auto_vertical_output or c["main"].as_bool("auto_vertical_output")
+        self.auto_vertical_output = auto_vertical_output or c["main"].as_bool(
+            "auto_vertical_output"
+        )
 
         # audit log
         if self.logfile is None and "audit_log" in c["main"]:
@@ -113,7 +115,9 @@ class LiteCli(object):
         self.initialize_logging()
 
         prompt_cnf = self.read_my_cnf_files(["prompt"])["prompt"]
-        self.prompt_format = prompt or prompt_cnf or c["main"]["prompt"] or self.default_prompt
+        self.prompt_format = (
+            prompt or prompt_cnf or c["main"]["prompt"] or self.default_prompt
+        )
         self.prompt_continuation_format = c["main"]["prompt_continuation"]
         keyword_casing = c["main"].get("keyword_casing", "auto")
 
@@ -254,7 +258,10 @@ class LiteCli(object):
             )
             return
 
-        formatter = logging.Formatter("%(asctime)s (%(process)d/%(threadName)s) " "%(name)s %(levelname)s - %(message)s")
+        formatter = logging.Formatter(
+            "%(asctime)s (%(process)d/%(threadName)s) "
+            "%(name)s %(levelname)s - %(message)s"
+        )
 
         handler.setFormatter(formatter)
 
@@ -353,7 +360,8 @@ class LiteCli(object):
         else:
             history = None
             self.echo(
-                'Error: Unable to open the history file "{}". ' "Your query history will not be saved.".format(history_file),
+                'Error: Unable to open the history file "{}". '
+                "Your query history will not be saved.".format(history_file),
                 err=True,
                 fg="red",
             )
@@ -368,7 +376,10 @@ class LiteCli(object):
 
         def get_message():
             prompt = self.get_prompt(self.prompt_format)
-            if self.prompt_format == self.default_prompt and len(prompt) > self.max_len_prompt:
+            if (
+                self.prompt_format == self.default_prompt
+                and len(prompt) > self.max_len_prompt
+            ):
                 prompt = self.get_prompt("\\d> ")
             return [("class:prompt", prompt)]
 
@@ -448,7 +459,9 @@ class LiteCli(object):
                     else:
                         max_width = None
 
-                    formatted = self.format_output(title, cur, headers, special.is_expanded_output(), max_width)
+                    formatted = self.format_output(
+                        title, cur, headers, special.is_expanded_output(), max_width
+                    )
 
                     t = time() - start
                     try:
@@ -475,7 +488,9 @@ class LiteCli(object):
                 # Restart connection to the database
                 sqlexecute.connect()
                 try:
-                    for title, cur, headers, status in sqlexecute.run("kill %s" % connection_id_to_kill):
+                    for title, cur, headers, status in sqlexecute.run(
+                        "kill %s" % connection_id_to_kill
+                    ):
                         status_str = str(status).lower()
                         if status_str.find("ok") > -1:
                             logger.debug(
@@ -596,7 +611,11 @@ class LiteCli(object):
     def get_output_margin(self, status=None):
         """Get the output margin (number of rows for the prompt, footer and
         timing message."""
-        margin = self.get_reserved_space() + self.get_prompt(self.prompt_format).count("\n") + 2
+        margin = (
+            self.get_reserved_space()
+            + self.get_prompt(self.prompt_format).count("\n")
+            + 2
+        )
         if status:
             margin += 1 + status.count("\n")
 
@@ -682,7 +701,9 @@ class LiteCli(object):
             },
         )
 
-        return [(None, None, None, "Auto-completion refresh started in the background.")]
+        return [
+            (None, None, None, "Auto-completion refresh started in the background.")
+        ]
 
     def _on_completions_refreshed(self, new_completer):
         """Swap the completer object in cli with the newly created completer."""
@@ -696,7 +717,9 @@ class LiteCli(object):
 
     def get_completions(self, text, cursor_positition):
         with self._completer_lock:
-            return self.completer.get_completions(Document(text=text, cursor_position=cursor_positition), None)
+            return self.completer.get_completions(
+                Document(text=text, cursor_position=cursor_positition), None
+            )
 
     def get_prompt(self, string):
         self.logger.debug("Getting prompt")
@@ -754,7 +777,11 @@ class LiteCli(object):
                 cur = list(cur)
 
             formatted = self.formatter.format_output(
-                cur, headers, format_name="vertical" if expanded else None, column_types=column_types, **output_kwargs
+                cur,
+                headers,
+                format_name="vertical" if expanded else None,
+                column_types=column_types,
+                **output_kwargs
             )
 
             if isinstance(formatted, (text_type)):
@@ -764,8 +791,20 @@ class LiteCli(object):
             first_line = next(formatted)
             formatted = itertools.chain([first_line], formatted)
 
-            if not expanded and max_width and headers and cur and len(first_line) > max_width:
-                formatted = self.formatter.format_output(cur, headers, format_name="vertical", column_types=column_types, **output_kwargs)
+            if (
+                not expanded
+                and max_width
+                and headers
+                and cur
+                and len(first_line) > max_width
+            ):
+                formatted = self.formatter.format_output(
+                    cur,
+                    headers,
+                    format_name="vertical",
+                    column_types=column_types,
+                    **output_kwargs
+                )
                 if isinstance(formatted, (text_type)):
                     formatted = iter(formatted.splitlines())
 
@@ -811,9 +850,13 @@ class LiteCli(object):
     is_flag=True,
     help="Automatically switch to vertical output mode if the result is wider than the terminal width.",
 )
-@click.option("-t", "--table", is_flag=True, help="Display batch output in table format.")
+@click.option(
+    "-t", "--table", is_flag=True, help="Display batch output in table format."
+)
 @click.option("--csv", is_flag=True, help="Display batch output in CSV format.")
-@click.option("--warn/--no-warn", default=None, help="Warn before running a destructive query.")
+@click.option(
+    "--warn/--no-warn", default=None, help="Warn before running a destructive query."
+)
 @click.option("-e", "--execute", type=str, help="Execute command and quit.")
 @click.argument("database", default="", nargs=1)
 def cli(
@@ -881,7 +924,10 @@ def cli(
         except (FileNotFoundError, OSError):
             litecli.logger.warning("Unable to open TTY as stdin.")
 
-        if litecli.destructive_warning and confirm_destructive_query(stdin_text) is False:
+        if (
+            litecli.destructive_warning
+            and confirm_destructive_query(stdin_text) is False
+        ):
             exit(0)
         try:
             new_line = True
