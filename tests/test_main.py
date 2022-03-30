@@ -2,6 +2,7 @@ import os
 from collections import namedtuple
 from textwrap import dedent
 from tempfile import NamedTemporaryFile
+import shutil
 
 import click
 from click.testing import CliRunner
@@ -232,12 +233,12 @@ def test_reserved_space_is_integer():
     def stub_terminal_size():
         return (5, 5)
 
-    old_func = click.get_terminal_size
+    old_func = shutil.get_terminal_size
 
-    click.get_terminal_size = stub_terminal_size
+    shutil.get_terminal_size = stub_terminal_size
     lc = LiteCli()
     assert isinstance(lc.get_reserved_space(), int)
-    click.get_terminal_size = old_func
+    shutil.get_terminal_size = old_func
 
 
 @dbtest
