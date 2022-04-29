@@ -23,6 +23,7 @@ from prompt_toolkit.shortcuts import PromptSession, CompleteStyle
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
 from prompt_toolkit.document import Document
 from prompt_toolkit.filters import HasFocus, IsDone
+from prompt_toolkit.formatted_text import ANSI
 from prompt_toolkit.layout.processors import (
     HighlightMatchingBracketProcessor,
     ConditionalProcessor,
@@ -381,7 +382,8 @@ class LiteCli(object):
                 and len(prompt) > self.max_len_prompt
             ):
                 prompt = self.get_prompt("\\d> ")
-            return [("class:prompt", prompt)]
+            prompt = prompt.replace("\\x1b", "\x1b")
+            return ANSI(prompt)
 
         def get_continuation(width, line_number, is_soft_wrap):
             continuation = " " * (width - 1) + " "

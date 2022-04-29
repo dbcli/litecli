@@ -62,6 +62,7 @@ wider_completion_menu = False
 # \R - The current time, in 24-hour military time (0-23)
 # \r - The current time, standard 12-hour time (1-12)
 # \s - Seconds of the current time
+# \x1b[...m - insert ANSI escape sequence
 prompt = '\d> '
 prompt_continuation = '-> '
 

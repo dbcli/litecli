@@ -1,3 +1,10 @@
+## TBD - 
+
+### Features
+
+* Add support for ANSI escape sequences for coloring the prompt.
+
+
 ## 1.8.0 - 2022-03-29
 
 ### Features
