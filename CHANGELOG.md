@@ -3,6 +3,7 @@
 ### Features
 
 * Add support for ANSI escape sequences for coloring the prompt.
+* Add support for `.indexes` command.
 
 
 ## 1.8.0 - 2022-03-29
