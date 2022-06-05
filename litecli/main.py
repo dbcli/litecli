@@ -162,10 +162,11 @@ class LiteCli(object):
         )
         special.register_special_command(
             self.execute_from_file,
-            "source",
+            ".read",
             "\\. filename",
             "Execute commands from file.",
-            aliases=("\\.",),
+            case_sensitive=True,
+            aliases=("\\.", "source"),
         )
         special.register_special_command(
             self.change_prompt_format,
