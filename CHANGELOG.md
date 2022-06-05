@@ -4,6 +4,10 @@
 
 * Add support for ANSI escape sequences for coloring the prompt.
 
+### Bug Fixes
+
+* Fix #120. Make the `.read` command actually read and execute the commands from a file.
+
 
 ## 1.8.0 - 2022-03-29
 
