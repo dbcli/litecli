@@ -105,14 +105,14 @@ def suggest_special(text):
     if cmd in ["\\f", "\\fs", "\\fd"]:
         return [{"type": "favoritequery"}]
 
-    if cmd in ["\\d", "\\dt", "\\dt+", ".schema"]:
+    if cmd in ["\\d", "\\dt", "\\dt+", ".schema", ".indexes"]:
         return [
             {"type": "table", "schema": []},
             {"type": "view", "schema": []},
             {"type": "schema"},
         ]
 
-    if cmd in ["\\.", "source", ".open"]:
+    if cmd in ["\\.", "source", ".open", ".read"]:
         return [{"type": "file_name"}]
 
     if cmd in [".import"]:

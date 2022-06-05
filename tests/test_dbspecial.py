@@ -63,3 +63,14 @@ def test_format_uptime():
 
     seconds = 522600
     assert "6 days 1 hour 10 min 0 sec" == format_uptime(seconds)
+
+
+def test_indexes():
+    suggestions = suggest_type(".indexes", ".indexes ")
+    assert sorted_dicts(suggestions) == sorted_dicts(
+        [
+            {"type": "table", "schema": []},
+            {"type": "view", "schema": []},
+            {"type": "schema"},
+        ]
+    )
