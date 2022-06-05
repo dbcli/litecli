@@ -48,4 +48,5 @@ def _get_vi_mode():
         InputMode.NAVIGATION: "N",
         InputMode.REPLACE: "R",
         InputMode.INSERT_MULTIPLE: "M",
+        InputMode.REPLACE_SINGLE: "R",
     }[get_app().vi_state.input_mode]
