@@ -52,6 +52,10 @@ key_bindings = emacs
 # Enabling this option will show the suggestions in a wider menu. Thus more items are suggested.
 wider_completion_menu = False
 
+# Autocompletion is on by default. This can be truned off by setting this
+# option to False. Pressing tab will still trigger completion.
+autocompletion = True
+
 # litecli prompt
 # \D - The full current date
 # \d - Database name
