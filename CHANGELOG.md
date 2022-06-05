@@ -6,8 +6,8 @@
 
 ### Bug Fixes
 
-* Fix #120. Make the `.read` command actually read and execute the commands from a file.
-
+* Fix [#120](https://github.com/dbcli/litecli/issues/120). Make the `.read` command actually read and execute the commands from a file.
+* Fix  [#96](https://github.com/dbcli/litecli/issues/96) the crash in VI mode when pressing `r`.
 
 ## 1.8.0 - 2022-03-29
 
