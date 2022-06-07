@@ -51,6 +51,10 @@ key_bindings = emacs
 # Enabling this option will show the suggestions in a wider menu. Thus more items are suggested.
 wider_completion_menu = False
 
+# Autocompletion is on by default. This can be truned off by setting this
+# option to False. Pressing tab will still trigger completion.
+autocompletion = True
+
 # litecli prompt
 # \D - The full current date
 # \d - Database name
@@ -61,8 +65,12 @@ wider_completion_menu = False
 # \R - The current time, in 24-hour military time (0-23)
 # \r - The current time, standard 12-hour time (1-12)
 # \s - Seconds of the current time
+# \x1b[...m - insert ANSI escape sequence
 prompt = "\t :\d> "
 prompt_continuation = "-> "
+
+# Show/hide the informational toolbar with function keymap at the footer.
+show_bottom_toolbar = True
 
 # Skip intro info on startup and outro info on exit
 less_chatty = False

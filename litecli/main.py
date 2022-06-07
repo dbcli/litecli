@@ -89,6 +89,7 @@ class LiteCli(object):
         self.cli_style = c["colors"]
         self.output_style = style_factory_output(self.syntax_style, self.cli_style)
         self.wider_completion_menu = c["main"].as_bool("wider_completion_menu")
+        self.autocompletion = c["main"].as_bool("autocompletion")
         c_dest_warning = c["main"].as_bool("destructive_warning")
         self.destructive_warning = c_dest_warning if warn is None else warn
         self.login_path_as_host = c["main"].as_bool("login_path_as_host")
@@ -162,10 +163,11 @@ class LiteCli(object):
         )
         special.register_special_command(
             self.execute_from_file,
-            "source",
+            ".read",
             "\\. filename",
             "Execute commands from file.",
-            aliases=("\\.",),
+            case_sensitive=True,
+            aliases=("\\.", "source"),
         )
         special.register_special_command(
             self.change_prompt_format,
@@ -548,6 +550,9 @@ class LiteCli(object):
             complete_style = CompleteStyle.MULTI_COLUMN
         else:
             complete_style = CompleteStyle.COLUMN
+
+        if not self.autocompletion:
+            complete_style = CompleteStyle.READLINE_LIKE
 
         with self._completer_lock:
 
