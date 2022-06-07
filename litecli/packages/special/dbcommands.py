@@ -111,6 +111,41 @@ def list_databases(cur, **_):
 
 
 @special_command(
+    ".indexes",
+    ".indexes [tablename]",
+    "List indexes.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\di",),
+)
+def list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+    if arg:
+        args = ("{0}%".format(arg),)
+        query = """
+            SELECT name FROM sqlite_master
+            WHERE type = 'index' AND tbl_name LIKE ? AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+        """
+    else:
+        args = tuple()
+        query = """
+            SELECT name FROM sqlite_master
+            WHERE type = 'index' AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+        """
+
+    log.debug(query)
+    cur.execute(query, args)
+    indexes = cur.fetchall()
+    status = ""
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, "")]
+    return [(None, indexes, headers, status)]
+
+
+@special_command(
     ".status",
     "\\s",
     "Show current settings.",

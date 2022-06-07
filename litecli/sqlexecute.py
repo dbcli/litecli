@@ -38,6 +38,13 @@ class SQLExecute(object):
         ORDER BY tableName, columnName
     """
 
+    indexes_query = """
+        SELECT name
+        FROM sqlite_master
+        WHERE type = 'index' AND name NOT LIKE 'sqlite_%'
+        ORDER BY 1
+    """
+
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
 

@@ -3,6 +3,7 @@
 ### Features
 
 * Add support for ANSI escape sequences for coloring the prompt.
+* Add support for `.indexes` command.
 * Add an option to turn off the auto-completion menu. Completion menu can be
   triggered by pressed the `<tab>` key when this option is set to False. Fixes
   [#105](https://github.com/dbcli/litecli/issues/105).
