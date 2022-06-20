@@ -286,7 +286,7 @@ def delete_favorite_query(arg, **_):
     return [(None, None, None, status)]
 
 
-@special_command("system", "system [command]", "Execute a system shell commmand.")
+@special_command("system", "system [command]", "Execute a system shell command.")
 def execute_system_command(arg, **_):
     """Execute a system shell command."""
     usage = "Syntax: system [command].\n"

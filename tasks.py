@@ -34,7 +34,7 @@ class BaseCommand(Command, object):
         sys.exit(subprocess.call(cmd, shell=shell))
 
     def call_in_sequence(self, cmds, shell=True):
-        """Run multiple commmands in a row, exiting if one fails."""
+        """Run multiple commands in a row, exiting if one fails."""
         for cmd in cmds:
             if subprocess.call(cmd, shell=shell) == 1:
                 sys.exit(1)
