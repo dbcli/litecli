@@ -65,7 +65,7 @@ class CompletionRefresher(object):
             # if DB is memory, needed to use same connection
             executor = sqlexecute
         else:
-            # Create a new sqlexecute method to popoulate the completions.
+            # Create a new sqlexecute method to populate the completions.
             executor = SQLExecute(e.dbname)
 
         # If callbacks is a single function then push it into a list.
@@ -79,7 +79,7 @@ class CompletionRefresher(object):
                     self._restart_refresh.clear()
                     break
             else:
-                # Break out of while loop if the for loop finishes natually
+                # Break out of while loop if the for loop finishes naturally
                 # without hitting the break statement.
                 break
 
