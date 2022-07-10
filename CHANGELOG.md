@@ -1,3 +1,10 @@
+## TBD
+
+### Bug Fixes
+
+* Fix [[#146](https://github.com/dbcli/litecli/issues/146)], making sure `.once`
+  can be used more than once in a session.
+
 ## 1.9.0 - 2022-06-06
 
 ### Features

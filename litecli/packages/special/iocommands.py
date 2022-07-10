@@ -405,9 +405,9 @@ def write_once(output):
 @export
 def unset_once_if_written():
     """Unset the once file, if it has been written to."""
-    global once_file
+    global once_file, written_to_once_file
     if written_to_once_file:
-        once_file = None
+        once_file = written_to_once_file = None
 
 
 @special_command(
