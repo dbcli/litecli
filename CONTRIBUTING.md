@@ -49,7 +49,7 @@ You'll always get credit for your work.
     $ pip install --editable .
     ```
 
-6. Create a branch for your bugfix or feature based off the `master` branch:
+6. Create a branch for your bugfix or feature based off the `main` branch:
 
     ```bash
     $ git checkout -b <name-of-bugfix-or-feature>
