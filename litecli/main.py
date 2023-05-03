@@ -442,7 +442,6 @@ class LiteCli(object):
                 start = time()
                 res = sqlexecute.run(text)
                 self.formatter.query = text
-                successful = True
                 result_count = 0
                 for title, cur, headers, status in res:
                     logger.debug("headers: %r", headers)
@@ -457,6 +456,8 @@ class LiteCli(object):
                         if not confirm("Do you want to continue?"):
                             self.echo("Aborted!", err=True, fg="red")
                             break
+                        else:
+                            successful = True
 
                     if self.auto_vertical_output:
                         max_width = self.prompt_app.output.get_size().columns
@@ -475,6 +476,8 @@ class LiteCli(object):
                             self.output(formatted, status)
                         except KeyboardInterrupt:
                             pass
+                        else:
+                            successful = True
                         self.echo("Time: %0.03fs" % t)
                     except KeyboardInterrupt:
                         pass
