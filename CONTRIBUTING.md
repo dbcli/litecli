@@ -58,7 +58,7 @@ You'll always get credit for your work.
 7. While you work on your bugfix or feature, be sure to pull the latest changes from `upstream`. This ensures that your local codebase is up-to-date:
 
     ```bash
-    $ git pull upstream master
+    $ git pull upstream main
     ```
 
 8. When your work is ready for the litecli team to review it, push your branch to your fork:
