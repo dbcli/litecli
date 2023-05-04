@@ -110,7 +110,12 @@ class LiteCli(object):
                     fg="red",
                 )
                 self.logfile = False
-
+        # Load startup commands.
+        try:
+            self.startup_commands = c["startup_commands"]
+        except KeyError: # Redundant given the load_config() function that merges in the standard config, but put here to avoid fail if user do not have updated config file.
+            self.startup_commands = None
+       
         self.completion_refresher = CompletionRefresher()
 
         self.logger = logging.getLogger(__name__)
@@ -442,6 +447,7 @@ class LiteCli(object):
                 start = time()
                 res = sqlexecute.run(text)
                 self.formatter.query = text
+                successful = True
                 result_count = 0
                 for title, cur, headers, status in res:
                     logger.debug("headers: %r", headers)
@@ -456,8 +462,6 @@ class LiteCli(object):
                         if not confirm("Do you want to continue?"):
                             self.echo("Aborted!", err=True, fg="red")
                             break
-                        else:
-                            successful = True
 
                     if self.auto_vertical_output:
                         max_width = self.prompt_app.output.get_size().columns
@@ -476,8 +480,6 @@ class LiteCli(object):
                             self.output(formatted, status)
                         except KeyboardInterrupt:
                             pass
-                        else:
-                            successful = True
                         self.echo("Time: %0.03fs" % t)
                     except KeyboardInterrupt:
                         pass
@@ -592,6 +594,33 @@ class LiteCli(object):
                 editing_mode=editing_mode,
                 search_ignore_case=True,
             )
+        def startup_commands():
+            #TODO: Wait for attach db
+            if self.startup_commands:
+                if "commands" in self.startup_commands:
+                    for command in self.startup_commands['commands']:
+                        try:
+                            res = sqlexecute.run(command)
+                        except Exception as e:
+                            click.echo(command)
+                            self.echo(str(e), err=True, fg="red")
+                        else:
+                            click.echo(command)
+                            for title, cur, headers, status in res:
+                                if title == 'dot command not implemented':
+                                    self.echo("The SQLite dot command '" + command.split(' ', 1)[0]+"' is not yet implemented.", fg="yellow")
+                                else:
+                                    output = self.format_output(title, cur, headers)
+                                    for line in output:
+                                        self.echo(line)
+                            
+                else:
+                    self.echo("Could not read commands. The startup commands needs to be formatted as: \n commands = 'command1', 'command2', ...", fg="yellow")
+
+        try:
+            startup_commands()
+        except Exception as e:
+            self.echo("Could not execute all startup commands: \n"+str(e), fg="yellow")
 
         try:
             while True:

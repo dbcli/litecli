@@ -8,13 +8,15 @@ import sqlparse
 import os.path
 
 from .packages import special
-
 _logger = logging.getLogger(__name__)
 
 # FIELD_TYPES = decoders.copy()
 # FIELD_TYPES.update({
 #     FIELD_TYPE.NULL: type(None)
 # })
+
+sqlite3dotcommands = ['.archive','.auth','.backup','.bail','.binary','.cd','.changes','.check','.clone','.connection','.databases','.dbconfig','.dbinfo','.dump','.echo','.eqp','.excel','.exit','.expert','.explain','.filectrl','.fullschema','.headers','.help','.import','.imposter','.indexes','.limit','.lint','.load','.log','.mode','.nonce','.nullvalue','.once','.open','.output','.parameter','.print','.progress','.prompt','.quit','.read','.recover','.restore','.save','.scanstats','.schema','.selftest','.separator','.session','.sha3sum','.shell','.show','.stats','.system','.tables','.testcase','.testctrl','.timeout','.timer','.trace','.vfsinfo','.vfslist','.vfsname','.width']
+
 
 
 class SQLExecute(object):
@@ -79,6 +81,7 @@ class SQLExecute(object):
         # retrieve connection id
         self.reset_connection_id()
 
+
     def run(self, statement):
         """Execute the sql in the database and return the results. The results
         are a list of tuples. Each tuple has 4 values
@@ -129,10 +132,14 @@ class SQLExecute(object):
                 for result in special.execute(cur, sql):
                     yield result
             except special.CommandNotFound:  # Regular SQL
-                _logger.debug("Regular sql statement. sql: %r", sql)
-                cur.execute(sql)
-                yield self.get_result(cur)
-
+                basecommand = sql.split(' ', 1)[0]
+                if basecommand.lower() in sqlite3dotcommands:
+                    yield ('dot command not implemented', None, None, None)
+                else:
+                    _logger.debug("Regular sql statement. sql: %r", sql)
+                    cur.execute(sql)
+                    yield self.get_result(cur)
+    
     def get_result(self, cursor):
         """Get the current result's data from the cursor."""
         title = headers = None
