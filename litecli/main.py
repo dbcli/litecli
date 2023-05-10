@@ -115,7 +115,7 @@ class LiteCli(object):
             self.startup_commands = c["startup_commands"]
         except KeyError: # Redundant given the load_config() function that merges in the standard config, but put here to avoid fail if user do not have updated config file.
             self.startup_commands = None
-       
+
         self.completion_refresher = CompletionRefresher()
 
         self.logger = logging.getLogger(__name__)
@@ -595,7 +595,6 @@ class LiteCli(object):
                 search_ignore_case=True,
             )
         def startup_commands():
-            #TODO: Wait for attach db
             if self.startup_commands:
                 if "commands" in self.startup_commands:
                     for command in self.startup_commands['commands']:
@@ -613,7 +612,6 @@ class LiteCli(object):
                                     output = self.format_output(title, cur, headers)
                                     for line in output:
                                         self.echo(line)
-                            
                 else:
                     self.echo("Could not read commands. The startup commands needs to be formatted as: \n commands = 'command1', 'command2', ...", fg="yellow")
 

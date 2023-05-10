@@ -3,6 +3,7 @@ import sqlite3
 import uuid
 from contextlib import closing
 from sqlite3 import OperationalError
+from .packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
 import os.path
@@ -14,10 +15,6 @@ _logger = logging.getLogger(__name__)
 # FIELD_TYPES.update({
 #     FIELD_TYPE.NULL: type(None)
 # })
-
-sqlite3dotcommands = ['.archive','.auth','.backup','.bail','.binary','.cd','.changes','.check','.clone','.connection','.databases','.dbconfig','.dbinfo','.dump','.echo','.eqp','.excel','.exit','.expert','.explain','.filectrl','.fullschema','.headers','.help','.import','.imposter','.indexes','.limit','.lint','.load','.log','.mode','.nonce','.nullvalue','.once','.open','.output','.parameter','.print','.progress','.prompt','.quit','.read','.recover','.restore','.save','.scanstats','.schema','.selftest','.separator','.session','.sha3sum','.shell','.show','.stats','.system','.tables','.testcase','.testctrl','.timeout','.timer','.trace','.vfsinfo','.vfslist','.vfsname','.width']
-
-
 
 class SQLExecute(object):
 
@@ -133,13 +130,13 @@ class SQLExecute(object):
                     yield result
             except special.CommandNotFound:  # Regular SQL
                 basecommand = sql.split(' ', 1)[0]
-                if basecommand.lower() in sqlite3dotcommands:
+                if check_if_sqlitedotcommand(basecommand):
                     yield ('dot command not implemented', None, None, None)
                 else:
                     _logger.debug("Regular sql statement. sql: %r", sql)
                     cur.execute(sql)
                     yield self.get_result(cur)
-    
+
     def get_result(self, cursor):
         """Get the current result's data from the cursor."""
         title = headers = None
