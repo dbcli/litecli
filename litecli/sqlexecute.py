@@ -3,7 +3,7 @@ import sqlite3
 import uuid
 from contextlib import closing
 from sqlite3 import OperationalError
-from .packages.special.utils import check_if_sqlitedotcommand
+from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
 import os.path
