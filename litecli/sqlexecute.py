@@ -129,8 +129,7 @@ class SQLExecute(object):
                 for result in special.execute(cur, sql):
                     yield result
             except special.CommandNotFound:  # Regular SQL
-                basecommand = sql.split(' ', 1)[0]
-                if check_if_sqlitedotcommand(basecommand):
+                if check_if_sqlitedotcommand(sql):
                     yield ('dot command not implemented', None, None, None)
                 else:
                     _logger.debug("Regular sql statement. sql: %r", sql)
