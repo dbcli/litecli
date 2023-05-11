@@ -140,5 +140,5 @@ sh_param = select * from test where id=$1
 # litecli commands or sqlite commands to be executed on startup.
 # some of them will require you to have a database attached. 
 # they will be executed in the same order as they appear in the list.
-# Startup commands
-#commands = ".tables", "pragma foreign_keys = ON;"
+[startup_commands]
+commands = "create table startupcommands(a text)", "insert into startupcommands values('abc')"
