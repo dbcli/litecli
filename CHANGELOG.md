@@ -1,5 +1,9 @@
 ## TBD
 
+### Features
+
+* Adding support for startup commands being set in liteclirc and executed on startup. Limited to commands already implemented in litecli. ([[#56](https://github.com/dbcli/litecli/issues/56)])
+
 ### Bug Fixes
 
 * Fix [[#146](https://github.com/dbcli/litecli/issues/146)], making sure `.once`
