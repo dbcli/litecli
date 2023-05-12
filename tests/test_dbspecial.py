@@ -1,6 +1,7 @@
 from litecli.packages.completion_engine import suggest_type
 from test_completion_engine import sorted_dicts
 from litecli.packages.special.utils import format_uptime
+from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 
 def test_import_first_argument():
@@ -74,3 +75,15 @@ def test_indexes():
             {"type": "schema"},
         ]
     )
+
+
+def test_check_if_sqlitedotcommand():
+    test_cases = [
+        [".tables", True],
+        [".BiNarY", True],
+        ["binary", False],
+        [234, False],
+        [".changes   test! test", True],
+        ["NotDotcommand", False]]
+    for command, expected_result in test_cases:
+        assert check_if_sqlitedotcommand(command) == expected_result

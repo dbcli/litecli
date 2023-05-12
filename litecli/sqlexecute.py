@@ -3,19 +3,18 @@ import sqlite3
 import uuid
 from contextlib import closing
 from sqlite3 import OperationalError
+from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
 import os.path
 
 from .packages import special
-
 _logger = logging.getLogger(__name__)
 
 # FIELD_TYPES = decoders.copy()
 # FIELD_TYPES.update({
 #     FIELD_TYPE.NULL: type(None)
 # })
-
 
 class SQLExecute(object):
 
@@ -79,6 +78,7 @@ class SQLExecute(object):
         # retrieve connection id
         self.reset_connection_id()
 
+
     def run(self, statement):
         """Execute the sql in the database and return the results. The results
         are a list of tuples. Each tuple has 4 values
@@ -129,9 +129,12 @@ class SQLExecute(object):
                 for result in special.execute(cur, sql):
                     yield result
             except special.CommandNotFound:  # Regular SQL
-                _logger.debug("Regular sql statement. sql: %r", sql)
-                cur.execute(sql)
-                yield self.get_result(cur)
+                if check_if_sqlitedotcommand(sql):
+                    yield ('dot command not implemented', None, None, None)
+                else:
+                    _logger.debug("Regular sql statement. sql: %r", sql)
+                    cur.execute(sql)
+                    yield self.get_result(cur)
 
     def get_result(self, cursor):
         """Get the current result's data from the cursor."""

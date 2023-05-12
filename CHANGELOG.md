@@ -1,9 +1,17 @@
 ## TBD
 
+### Features
+
+* Adding support for startup commands being set in liteclirc and executed on startup. Limited to commands already implemented in litecli. ([[#56](https://github.com/dbcli/litecli/issues/56)])
+
 ### Bug Fixes
 
 * Fix [[#146](https://github.com/dbcli/litecli/issues/146)], making sure `.once`
   can be used more than once in a session.
+* Fixed setting `successful = True` only when query is executed without exceptions so 
+  failing queries get `successful = False` in `query_history`.
+* Changed `master` to `main` in CONTRIBUTING.md to reflect GitHubs new default branch 
+  naming.
 
 ## 1.9.0 - 2022-06-06
 
@@ -115,3 +123,4 @@
 [Shawn Chapla]: https://github.com/shwnchpl
 [Zhaolong Zhu]: https://github.com/zzl0
 [Zhiming Wang]: https://github.com/zmwangx
+[Bjørnar Smestad]: https://brendesmestad.no

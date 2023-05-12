@@ -117,6 +117,12 @@ output.header = "#00ff5f bold"
 output.odd-row = ""
 output.even-row = ""
 
-
 # Favorite queries.
 [favorite_queries]
+
+# Startup commands
+# litecli commands or sqlite commands to be executed on startup.
+# some of them will require you to have a database attached. 
+# they will be executed in the same order as they appear in the list.
+[startup_commands]
+#commands = ".tables", "pragma foreign_keys = ON;"
