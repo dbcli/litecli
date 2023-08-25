@@ -212,7 +212,7 @@ def load_extension(cur, arg, **_):
     "Description of a table",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
-    aliases=("\\d", "describe", "desc"),
+    aliases=("\\d", "desc"),
 )
 def describe(cur, arg, **_):
     if arg:
