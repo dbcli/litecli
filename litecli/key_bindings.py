@@ -81,4 +81,12 @@ def cli_bindings(cli):
         b = event.app.current_buffer
         b.complete_state = None
 
+    @kb.add("right", filter=completion_is_selected)
+    def _(event):
+        """Accept the completion that is selected in the dropdown menu."""
+        _logger.debug("Detected right-arrow key.")
+
+        b = event.app.current_buffer
+        b.complete_state = None
+
     return kb
