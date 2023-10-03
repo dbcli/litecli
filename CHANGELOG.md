@@ -14,6 +14,9 @@
   naming.
 * Fixed `.once -o <file>` by opening the output file once per statement instead
   of for every line of output ([#148](https://github.com/dbcli/litecli/issues/148)).
+* Use the sqlite3 API to cancel a running query on interrupt
+  ([#164](https://github.com/dbcli/litecli/issues/164)).
+
 
 ## 1.9.0 - 2022-06-06
 
