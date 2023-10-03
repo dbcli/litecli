@@ -21,7 +21,7 @@ from litecli.packages.prompt_utils import confirm_destructive_query
 use_expanded_output = False
 PAGER_ENABLED = True
 tee_file = None
-once_file = written_to_once_file = None
+once_file = once_file_args = written_to_once_file = None
 favoritequeries = FavoriteQueries(ConfigObj())
 
 
@@ -377,9 +377,9 @@ def write_tee(output):
     aliases=("\\o", "\\once"),
 )
 def set_once(arg, **_):
-    global once_file
+    global once_file_args
 
-    once_file = parseargfile(arg)
+    once_file_args = parseargfile(arg)
 
     return [(None, None, None, "")]
 
@@ -387,27 +387,28 @@ def set_once(arg, **_):
 @export
 def write_once(output):
     global once_file, written_to_once_file
-    if output and once_file:
-        try:
-            f = open(**once_file)
-        except (IOError, OSError) as e:
-            once_file = None
-            raise OSError(
-                "Cannot write to file '{}': {}".format(e.filename, e.strerror)
-            )
+    if output and once_file_args:
+        if once_file is None:
+            try:
+                once_file = open(**once_file_args)
+            except (IOError, OSError) as e:
+                once_file = None
+                raise OSError(
+                    "Cannot write to file '{}': {}".format(e.filename, e.strerror)
+                )
 
-        with f:
-            click.echo(output, file=f, nl=False)
-            click.echo("\n", file=f, nl=False)
+        click.echo(output, file=once_file, nl=False)
+        click.echo("\n", file=once_file, nl=False)
         written_to_once_file = True
 
 
 @export
 def unset_once_if_written():
     """Unset the once file, if it has been written to."""
-    global once_file, written_to_once_file
-    if written_to_once_file:
-        once_file = written_to_once_file = None
+    global once_file, once_file_args, written_to_once_file
+    if once_file and written_to_once_file:
+        once_file.close()
+        once_file = once_file_args = written_to_once_file = None
 
 
 @special_command(
