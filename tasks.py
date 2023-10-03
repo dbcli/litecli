@@ -75,7 +75,6 @@ class lint(BaseCommand):
 
 
 class test(TestCommand):
-
     user_options = [("pytest-args=", "a", "Arguments to pass to pytest")]
 
     def initialize_options(self):

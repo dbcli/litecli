@@ -448,7 +448,6 @@ class SQLCompleter(Completer):
         suggestions = suggest_type(document.text, document.text_before_cursor)
 
         for suggestion in suggestions:
-
             _logger.debug("Suggestion type: %r", suggestion["type"])
 
             if suggestion["type"] == "column":

@@ -461,7 +461,7 @@ def watch_query(arg, **kwargs):
             # Somewhere in the code the pager its activated after every yield,
             # so we disable it in every iteration
             set_pager_enabled(False)
-            for (sql, title) in sql_list:
+            for sql, title in sql_list:
                 cur.execute(sql)
                 if cur.description:
                     headers = [x[0] for x in cur.description]

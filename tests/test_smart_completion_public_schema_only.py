@@ -15,7 +15,6 @@ metadata = {
 
 @pytest.fixture
 def completer():
-
     import litecli.sqlcompleter as sqlcompleter
 
     comp = sqlcompleter.SQLCompleter()
@@ -367,17 +366,15 @@ def test_auto_escaped_col_names(completer, complete_event):
             Document(text=text, cursor_position=position), complete_event
         )
     )
-    assert (
-        result
-        == [
-            Completion(text="*", start_position=0),
-            Completion(text="`ABC`", start_position=0),
-            Completion(text="`insert`", start_position=0),
-            Completion(text="id", start_position=0),
-        ]
-        + list(map(Completion, completer.functions))
-        + [Completion(text="select", start_position=0)]
-        + list(map(Completion, sorted(completer.keywords)))
+    assert result == [
+        Completion(text="*", start_position=0),
+        Completion(text="`ABC`", start_position=0),
+        Completion(text="`insert`", start_position=0),
+        Completion(text="id", start_position=0),
+    ] + list(map(Completion, completer.functions)) + [
+        Completion(text="select", start_position=0)
+    ] + list(
+        map(Completion, sorted(completer.keywords))
     )
 
 
