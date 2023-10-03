@@ -12,6 +12,8 @@
   failing queries get `successful = False` in `query_history`.
 * Changed `master` to `main` in CONTRIBUTING.md to reflect GitHubs new default branch 
   naming.
+* Fixed `.once -o <file>` by opening the output file once per statement instead
+  of for every line of output ([#148](https://github.com/dbcli/litecli/issues/148)).
 
 ## 1.9.0 - 2022-06-06
 
