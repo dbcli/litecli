@@ -1,6 +1,5 @@
 import logging
 import sqlite3
-import uuid
 from contextlib import closing
 from sqlite3 import OperationalError
 from litecli.packages.special.utils import check_if_sqlitedotcommand
@@ -51,7 +50,6 @@ class SQLExecute(object):
     def __init__(self, database):
         self.dbname = database
         self._server_type = None
-        self.connection_id = None
         self.conn = None
         if not database:
             _logger.debug("Database is not specified. Skip connection.")
@@ -76,8 +74,6 @@ class SQLExecute(object):
         # Update them after the connection is made to ensure that it was a
         # successful connection.
         self.dbname = db
-        # retrieve connection id
-        self.reset_connection_id()
 
     def run(self, statement):
         """Execute the sql in the database and return the results. The results
@@ -207,17 +203,3 @@ class SQLExecute(object):
     def server_type(self):
         self._server_type = ("sqlite3", "3")
         return self._server_type
-
-    def get_connection_id(self):
-        if not self.connection_id:
-            self.reset_connection_id()
-        return self.connection_id
-
-    def reset_connection_id(self):
-        # Remember current connection id
-        _logger.debug("Get current connection id")
-        # res = self.run('select connection_id()')
-        self.connection_id = uuid.uuid4()
-        # for title, cur, headers, status in res:
-        #     self.connection_id = cur.fetchone()[0]
-        _logger.debug("Current connection id: %s", self.connection_id)
