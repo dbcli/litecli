@@ -12,6 +12,8 @@
   failing queries get `successful = False` in `query_history`.
 * Changed `master` to `main` in CONTRIBUTING.md to reflect GitHubs new default branch 
   naming.
+* Use the sqlite3 API to cancel a running query on interrupt
+  ([#164](https://github.com/dbcli/litecli/issues/164)).
 
 ## 1.9.0 - 2022-06-06
 
