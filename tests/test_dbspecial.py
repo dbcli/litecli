@@ -84,6 +84,7 @@ def test_check_if_sqlitedotcommand():
         ["binary", False],
         [234, False],
         [".changes   test! test", True],
-        ["NotDotcommand", False]]
+        ["NotDotcommand", False],
+    ]
     for command, expected_result in test_cases:
         assert check_if_sqlitedotcommand(command) == expected_result

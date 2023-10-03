@@ -264,6 +264,9 @@ def test_import_command(executor):
 
 def test_startup_commands(executor):
     m = LiteCli(liteclirc=default_config_file)
-    assert m.startup_commands['commands'] == ['create table startupcommands(a text)', "insert into startupcommands values('abc')"]
+    assert m.startup_commands["commands"] == [
+        "create table startupcommands(a text)",
+        "insert into startupcommands values('abc')",
+    ]
 
     # implement tests on executions of the startupcommands

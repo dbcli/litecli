@@ -9,6 +9,7 @@ import sqlparse
 import os.path
 
 from .packages import special
+
 _logger = logging.getLogger(__name__)
 
 # FIELD_TYPES = decoders.copy()
@@ -16,8 +17,8 @@ _logger = logging.getLogger(__name__)
 #     FIELD_TYPE.NULL: type(None)
 # })
 
-class SQLExecute(object):
 
+class SQLExecute(object):
     databases_query = """
         PRAGMA database_list
     """
@@ -78,7 +79,6 @@ class SQLExecute(object):
         # retrieve connection id
         self.reset_connection_id()
 
-
     def run(self, statement):
         """Execute the sql in the database and return the results. The results
         are a list of tuples. Each tuple has 4 values
@@ -130,7 +130,7 @@ class SQLExecute(object):
                     yield result
             except special.CommandNotFound:  # Regular SQL
                 if check_if_sqlitedotcommand(sql):
-                    yield ('dot command not implemented', None, None, None)
+                    yield ("dot command not implemented", None, None, None)
                 else:
                     _logger.debug("Regular sql statement. sql: %r", sql)
                     cur.execute(sql)

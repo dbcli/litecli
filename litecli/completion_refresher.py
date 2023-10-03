@@ -7,7 +7,6 @@ from .sqlexecute import SQLExecute
 
 
 class CompletionRefresher(object):
-
     refreshers = OrderedDict()
 
     def __init__(self):

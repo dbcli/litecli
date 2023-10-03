@@ -59,7 +59,6 @@ PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 class LiteCli(object):
-
     default_prompt = "\\d> "
     max_len_prompt = 45
 
@@ -113,7 +112,9 @@ class LiteCli(object):
         # Load startup commands.
         try:
             self.startup_commands = c["startup_commands"]
-        except KeyError: # Redundant given the load_config() function that merges in the standard config, but put here to avoid fail if user do not have updated config file.
+        except (
+            KeyError
+        ):  # Redundant given the load_config() function that merges in the standard config, but put here to avoid fail if user do not have updated config file.
             self.startup_commands = None
 
         self.completion_refresher = CompletionRefresher()
@@ -235,7 +236,6 @@ class LiteCli(object):
         return [(None, None, None, "Changed prompt format to %s" % arg)]
 
     def initialize_logging(self):
-
         log_file = self.config["main"]["log_file"]
         if log_file == "default":
             log_file = config_location() + "log"
@@ -303,7 +303,6 @@ class LiteCli(object):
         return {x: get(x) for x in keys}
 
     def connect(self, database=""):
-
         cnf = {"database": None}
 
         cnf = self.read_my_cnf_files(cnf.keys())
@@ -560,7 +559,6 @@ class LiteCli(object):
             complete_style = CompleteStyle.READLINE_LIKE
 
         with self._completer_lock:
-
             if self.key_bindings == "vi":
                 editing_mode = EditingMode.VI
             else:
@@ -594,10 +592,11 @@ class LiteCli(object):
                 editing_mode=editing_mode,
                 search_ignore_case=True,
             )
+
         def startup_commands():
             if self.startup_commands:
                 if "commands" in self.startup_commands:
-                    for command in self.startup_commands['commands']:
+                    for command in self.startup_commands["commands"]:
                         try:
                             res = sqlexecute.run(command)
                         except Exception as e:
@@ -606,19 +605,29 @@ class LiteCli(object):
                         else:
                             click.echo(command)
                             for title, cur, headers, status in res:
-                                if title == 'dot command not implemented':
-                                    self.echo("The SQLite dot command '" + command.split(' ', 1)[0]+"' is not yet implemented.", fg="yellow")
+                                if title == "dot command not implemented":
+                                    self.echo(
+                                        "The SQLite dot command '"
+                                        + command.split(" ", 1)[0]
+                                        + "' is not yet implemented.",
+                                        fg="yellow",
+                                    )
                                 else:
                                     output = self.format_output(title, cur, headers)
                                     for line in output:
                                         self.echo(line)
                 else:
-                    self.echo("Could not read commands. The startup commands needs to be formatted as: \n commands = 'command1', 'command2', ...", fg="yellow")
+                    self.echo(
+                        "Could not read commands. The startup commands needs to be formatted as: \n commands = 'command1', 'command2', ...",
+                        fg="yellow",
+                    )
 
         try:
             startup_commands()
         except Exception as e:
-            self.echo("Could not execute all startup commands: \n"+str(e), fg="yellow")
+            self.echo(
+                "Could not execute all startup commands: \n" + str(e), fg="yellow"
+            )
 
         try:
             while True:

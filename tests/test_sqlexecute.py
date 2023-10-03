@@ -94,11 +94,11 @@ def test_invalid_column_name(executor):
 @dbtest
 def test_unicode_support_in_output(executor):
     run(executor, "create table unicodechars(t text)")
-    run(executor, u"insert into unicodechars (t) values ('é')")
+    run(executor, "insert into unicodechars (t) values ('é')")
 
     # See issue #24, this raises an exception without proper handling
-    results = run(executor, u"select * from unicodechars")
-    assert_result_equal(results, headers=["t"], rows=[(u"é",)])
+    results = run(executor, "select * from unicodechars")
+    assert_result_equal(results, headers=["t"], rows=[("é",)])
 
 
 @dbtest
@@ -106,9 +106,9 @@ def test_invalid_unicode_values_dont_choke(executor):
     run(executor, "create table unicodechars(t text)")
     # \xc3 is not a valid utf-8 char. But we can insert it into the database
     # which can break querying if not handled correctly.
-    run(executor, u"insert into unicodechars (t) values (cast(x'c3' as text))")
+    run(executor, "insert into unicodechars (t) values (cast(x'c3' as text))")
 
-    results = run(executor, u"select * from unicodechars")
+    results = run(executor, "select * from unicodechars")
     assert_result_equal(results, headers=["t"], rows=[("\\xc3",)])
 
 
@@ -120,13 +120,13 @@ def test_multiple_queries_same_line(executor):
         {
             "title": None,
             "headers": ["'foo'"],
-            "rows": [(u"foo",)],
+            "rows": [("foo",)],
             "status": "1 row in set",
         },
         {
             "title": None,
             "headers": ["'bar'"],
-            "rows": [(u"bar",)],
+            "rows": [("bar",)],
             "status": "1 row in set",
         },
     ]
@@ -369,8 +369,8 @@ def test_cd_command_current_dir(executor):
 
 @dbtest
 def test_unicode_support(executor):
-    results = run(executor, u"SELECT '日本語' AS japanese;")
-    assert_result_equal(results, headers=["japanese"], rows=[(u"日本語",)])
+    results = run(executor, "SELECT '日本語' AS japanese;")
+    assert_result_equal(results, headers=["japanese"], rows=[("日本語",)])
 
 
 @dbtest
