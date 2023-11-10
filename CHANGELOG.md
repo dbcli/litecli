@@ -16,6 +16,8 @@
   of for every line of output ([#148](https://github.com/dbcli/litecli/issues/148)).
 * Use the sqlite3 API to cancel a running query on interrupt
   ([#164](https://github.com/dbcli/litecli/issues/164)).
+* Skip internal indexes in the .schema output
+  ([#170](https://github.com/dbcli/litecli/issues/170)).
 
 
 ## 1.9.0 - 2022-06-06
