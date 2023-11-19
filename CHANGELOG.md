@@ -1,4 +1,4 @@
-## TBD
+## 1.10.0 - 2022-11-19
 
 ### Features
 
@@ -8,9 +8,9 @@
 
 * Fix [[#146](https://github.com/dbcli/litecli/issues/146)], making sure `.once`
   can be used more than once in a session.
-* Fixed setting `successful = True` only when query is executed without exceptions so 
+* Fixed setting `successful = True` only when query is executed without exceptions so
   failing queries get `successful = False` in `query_history`.
-* Changed `master` to `main` in CONTRIBUTING.md to reflect GitHubs new default branch 
+* Changed `master` to `main` in CONTRIBUTING.md to reflect GitHubs new default branch
   naming.
 * Fixed `.once -o <file>` by opening the output file once per statement instead
   of for every line of output ([#148](https://github.com/dbcli/litecli/issues/148)).
@@ -46,7 +46,7 @@
 ### Bug Fixes
 
 * Upgrade cli_helpers to workaround Pygments regression.
-* Use get_terminal_size from shutil instead of click. 
+* Use get_terminal_size from shutil instead of click.
 
 ## 1.7.0 - 2022-01-11
 
