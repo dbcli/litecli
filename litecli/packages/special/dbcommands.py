@@ -69,13 +69,14 @@ def show_schema(cur, arg=None, **_):
         args = (arg,)
         query = """
             SELECT sql FROM sqlite_master
-            WHERE name==?
+            WHERE name==? AND sql IS NOT NULL
             ORDER BY tbl_name, type DESC, name
         """
     else:
         args = tuple()
         query = """
             SELECT sql FROM sqlite_master
+            WHERE sql IS NOT NULL
             ORDER BY tbl_name, type DESC, name
         """
 
