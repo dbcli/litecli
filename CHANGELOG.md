@@ -1,3 +1,10 @@
+## Next Release - [TBD]
+
+### Bug Fixes
+
+* Do not crash at start up if ~/.config/litecli is not writeable. [#172](https://github.com/dbcli/litecli/issues/172)
+
+
 ## 1.10.0 - 2022-11-19
 
 ### Features
