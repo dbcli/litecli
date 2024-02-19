@@ -239,7 +239,11 @@ class LiteCli(object):
         log_file = self.config["main"]["log_file"]
         if log_file == "default":
             log_file = config_location() + "log"
-        ensure_dir_exists(log_file)
+        try:
+            ensure_dir_exists(log_file)
+        except OSError:
+            # Unable to create log file, log to temp directory instead.
+            log_file = "/tmp/litecli.log"
 
         log_level = self.config["main"]["log_level"]
 
