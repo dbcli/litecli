@@ -57,6 +57,10 @@ def get_config(liteclirc_file=None):
     liteclirc_file = liteclirc_file or "%sconfig" % config_location()
 
     default_config = os.path.join(package_root, "liteclirc")
-    write_default_config(default_config, liteclirc_file)
+    try:
+        write_default_config(default_config, liteclirc_file)
+    except OSError:
+        # If we can't write to the config file, just use the default config
+        return load_config(default_config)
 
     return load_config(liteclirc_file, default_config)
