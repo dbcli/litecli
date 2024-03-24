@@ -3,6 +3,7 @@
 ### Improvements
 
 * When an empty `\d` is invoked the list of tables are returned instead of an error.
+* Show SQLite version at startup.
 
 
 
