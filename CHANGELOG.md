@@ -1,3 +1,11 @@
+## 1.11.0 - TBD
+
+### Improvements
+
+* When an empty `\d` is invoked the list of tables are returned instead of an error.
+
+
+
 ## 1.10.1 - 2024-3-23
 
 ### Bug Fixes

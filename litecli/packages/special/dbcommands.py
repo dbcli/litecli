@@ -224,7 +224,7 @@ def describe(cur, arg, **_):
             arg
         )
     else:
-        raise ArgumentMissing("Table name required.")
+        return list_tables(cur)
 
     log.debug(query)
     cur.execute(query)
