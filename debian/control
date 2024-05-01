@@ -2,7 +2,7 @@ Source: litecli
 Section: python
 Priority: optional
 Maintainer: LiteCLI Contributors <info@litecli.com>
-Uploaders: Joshua M. Boniface <joshua@boniface.me>
+Homepage: https://litecli.com/
 Rules-Requires-Root: no
 Standards-Version: 4.5.0
 Build-Depends: debhelper-compat (= 12),
