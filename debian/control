@@ -1,0 +1,26 @@
+Source: litecli
+Section: python
+Priority: optional
+Maintainer: LiteCLI Contributors <info@litecli.com>
+Uploaders: Joshua M. Boniface <joshua@boniface.me>
+Rules-Requires-Root: no
+Standards-Version: 4.5.0
+Build-Depends: debhelper-compat (= 12),
+               dh-python,
+               fakeroot,
+               python3-all (>= 3.3),
+               python3-all-dev (>= 3.3),
+               python3-distutils,
+               python3-setuptools,
+               python3-sqlparse,
+               python3-click,
+Vcs-Git: https://github.com/dbcli/litecli.git
+Vcs-Browser: https://github.com/dbcli/litecli
+
+Package: litecli
+Architecture: all
+Depends: python3-sqlparse,
+         python3-click,
+         python3-cli-helpers,
+         python3-pygments,
+Description:  CLI for SQLite Databases with auto-completion and syntax highlighting 
