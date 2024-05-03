@@ -1,4 +1,4 @@
-## Upcoming - TBD
+## 1.11.0 - 2024-05-03
 
 ### Improvements
 
