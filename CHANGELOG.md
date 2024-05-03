@@ -1,3 +1,13 @@
+## Upcoming - TBD
+
+### Features
+
+
+### Bug Fixes
+
+* Support a single item in the startup commands in the config. (bug #176)
+
+
 ## 1.10.1 - 2024-3-23
 
 ### Bug Fixes
