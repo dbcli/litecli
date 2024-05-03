@@ -586,7 +586,11 @@ class LiteCli(object):
         def startup_commands():
             if self.startup_commands:
                 if "commands" in self.startup_commands:
-                    for command in self.startup_commands["commands"]:
+                    if isinstance(self.startup_commands["commands"], str):
+                        commands = [self.startup_commands["commands"]]
+                    else:
+                        commands = self.startup_commands["commands"]
+                    for command in commands:
                         try:
                             res = sqlexecute.run(command)
                         except Exception as e:

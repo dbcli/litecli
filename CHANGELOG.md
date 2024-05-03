@@ -1,10 +1,14 @@
-## 1.11.0 - TBD
+## Upcoming - TBD
 
 ### Improvements
 
 * When an empty `\d` is invoked the list of tables are returned instead of an error.
 * Show SQLite version at startup.
 
+
+### Bug Fixes
+
+* Support a single item in the startup commands in the config. (bug #176)
 
 
 ## 1.10.1 - 2024-3-23
