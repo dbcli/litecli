@@ -10,7 +10,7 @@ from time import time
 from datetime import datetime
 from io import open
 from collections import namedtuple
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError, sqlite_version
 import shutil
 
 from cli_helpers.tabular_output import TabularOutputFormatter
@@ -380,10 +380,8 @@ class LiteCli(object):
         key_bindings = cli_bindings(self)
 
         if not self.less_chatty:
-            print("Version:", __version__)
-            print("Mail: https://groups.google.com/forum/#!forum/litecli-users")
+            print(f"LiteCli: {__version__} (SQLite: {sqlite_version})")
             print("GitHub: https://github.com/dbcli/litecli")
-            # print("Home: https://litecli.com")
 
         def get_message():
             prompt = self.get_prompt(self.prompt_format)
@@ -823,7 +821,7 @@ class LiteCli(object):
                 headers,
                 format_name="vertical" if expanded else None,
                 column_types=column_types,
-                **output_kwargs
+                **output_kwargs,
             )
 
             if isinstance(formatted, (text_type)):
@@ -845,7 +843,7 @@ class LiteCli(object):
                     headers,
                     format_name="vertical",
                     column_types=column_types,
-                    **output_kwargs
+                    **output_kwargs,
                 )
                 if isinstance(formatted, (text_type)):
                     formatted = iter(formatted.splitlines())
