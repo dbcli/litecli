@@ -329,7 +329,7 @@ class LiteCli(object):
             exit(1)
 
     def handle_editor_command(self, text):
-        """Editor command is any query that is prefixed or suffixed by a '\e'.
+        R"""Editor command is any query that is prefixed or suffixed by a '\e'.
         The reason for a while loop is because a user might edit a query
         multiple times. For eg:
 
