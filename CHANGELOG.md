@@ -1,3 +1,10 @@
+## 1.11.1 - 2024-07-04
+
+### Bug Fixes
+
+* Fix the escape sequence warning.
+
+
 ## 1.11.0 - 2024-05-03
 
 ### Improvements
