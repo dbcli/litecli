@@ -1,3 +1,5 @@
+# ruff: noqa
+
 __all__ = []
 
 
