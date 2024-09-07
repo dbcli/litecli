@@ -12,7 +12,7 @@ import pytest
 
 from litecli.main import special
 
-DATABASE = os.getenv("PYTEST_DATABASE", "test.sqlite3")
+DATABASE = "test.sqlite3"
 
 
 def db_connection(dbname=":memory:"):
@@ -23,12 +23,10 @@ def db_connection(dbname=":memory:"):
 try:
     db_connection()
     CAN_CONNECT_TO_DB = True
-except Exception as ex:
+except Exception:
     CAN_CONNECT_TO_DB = False
 
-dbtest = pytest.mark.skipif(
-    not CAN_CONNECT_TO_DB, reason="Error creating sqlite connection"
-)
+dbtest = pytest.mark.skipif(not CAN_CONNECT_TO_DB, reason="Error creating sqlite connection")
 
 
 def create_db(dbname):
@@ -36,7 +34,7 @@ def create_db(dbname):
         try:
             cur.execute("""DROP DATABASE IF EXISTS _test_db""")
             cur.execute("""CREATE DATABASE _test_db""")
-        except:
+        except Exception:
             pass
 
 
@@ -44,7 +42,7 @@ def drop_tables(dbname):
     with closing(db_connection().cursor()) as cur:
         try:
             cur.execute("""DROP DATABASE IF EXISTS _test_db""")
-        except:
+        except Exception:
             pass
 
 
@@ -54,9 +52,7 @@ def run(executor, sql, rows_as_list=True):
 
     for title, rows, headers, status in executor.run(sql):
         rows = list(rows) if (rows_as_list and rows) else rows
-        result.append(
-            {"title": title, "rows": rows, "headers": headers, "status": status}
-        )
+        result.append({"title": title, "rows": rows, "headers": headers, "status": status})
 
     return result
 
@@ -89,8 +85,6 @@ def send_ctrl_c(wait_seconds):
     Returns the `multiprocessing.Process` created.
 
     """
-    ctrl_c_process = multiprocessing.Process(
-        target=send_ctrl_c_to_pid, args=(os.getpid(), wait_seconds)
-    )
+    ctrl_c_process = multiprocessing.Process(target=send_ctrl_c_to_pid, args=(os.getpid(), wait_seconds))
     ctrl_c_process.start()
     return ctrl_c_process
