@@ -32,6 +32,9 @@ dev = [
     "tox>=4.8.0",
 ]
 
+[tool.setuptools]
+packages = ["litecli"]
+
 [tool.setuptools.package-data]
 litecli = ["liteclirc", "AUTHORS"]
 
