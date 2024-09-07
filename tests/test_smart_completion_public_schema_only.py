@@ -35,7 +35,7 @@ def completer():
 
 @pytest.fixture
 def complete_event():
-    from mock import Mock
+    from unittest.mock import Mock
 
     return Mock()
 

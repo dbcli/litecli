@@ -1,7 +1,6 @@
 import os
 from collections import namedtuple
 from textwrap import dedent
-from tempfile import NamedTemporaryFile
 import shutil
 
 import click
@@ -180,9 +179,7 @@ def output(monkeypatch, terminal_size, testdata, explicit_pager, expect_pager):
 
 
 def test_conditional_pager(monkeypatch):
-    testdata = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do".split(
-        " "
-    )
+    testdata = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do".split(" ")
     # User didn't set pager, output doesn't fit screen -> pager
     output(
         monkeypatch,

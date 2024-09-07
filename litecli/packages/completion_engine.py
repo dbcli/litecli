@@ -1,5 +1,4 @@
 from __future__ import print_function
-import sys
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where
 from litecli.encodingutils import string_types, text_type
@@ -83,9 +82,7 @@ def suggest_type(full_text, text_before_cursor):
 
     last_token = statement and statement.token_prev(len(statement.tokens))[1] or ""
 
-    return suggest_based_on_last_token(
-        last_token, text_before_cursor, full_text, identifier
-    )
+    return suggest_based_on_last_token(last_token, text_before_cursor, full_text, identifier)
 
 
 def suggest_special(text):
@@ -158,13 +155,12 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
         # 'where foo > 5 and '. We need to look "inside" token.tokens to handle
         # suggestions in complicated where clauses correctly
         prev_keyword, text_before_cursor = find_prev_keyword(text_before_cursor)
-        return suggest_based_on_last_token(
-            prev_keyword, text_before_cursor, full_text, identifier
-        )
+        return suggest_based_on_last_token(prev_keyword, text_before_cursor, full_text, identifier)
     else:
         token_v = token.value.lower()
 
-    is_operand = lambda x: x and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
+    def is_operand(x):
+        x and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
 
     if not token:
         return [{"type": "keyword"}, {"type": "special"}]
@@ -183,9 +179,7 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
             #        Suggest columns/functions AND keywords. (If we wanted to be
             #        really fancy, we could suggest only array-typed columns)
 
-            column_suggestions = suggest_based_on_last_token(
-                "where", text_before_cursor, full_text, identifier
-            )
+            column_suggestions = suggest_based_on_last_token("where", text_before_cursor, full_text, identifier)
 
             # Check for a subquery expression (cases 3 & 4)
             where = p.tokens[-1]
@@ -256,8 +250,7 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
                 {"type": "keyword"},
             ]
     elif (token_v.endswith("join") and token.is_keyword) or (
-        token_v
-        in ("copy", "from", "update", "into", "describe", "truncate", "desc", "explain")
+        token_v in ("copy", "from", "update", "into", "describe", "truncate", "desc", "explain")
     ):
         schema = (identifier and identifier.get_parent_name()) or []
 
@@ -318,9 +311,7 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
     elif token_v.endswith(",") or is_operand(token_v) or token_v in ["=", "and", "or"]:
         prev_keyword, text_before_cursor = find_prev_keyword(text_before_cursor)
         if prev_keyword:
-            return suggest_based_on_last_token(
-                prev_keyword, text_before_cursor, full_text, identifier
-            )
+            return suggest_based_on_last_token(prev_keyword, text_before_cursor, full_text, identifier)
         else:
             return []
     else:

@@ -135,10 +135,5 @@ Token.Toolbar.Arg.Text = nobold
 [favorite_queries]
 q_param = select * from test where name=?
 sh_param = select * from test where id=$1
-
-# Startup commands
-# litecli commands or sqlite commands to be executed on startup.
-# some of them will require you to have a database attached. 
-# they will be executed in the same order as they appear in the list.
 [startup_commands]
-commands = "create table startupcommands(a text)", "insert into startupcommands values('abc')"
+commands = create table startupcommands(a text), insert into startupcommands values('abc')
