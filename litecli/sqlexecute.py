@@ -112,9 +112,7 @@ class SQLExecute(object):
                 or sql.startswith("exit")
                 or sql.startswith("quit")
             ):
-                _logger.debug(
-                    "Not connected to database. Will not run statement: %s.", sql
-                )
+                _logger.debug("Not connected to database. Will not run statement: %s.", sql)
                 raise OperationalError("Not connected to database.")
                 # yield ('Not connected to database', None, None, None)
                 # return

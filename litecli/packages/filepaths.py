@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-from litecli.encodingutils import text_type
 import os
 
 
@@ -64,10 +63,10 @@ def suggest_path(root_dir):
 
     """
     if not root_dir:
-        return map(text_type, [os.path.abspath(os.sep), "~", os.curdir, os.pardir])
+        return map(str, [os.path.abspath(os.sep), "~", os.curdir, os.pardir])
 
     if "~" in root_dir:
-        root_dir = text_type(os.path.expanduser(root_dir))
+        root_dir = str(os.path.expanduser(root_dir))
 
     if not os.path.exists(root_dir):
         root_dir, _ = os.path.split(root_dir)

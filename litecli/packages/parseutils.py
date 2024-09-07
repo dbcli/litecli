@@ -96,17 +96,18 @@ def extract_from_part(parsed, stop_at_punctuation=True):
             # Also 'SELECT * FROM abc JOIN def' will trigger this elif
             # condition. So we need to ignore the keyword JOIN and its variants
             # INNER JOIN, FULL OUTER JOIN, etc.
-            elif (
-                item.ttype is Keyword
-                and (not item.value.upper() == "FROM")
-                and (not item.value.upper().endswith("JOIN"))
-            ):
+            elif item.ttype is Keyword and (not item.value.upper() == "FROM") and (not item.value.upper().endswith("JOIN")):
                 return
             else:
                 yield item
-        elif (
-            item.ttype is Keyword or item.ttype is Keyword.DML
-        ) and item.value.upper() in ("COPY", "FROM", "INTO", "UPDATE", "TABLE", "JOIN"):
+        elif (item.ttype is Keyword or item.ttype is Keyword.DML) and item.value.upper() in (
+            "COPY",
+            "FROM",
+            "INTO",
+            "UPDATE",
+            "TABLE",
+            "JOIN",
+        ):
             tbl_prefix_seen = True
         # 'SELECT a, FROM abc' will detect FROM as part of the column list.
         # So this check here is necessary.
@@ -180,9 +181,7 @@ def find_prev_keyword(sql):
     logical_operators = ("AND", "OR", "NOT", "BETWEEN")
 
     for t in reversed(flattened):
-        if t.value == "(" or (
-            t.is_keyword and (t.value.upper() not in logical_operators)
-        ):
+        if t.value == "(" or (t.is_keyword and (t.value.upper() not in logical_operators)):
             # Find the location of token t in the original parsed statement
             # We can't use parsed.token_index(t) because t may be a child token
             # inside a TokenList, in which case token_index thows an error

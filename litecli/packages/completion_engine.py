@@ -1,7 +1,6 @@
 from __future__ import print_function
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where
-from litecli.encodingutils import string_types, text_type
 from .parseutils import last_word, extract_tables, find_prev_keyword
 from .special import parse_special_command
 
@@ -51,7 +50,7 @@ def suggest_type(full_text, text_before_cursor):
         stmt_start, stmt_end = 0, 0
 
         for statement in parsed:
-            stmt_len = len(text_type(statement))
+            stmt_len = len(str(statement))
             stmt_start, stmt_end = stmt_end, stmt_end + stmt_len
 
             if stmt_end >= current_pos:
@@ -139,7 +138,7 @@ def _expecting_arg_idx(arg, text):
 
 
 def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier):
-    if isinstance(token, string_types):
+    if isinstance(token, str):
         token_v = token.lower()
     elif isinstance(token, Comparison):
         # If 'token' is a Comparison type such as
@@ -160,7 +159,7 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
         token_v = token.value.lower()
 
     def is_operand(x):
-        x and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
+        return x and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
 
     if not token:
         return [{"type": "keyword"}, {"type": "special"}]

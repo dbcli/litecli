@@ -267,11 +267,7 @@ class SQLCompleter(Completer):
         self.reset_completions()
 
     def escape_name(self, name):
-        if name and (
-            (not self.name_pattern.match(name))
-            or (name.upper() in self.reserved_words)
-            or (name.upper() in self.functions)
-        ):
+        if name and ((not self.name_pattern.match(name)) or (name.upper() in self.reserved_words) or (name.upper() in self.functions)):
             name = "`%s`" % name
 
         return name
@@ -437,10 +433,7 @@ class SQLCompleter(Completer):
                 return kw.upper()
             return kw.lower()
 
-        return (
-            Completion(z if casing is None else apply_case(z), -len(text))
-            for x, y, z in sorted(completions)
-        )
+        return (Completion(z if casing is None else apply_case(z), -len(text)) for x, y, z in sorted(completions))
 
     def get_completions(self, document, complete_event):
         word_before_cursor = document.get_word_before_cursor(WORD=True)
@@ -458,11 +451,7 @@ class SQLCompleter(Completer):
                     # drop_unique is used for 'tb11 JOIN tbl2 USING (...'
                     # which should suggest only columns that appear in more than
                     # one table
-                    scoped_cols = [
-                        col
-                        for (col, count) in Counter(scoped_cols).items()
-                        if count > 1 and col != "*"
-                    ]
+                    scoped_cols = [col for (col, count) in Counter(scoped_cols).items() if count > 1 and col != "*"]
 
                 cols = self.find_matches(word_before_cursor, scoped_cols)
                 completions.extend(cols)
@@ -535,9 +524,7 @@ class SQLCompleter(Completer):
                 )
                 completions.extend(queries)
             elif suggestion["type"] == "table_format":
-                formats = self.find_matches(
-                    word_before_cursor, self.table_formats, start_only=True, fuzzy=False
-                )
+                formats = self.find_matches(word_before_cursor, self.table_formats, start_only=True, fuzzy=False)
                 completions.extend(formats)
             elif suggestion["type"] == "file_name":
                 file_names = self.find_files(word_before_cursor)

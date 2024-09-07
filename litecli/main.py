@@ -42,7 +42,6 @@ from .clibuffer import cli_is_multiline
 from .completion_refresher import CompletionRefresher
 from .config import config_location, ensure_dir_exists, get_config
 from .key_bindings import cli_bindings
-from .encodingutils import utf8tounicode, text_type
 from .lexer import LiteCliLexer
 from .__init__ import __version__
 from .packages.filepaths import dir_path_exists
@@ -615,7 +614,7 @@ class LiteCli(object):
     def log_output(self, output):
         """Log the output in the audit log, if it's enabled."""
         if self.logfile:
-            click.echo(utf8tounicode(output), file=self.logfile)
+            click.echo(output, file=self.logfile)
 
     def echo(self, s, **kwargs):
         """Print a message to stdout.
@@ -777,13 +776,7 @@ class LiteCli(object):
         if cur:
             column_types = None
             if hasattr(cur, "description"):
-
-                def get_col_type(col):
-                    # col_type = FIELD_TYPES.get(col[1], text_type)
-                    # return col_type if type(col_type) is type else text_type
-                    return text_type
-
-                column_types = [get_col_type(col) for col in cur.description]
+                column_types = [str(col) for col in cur.description]
 
             if max_width is not None:
                 cur = list(cur)
@@ -796,7 +789,7 @@ class LiteCli(object):
                 **output_kwargs,
             )
 
-            if isinstance(formatted, (text_type)):
+            if isinstance(formatted, str):
                 formatted = formatted.splitlines()
             formatted = iter(formatted)
 
@@ -811,7 +804,7 @@ class LiteCli(object):
                     column_types=column_types,
                     **output_kwargs,
                 )
-                if isinstance(formatted, (text_type)):
+                if isinstance(formatted, str):
                     formatted = iter(formatted.splitlines())
 
             output = itertools.chain(output, formatted)

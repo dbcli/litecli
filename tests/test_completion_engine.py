@@ -32,9 +32,7 @@ def test_select_suggests_cols_with_qualified_table_scope():
 
 
 def test_order_by_suggests_cols_with_qualified_table_scope():
-    suggestions = suggest_type(
-        "SELECT * FROM sch.tabl ORDER BY ", "SELECT * FROM sch.tabl ORDER BY "
-    )
+    suggestions = suggest_type("SELECT * FROM sch.tabl ORDER BY ", "SELECT * FROM sch.tabl ORDER BY ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "column", "tables": [("sch", "tabl", None)]},
@@ -109,9 +107,7 @@ def test_operand_inside_function_suggests_cols1():
 
 
 def test_operand_inside_function_suggests_cols2():
-    suggestion = suggest_type(
-        "SELECT MAX(col1 + col2 +  FROM tbl", "SELECT MAX(col1 + col2 + "
-    )
+    suggestion = suggest_type("SELECT MAX(col1 + col2 +  FROM tbl", "SELECT MAX(col1 + col2 + ")
     assert suggestion == [{"type": "column", "tables": [(None, "tbl", None)]}]
 
 
@@ -166,23 +162,17 @@ def test_expression_suggests_tables_views_and_schemas(expression):
 )
 def test_expression_suggests_qualified_tables_views_and_schemas(expression):
     suggestions = suggest_type(expression, expression)
-    assert sorted_dicts(suggestions) == sorted_dicts(
-        [{"type": "table", "schema": "sch"}, {"type": "view", "schema": "sch"}]
-    )
+    assert sorted_dicts(suggestions) == sorted_dicts([{"type": "table", "schema": "sch"}, {"type": "view", "schema": "sch"}])
 
 
 def test_truncate_suggests_tables_and_schemas():
     suggestions = suggest_type("TRUNCATE ", "TRUNCATE ")
-    assert sorted_dicts(suggestions) == sorted_dicts(
-        [{"type": "table", "schema": []}, {"type": "schema"}]
-    )
+    assert sorted_dicts(suggestions) == sorted_dicts([{"type": "table", "schema": []}, {"type": "schema"}])
 
 
 def test_truncate_suggests_qualified_tables():
     suggestions = suggest_type("TRUNCATE sch.", "TRUNCATE sch.")
-    assert sorted_dicts(suggestions) == sorted_dicts(
-        [{"type": "table", "schema": "sch"}]
-    )
+    assert sorted_dicts(suggestions) == sorted_dicts([{"type": "table", "schema": "sch"}])
 
 
 def test_distinct_suggests_cols():
@@ -240,9 +230,7 @@ def test_insert_into_lparen_comma_suggests_cols():
 
 
 def test_partially_typed_col_name_suggests_col_names():
-    suggestions = suggest_type(
-        "SELECT * FROM tabl WHERE col_n", "SELECT * FROM tabl WHERE col_n"
-    )
+    suggestions = suggest_type("SELECT * FROM tabl WHERE col_n", "SELECT * FROM tabl WHERE col_n")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "alias", "aliases": ["tabl"]},
@@ -278,9 +266,7 @@ def test_dot_suggests_cols_of_an_alias():
 
 
 def test_dot_col_comma_suggests_cols_or_schema_qualified_table():
-    suggestions = suggest_type(
-        "SELECT t1.a, t2. FROM tabl1 t1, tabl2 t2", "SELECT t1.a, t2."
-    )
+    suggestions = suggest_type("SELECT t1.a, t2. FROM tabl1 t1, tabl2 t2", "SELECT t1.a, t2.")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "column", "tables": [(None, "tabl2", "t2")]},
@@ -349,9 +335,7 @@ def test_sub_select_table_name_completion(expression):
 
 
 def test_sub_select_col_name_completion():
-    suggestions = suggest_type(
-        "SELECT * FROM (SELECT  FROM abc", "SELECT * FROM (SELECT "
-    )
+    suggestions = suggest_type("SELECT * FROM (SELECT  FROM abc", "SELECT * FROM (SELECT ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "alias", "aliases": ["abc"]},
@@ -364,9 +348,7 @@ def test_sub_select_col_name_completion():
 
 @pytest.mark.xfail
 def test_sub_select_multiple_col_name_completion():
-    suggestions = suggest_type(
-        "SELECT * FROM (SELECT a, FROM abc", "SELECT * FROM (SELECT a, "
-    )
+    suggestions = suggest_type("SELECT * FROM (SELECT a, FROM abc", "SELECT * FROM (SELECT a, ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "column", "tables": [(None, "abc", None)]},
@@ -376,9 +358,7 @@ def test_sub_select_multiple_col_name_completion():
 
 
 def test_sub_select_dot_col_name_completion():
-    suggestions = suggest_type(
-        "SELECT * FROM (SELECT t. FROM tabl t", "SELECT * FROM (SELECT t."
-    )
+    suggestions = suggest_type("SELECT * FROM (SELECT t. FROM tabl t", "SELECT * FROM (SELECT t.")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "column", "tables": [(None, "tabl", "t")]},
@@ -502,9 +482,7 @@ def test_join_using_suggests_common_columns(col_list):
 
 
 def test_2_statements_2nd_current():
-    suggestions = suggest_type(
-        "select * from a; select * from ", "select * from a; select * from "
-    )
+    suggestions = suggest_type("select * from a; select * from ", "select * from a; select * from ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "table", "schema": []},
@@ -513,9 +491,7 @@ def test_2_statements_2nd_current():
         ]
     )
 
-    suggestions = suggest_type(
-        "select * from a; select  from b", "select * from a; select "
-    )
+    suggestions = suggest_type("select * from a; select  from b", "select * from a; select ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "alias", "aliases": ["b"]},
@@ -526,9 +502,7 @@ def test_2_statements_2nd_current():
     )
 
     # Should work even if first statement is invalid
-    suggestions = suggest_type(
-        "select * from; select * from ", "select * from; select * from "
-    )
+    suggestions = suggest_type("select * from; select * from ", "select * from; select * from ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "table", "schema": []},
@@ -572,9 +546,7 @@ def test_3_statements_2nd_current():
         ]
     )
 
-    suggestions = suggest_type(
-        "select * from a; select  from b; select * from c", "select * from a; select "
-    )
+    suggestions = suggest_type("select * from a; select  from b; select * from c", "select * from a; select ")
     assert sorted_dicts(suggestions) == sorted_dicts(
         [
             {"type": "alias", "aliases": ["b"]},
@@ -586,9 +558,7 @@ def test_3_statements_2nd_current():
 
 
 def test_create_db_with_template():
-    suggestions = suggest_type(
-        "create database foo with template ", "create database foo with template "
-    )
+    suggestions = suggest_type("create database foo with template ", "create database foo with template ")
 
     assert sorted_dicts(suggestions) == sorted_dicts([{"type": "database"}])
 
@@ -597,9 +567,7 @@ def test_create_db_with_template():
 def test_specials_included_for_initial_completion(initial_text):
     suggestions = suggest_type(initial_text, initial_text)
 
-    assert sorted_dicts(suggestions) == sorted_dicts(
-        [{"type": "keyword"}, {"type": "special"}]
-    )
+    assert sorted_dicts(suggestions) == sorted_dicts([{"type": "keyword"}, {"type": "special"}])
 
 
 def test_specials_not_included_after_initial_token():
