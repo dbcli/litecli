@@ -241,8 +241,7 @@ def subst_favorite_query_args(query, args):
         else:
             return [
                 None,
-                "Too many arguments.\nQuery does not have enough place holders to substitute.\n"
-                + query,
+                "Too many arguments.\nQuery does not have enough place holders to substitute.\n" + query,
             ]
 
     match = re.search(r"\?|\$\d+", query)
@@ -393,9 +392,7 @@ def write_once(output):
                 once_file = open(**once_file_args)
             except (IOError, OSError) as e:
                 once_file = None
-                raise OSError(
-                    "Cannot write to file '{}': {}".format(e.filename, e.strerror)
-                )
+                raise OSError("Cannot write to file '{}': {}".format(e.filename, e.strerror))
 
         click.echo(output, file=once_file, nl=False)
         click.echo("\n", file=once_file, nl=False)
@@ -451,9 +448,7 @@ def watch_query(arg, **kwargs):
     elif destructive_prompt is True:
         click.secho("Your call!")
     cur = kwargs["cur"]
-    sql_list = [
-        (sql.rstrip(";"), "> {0!s}".format(sql)) for sql in sqlparse.split(statement)
-    ]
+    sql_list = [(sql.rstrip(";"), "> {0!s}".format(sql)) for sql in sqlparse.split(statement)]
     old_pager_enabled = is_pager_enabled()
     while True:
         if clear_screen:
