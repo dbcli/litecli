@@ -1,13 +1,10 @@
-## Upcoming - TBD
-
-### Features
+## 1.12.1  - 2024-09-07
 
 ### Bug Fixes
 
-### Internal Changes
+* Fix the missing packages due to invalid pyproject.toml config
 
-
-## 1.12.1  - 2024-09-07
+## 1.12.1  - 2024-09-07 (Yanked)
 
 ### Internal Changes
 
