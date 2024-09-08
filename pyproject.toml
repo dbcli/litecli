@@ -33,8 +33,8 @@ dev = [
     "pdbpp>=0.10.3",
 ]
 
-[tool.setuptools]
-packages = ["litecli"]
+[tool.setuptools.packages.find]
+exclude = ["screenshots"]
 
 [tool.setuptools.package-data]
 litecli = ["liteclirc", "AUTHORS"]
