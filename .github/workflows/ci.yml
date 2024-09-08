@@ -16,6 +16,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: astral-sh/setup-uv@v1
+        with:
+          version: "latest"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
