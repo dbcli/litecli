@@ -1,6 +1,6 @@
 [project]
 name = "litecli"
-version = "1.11.1"
+dynamic = ["version"]
 description = "CLI for SQLite Databases with auto-completion and syntax highlighting."
 readme = "README.md"
 requires-python = ">=3.7"
@@ -38,6 +38,9 @@ packages = ["litecli"]
 
 [tool.setuptools.package-data]
 litecli = ["liteclirc", "AUTHORS"]
+
+[tool.setuptools.dynamic]
+version = {attr = "litecli.__version__"}
 
 [tool.ruff]
 line-length = 140
