@@ -6,7 +6,7 @@ from utils import create_db, db_connection, drop_tables
 import litecli.sqlexecute
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def connection():
     create_db("_test_db")
     connection = db_connection("_test_db")

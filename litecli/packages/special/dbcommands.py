@@ -5,12 +5,10 @@ import os
 import sys
 import platform
 import shlex
-from sqlite3 import ProgrammingError
 
 from litecli import __version__
 from litecli.packages.special import iocommands
-from litecli.packages.special.utils import format_uptime
-from .main import special_command, RAW_QUERY, PARSED_QUERY, ArgumentMissing
+from .main import special_command, RAW_QUERY, PARSED_QUERY
 
 log = logging.getLogger(__name__)
 
@@ -220,9 +218,7 @@ def describe(cur, arg, **_):
         args = (arg,)
         query = """
             PRAGMA table_info({})
-        """.format(
-            arg
-        )
+        """.format(args)
     else:
         return list_tables(cur)
 
@@ -275,8 +271,7 @@ def import_file(cur, arg=None, **_):
         for i, row in enumerate(reader):
             if len(row) != ncols:
                 print(
-                    "%s:%d expected %d columns but found %d - ignored"
-                    % (filename, i, ncols, len(row)),
+                    "%s:%d expected %d columns but found %d - ignored" % (filename, i, ncols, len(row)),
                     file=sys.stderr,
                 )
                 nignored += 1

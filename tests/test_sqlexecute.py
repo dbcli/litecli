@@ -274,8 +274,7 @@ def test_favorite_query_multiple_statement(executor):
 
     results = run(
         executor,
-        "\\fs test-ad select * from test where a like 'a%'; "
-        "select * from test where a like 'd%'",
+        "\\fs test-ad select * from test where a like 'a%'; " "select * from test where a like 'd%'",
     )
     assert_result_equal(results, status="Saved.")
 
@@ -346,9 +345,7 @@ def test_cd_command_without_a_folder_name(executor):
 @dbtest
 def test_system_command_not_found(executor):
     results = run(executor, "system xyz")
-    assert_result_equal(
-        results, status="OSError: No such file or directory", assert_contains=True
-    )
+    assert_result_equal(results, status="OSError: No such file or directory", assert_contains=True)
 
 
 @dbtest

@@ -56,7 +56,7 @@ def parse_pygments_style(token_name, style_object, style_dict):
     try:
         other_token_type = string_to_tokentype(style_dict[token_name])
         return token_type, style_object.styles[other_token_type]
-    except AttributeError as err:
+    except AttributeError:
         return token_type, style_dict[token_name]
 
 
@@ -85,9 +85,7 @@ def style_factory(name, cli_style):
             prompt_styles.append((token, cli_style[token]))
 
     override_style = Style([("bottom-toolbar", "noreverse")])
-    return merge_styles(
-        [style_from_pygments_cls(style), override_style, Style(prompt_styles)]
-    )
+    return merge_styles([style_from_pygments_cls(style), override_style, Style(prompt_styles)])
 
 
 def style_factory_output(name, cli_style):

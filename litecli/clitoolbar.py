@@ -15,23 +15,17 @@ def create_toolbar_tokens_func(cli, show_fish_help):
         result.append(("class:bottom-toolbar", " "))
 
         if cli.multi_line:
-            result.append(
-                ("class:bottom-toolbar", " (Semi-colon [;] will end the line) ")
-            )
+            result.append(("class:bottom-toolbar", " (Semi-colon [;] will end the line) "))
 
         if cli.multi_line:
             result.append(("class:bottom-toolbar.on", "[F3] Multiline: ON  "))
         else:
             result.append(("class:bottom-toolbar.off", "[F3] Multiline: OFF  "))
         if cli.prompt_app.editing_mode == EditingMode.VI:
-            result.append(
-                ("class:botton-toolbar.on", "Vi-mode ({})".format(_get_vi_mode()))
-            )
+            result.append(("class:botton-toolbar.on", "Vi-mode ({})".format(_get_vi_mode())))
 
         if show_fish_help():
-            result.append(
-                ("class:bottom-toolbar", "  Right-arrow to complete suggestion")
-            )
+            result.append(("class:bottom-toolbar", "  Right-arrow to complete suggestion"))
 
         if cli.completion_refresher.is_refreshing():
             result.append(("class:bottom-toolbar", "     Refreshing completions..."))

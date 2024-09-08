@@ -82,9 +82,7 @@ def register_special_command(
     aliases=(),
 ):
     cmd = command.lower() if not case_sensitive else command
-    COMMANDS[cmd] = SpecialCommand(
-        handler, command, shortcut, description, arg_type, hidden, case_sensitive
-    )
+    COMMANDS[cmd] = SpecialCommand(handler, command, shortcut, description, arg_type, hidden, case_sensitive)
     for alias in aliases:
         cmd = alias.lower() if not case_sensitive else alias
         COMMANDS[cmd] = SpecialCommand(
@@ -123,9 +121,7 @@ def execute(cur, sql):
         return special_cmd.handler(cur=cur, query=sql)
 
 
-@special_command(
-    "help", "\\?", "Show this help.", arg_type=NO_QUERY, aliases=("\\?", "?")
-)
+@special_command("help", "\\?", "Show this help.", arg_type=NO_QUERY, aliases=("\\?", "?"))
 def show_help():  # All the parameters are ignored.
     headers = ["Command", "Shortcut", "Description"]
     result = []

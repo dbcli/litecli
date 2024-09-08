@@ -1,3 +1,13 @@
+## 1.12.0  - 2024-09-07
+
+## Internal Changes
+
+* Modernize the project with following changes:
+  * pyproject.toml instead of setup.py
+  * Use ruff for linting and formatting
+  * Update GH actions to use uv and tox
+  * Use GH actions to release a new version
+
 ## 1.11.1 - 2024-07-04
 
 ### Bug Fixes

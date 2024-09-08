@@ -1,6 +1,6 @@
 # Development Guide
 
-This is a guide for developers who would like to contribute to this project. It is recommended to use Python 3.7 and above for development.
+This is a guide for developers who would like to contribute to this project. It is recommended to use Python 3.10 and above for development.
 
 If you're interested in contributing to litecli, thank you. We'd love your help!
 You'll always get credit for your work.
@@ -24,8 +24,7 @@ You'll always get credit for your work.
 
     ```bash
     $ cd litecli
-    $ pip install virtualenv
-    $ virtualenv litecli_dev
+    $ python -m venv .venv
     ```
 
     We've just created a virtual environment that we'll use to install all the dependencies
@@ -33,7 +32,7 @@ You'll always get credit for your work.
     need to activate the virtual environment:
 
     ```bash
-    $ source litecli_dev/bin/activate
+    $ source .venv/bin/activate
     ```
 
     When you're done working, you can deactivate the virtual environment:
@@ -45,8 +44,7 @@ You'll always get credit for your work.
 5. Install the dependencies and development tools:
 
     ```bash
-    $ pip install -r requirements-dev.txt
-    $ pip install --editable .
+    $ pip install --editable .[dev]
     ```
 
 6. Create a branch for your bugfix or feature based off the `main` branch:
@@ -76,16 +74,8 @@ While you work on litecli, it's important to run the tests to make sure your cod
 hasn't broken any existing functionality. To run the tests, just type in:
 
 ```bash
-$ ./setup.py test
-```
-
-litecli supports Python 3.7+. You can test against multiple versions of
-Python by running tox:
-
-```bash
 $ tox
 ```
-
 
 ### CLI Tests
 
@@ -102,18 +92,12 @@ $ readlink -f $(which ex)
 
 ## Coding Style
 
-litecli uses [black](https://github.com/ambv/black) to format the source code. Make sure to install black.
+Litecli uses [ruff](https://docs.astral.sh/ruff/) to format the source code.
 
-It's easy to check the style of your code, just run:
-
-```bash
-$ ./setup.py lint
-```
-
-If you see any style issues, you can automatically fix them by running:
+To check the style and fix any violations, run:
 
 ```bash
-$ ./setup.py lint --fix
+$ tox -e style
 ```
 
 Be sure to commit and push any stylistic fixes.
