@@ -54,8 +54,7 @@ jobs:
       run: uv sync --all-extras -p 3.12
 
     - name: Build
-      run: |
-        python -m build
+      run: uv build
 
     - name: Store the distribution packages
       uses: actions/upload-artifact@v4
