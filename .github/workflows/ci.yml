@@ -29,7 +29,7 @@ jobs:
         run: uv sync --all-extras -p ${{ matrix.python-version }}
 
       - name: Run unit tests
-        run: uv run --verbose tox -e py${{ matrix.python-version }}
+        run: uv run tox -e py${{ matrix.python-version }}
 
       - name: Run Style Checks
-        run: uv run --verbose tox -e style
+        run: uv run tox -e style
