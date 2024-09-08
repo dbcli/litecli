@@ -1,6 +1,15 @@
+## Upcoming - TBD
+
+### Features
+
+### Bug Fixes
+
+### Internal Changes
+
+
 ## 1.12.1  - 2024-09-07
 
-## Internal Changes
+### Internal Changes
 
 * Modernize the project with following changes:
   * pyproject.toml instead of setup.py
