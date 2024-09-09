@@ -18,6 +18,8 @@ dependencies = [
     "sqlparse>=0.4.4",
 ]
 
+[build-system]
+build-backend = "setuptools.build_meta"
 
 [project.scripts]
 litecli = "litecli.main:cli"
