@@ -1,5 +1,7 @@
 ## Upcoming - TBD
 
+## 1.12.2  - 2024-09-10
+
 ### Bug Fixes
 
 * Specify build system in `pyproject.toml`
