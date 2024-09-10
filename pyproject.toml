@@ -36,7 +36,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["screenshots"]
+exclude = ["screenshots", "tests*"]
 
 [tool.setuptools.package-data]
 litecli = ["liteclirc", "AUTHORS"]
