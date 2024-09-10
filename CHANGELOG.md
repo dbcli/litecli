@@ -2,7 +2,9 @@
 
 ### Bug Fixes
 
+* Specify build system in `pyproject.toml`
 * Don't install tests
+
 
 ## 1.12.1  - 2024-09-07
 
