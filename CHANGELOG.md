@@ -1,6 +1,16 @@
 ## Upcoming - TBD
 
-## 1.12.2  - 2024-09-10
+
+### Features
+
+
+### Bug Fixes
+
+
+### Internal Changes
+
+
+## 1.12.3  - 2024-09-10
 
 ### Bug Fixes
 
@@ -8,7 +18,7 @@
 * Don't install tests
 
 
-## 1.12.1  - 2024-09-07
+## 1.12.2  - 2024-09-07
 
 ### Bug Fixes
 
