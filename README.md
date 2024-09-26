@@ -1,6 +1,6 @@
 # litecli
 
-[![Build Status](https://travis-ci.org/dbcli/litecli.svg?branch=master)](https://travis-ci.org/dbcli/litecli)
+[![GitHub Actions](https://github.com/dbcli/litecli/actions/workflows/ci.yml/badge.svg)](https://github.com/dbcli/litecli/actions/workflows/ci.yml "GitHub Actions")
 
 [Docs](https://litecli.com)
 
@@ -24,6 +24,7 @@ The package is also available on Arch Linux through AUR in two versions: [litecl
 ```
 $ yay -S litecli
 ```
+
 or
 
 ```
