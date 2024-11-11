@@ -215,10 +215,9 @@ def load_extension(cur, arg, **_):
 )
 def describe(cur, arg, **_):
     if arg:
-        args = (arg,)
         query = """
             PRAGMA table_info({})
-        """.format(args)
+        """.format(arg)
     else:
         return list_tables(cur)
 

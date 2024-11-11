@@ -2,6 +2,7 @@ from litecli.packages.completion_engine import suggest_type
 from test_completion_engine import sorted_dicts
 from litecli.packages.special.utils import format_uptime
 from litecli.packages.special.utils import check_if_sqlitedotcommand
+from utils import run, dbtest, assert_result_equal
 
 
 def test_import_first_argument():
@@ -88,3 +89,21 @@ def test_check_if_sqlitedotcommand():
     ]
     for command, expected_result in test_cases:
         assert check_if_sqlitedotcommand(command) == expected_result
+
+
+@dbtest
+def test_special_d(executor):
+    run(executor, """create table tst_tbl1(a text)""")
+    results = run(executor, """\\d""")
+
+    assert_result_equal(results, headers=["name"], rows=[("tst_tbl1",)], status="")
+
+
+@dbtest
+def test_special_d_w_arg(executor):
+    run(executor, """create table tst_tbl1(a text)""")
+    results = run(executor, """\\d tst_tbl1""")
+
+    assert_result_equal(
+        results, headers=["cid", "name", "type", "notnull", "dflt_value", "pk"], rows=[(0, "a", "TEXT", 0, None, 0)], status=""
+    )
