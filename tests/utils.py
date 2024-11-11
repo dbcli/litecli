@@ -88,3 +88,27 @@ def send_ctrl_c(wait_seconds):
     ctrl_c_process = multiprocessing.Process(target=send_ctrl_c_to_pid, args=(os.getpid(), wait_seconds))
     ctrl_c_process.start()
     return ctrl_c_process
+
+
+def assert_result_equal(
+    result,
+    title=None,
+    rows=None,
+    headers=None,
+    status=None,
+    auto_status=True,
+    assert_contains=False,
+):
+    """Assert that an sqlexecute.run() result matches the expected values."""
+    if status is None and auto_status and rows:
+        status = "{} row{} in set".format(len(rows), "s" if len(rows) > 1 else "")
+    fields = {"title": title, "rows": rows, "headers": headers, "status": status}
+
+    if assert_contains:
+        # Do a loose match on the results using the *in* operator.
+        for key, field in fields.items():
+            if field:
+                assert field in result[0][key]
+    else:
+        # Do an exact match on the fields.
+        assert result == [fields]
