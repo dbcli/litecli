@@ -1,3 +1,13 @@
+## Upcoming - TBD
+
+### Features
+
+* Add `\pipe_once` / `\|` commands for sending output to a command
+
+### Bug Fixes
+
+### Internal Changes
+
 ## 1.12.4 - 2024-11-11
 
 ### Bug Fixes
