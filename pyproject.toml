@@ -4,10 +4,8 @@ dynamic = ["version"]
 description = "CLI for SQLite Databases with auto-completion and syntax highlighting."
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "BSD"}
-authors = [
-    {name = "dbcli", email = "litecli-users@googlegroups.com"}
-]
+license = { text = "BSD" }
+authors = [{ name = "dbcli", email = "litecli-users@googlegroups.com" }]
 urls = { "homepage" = "https://github.com/dbcli/litecli" }
 dependencies = [
     "cli-helpers[styles]>=2.2.1",
@@ -19,7 +17,7 @@ dependencies = [
 ]
 
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools>=64.0", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
@@ -41,9 +39,6 @@ exclude = ["screenshots", "tests*"]
 
 [tool.setuptools.package-data]
 litecli = ["liteclirc", "AUTHORS"]
-
-[tool.setuptools.dynamic]
-version = {attr = "litecli.__version__"}
 
 [tool.ruff]
 line-length = 140

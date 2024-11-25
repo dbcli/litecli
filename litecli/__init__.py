@@ -1,1 +1,3 @@
-__version__ = "1.13.0"
+import importlib.metadata
+
+__version__ = importlib.metadata.version("litecli")
