@@ -833,7 +833,7 @@ def version_callback(ctx: click.Context, param: click.Parameter, value: bool) ->
 
 
 @click.command()
-@click.option("-V", "--version", callback=version_callback, expose_value=False, is_eager=True, is_flag=True)
+@click.option("-V", "--version", callback=version_callback, expose_value=False, is_eager=True, is_flag=True, help="Show version.")
 @click.option("-D", "--database", "dbname", help="Database to use.")
 @click.option(
     "-R",
