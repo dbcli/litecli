@@ -825,8 +825,15 @@ class LiteCli(object):
         return self.query_history[-1][0] if self.query_history else None
 
 
+def version_callback(ctx: click.Context, param: click.Parameter, value: bool) -> None:
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(f"Version: {__version__}", color=ctx.color)
+    ctx.exit()
+
+
 @click.command()
-@click.option("-V", "--version", is_flag=True, help="Output litecli's version.")
+@click.option("-V", "--version", callback=version_callback, expose_value=False, is_eager=True, is_flag=True, help="Show version.")
 @click.option("-D", "--database", "dbname", help="Database to use.")
 @click.option(
     "-R",
@@ -859,7 +866,6 @@ class LiteCli(object):
 def cli(
     database,
     dbname,
-    version,
     prompt,
     logfile,
     auto_vertical_output,
@@ -876,11 +882,6 @@ def cli(
       - litecli lite_database
 
     """
-
-    if version:
-        print("Version:", __version__)
-        sys.exit(0)
-
     litecli = LiteCli(
         prompt=prompt,
         logfile=logfile,

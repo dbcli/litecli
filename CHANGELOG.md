@@ -1,3 +1,9 @@
+## 1.13.1 - 2024-11-24
+
+### Internal
+
+* Read the version from the git tag using setuptools-scm
+
 ## 1.13.0 - 2024-11-23
 
 ### Features
