@@ -239,7 +239,7 @@ def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
     {question}
 
     Explain the reason for choosing each table in the SQL query you have
-    written. Include a brief explanation of any built in SQLite3 functions.
+    written. Keep the explanation concise and to the point.
     Finally include the sql query in a code fence such as this one:
 
     ```sql
