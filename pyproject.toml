@@ -30,6 +30,8 @@ build-backend = "setuptools.build_meta"
 litecli = "litecli.main:cli"
 
 [project.optional-dependencies]
+ai = ["llm"]
+
 dev = [
     "behave>=1.2.6",
     "coverage>=7.2.7",
