@@ -152,5 +152,13 @@ def quit(*_args):
     arg_type=NO_QUERY,
     case_sensitive=True,
 )
+@special_command(
+    "\\llm",
+    "\\ai",
+    "Use LLM to construct a SQL query.",
+    arg_type=NO_QUERY,
+    case_sensitive=False,
+    aliases=(".ai", ".llm"),
+)
 def stub():
     raise NotImplementedError

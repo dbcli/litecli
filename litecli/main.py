@@ -347,6 +347,27 @@ class LiteCli(object):
             continue
         return text
 
+    def handle_llm_command(self, text):
+        if not special.is_llm_command(text):
+            return text
+
+        cur = self.sqlexecute.conn.cursor()
+        try:
+            question = special.get_llm_question(text)
+            context, sql = special.sql_using_llm(cur=cur, question=question)
+        except Exception as e:
+            # Something went wrong. Raise an exception and bail.
+            raise RuntimeError(e)
+        while True:
+            try:
+                click.echo(context)
+                text = self.prompt_app.prompt(default=sql)
+                break
+            except KeyboardInterrupt:
+                sql = ""
+
+        return text
+
     def run_cli(self):
         iterations = 0
         sqlexecute = self.sqlexecute
@@ -396,6 +417,14 @@ class LiteCli(object):
 
                 try:
                     text = self.handle_editor_command(text)
+                except RuntimeError as e:
+                    logger.error("sql: %r, error: %r", text, e)
+                    logger.error("traceback: %r", traceback.format_exc())
+                    self.echo(str(e), err=True, fg="red")
+                    return
+
+                try:
+                    text = self.handle_llm_command(text)
                 except RuntimeError as e:
                     logger.error("sql: %r, error: %r", text, e)
                     logger.error("traceback: %r", traceback.format_exc())

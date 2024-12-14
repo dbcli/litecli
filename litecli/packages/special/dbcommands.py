@@ -6,8 +6,6 @@ import sys
 import platform
 import shlex
 
-import click
-import llm
 
 from litecli import __version__
 from litecli.packages.special import iocommands
@@ -91,74 +89,6 @@ def show_schema(cur, arg=None, **_):
         return [(None, None, None, "")]
 
     return [(None, tables, headers, status)]
-
-
-@special_command(
-    ".ai",
-    ".llm",
-    "Ask AI to answer your question.",
-    arg_type=PARSED_QUERY,
-    case_sensitive=False,
-    aliases=("\\ai",),
-)
-def use_ai(cur, arg=None, **_):
-    schema_query = """
-        SELECT sql FROM sqlite_master
-        WHERE sql IS NOT NULL
-        ORDER BY tbl_name, type DESC, name
-    """
-    log.debug(schema_query)
-    cur.execute(schema_query)
-    db_schema = "\n".join([x for (x,) in cur.fetchall()])
-    tables_query = """
-            SELECT name FROM sqlite_master
-            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
-            ORDER BY 1
-        """
-    log.debug(tables_query)
-    cur.execute(tables_query)
-    sample_row = "SELECT * FROM {table} LIMIT 1"
-    sample_data = {}
-    for (table,) in cur.fetchall():
-        sample_row_query = sample_row.format(table=table)
-        cur.execute(sample_row_query)
-        cols = [x[0] for x in cur.description]
-        row = cur.fetchone()
-        if row is None:
-            continue
-        sample_data[table] = list(zip(cols, row))
-
-    sys_prompt = f"""A SQLite database has the following schema:
-    {db_schema}
-
-    Here is a sample data for each table: {sample_data}
-
-
-    Use the provided schema and the sample data to construct a SQL query that
-    can be run in SQLite3 to answer
-
-    {arg}
-
-    Do NOT include any additional formatting or explanation just the SQL query.
-    """
-    log.debug(sys_prompt)
-    # model = llm.get_model("qwen2.5-coder")
-    model = llm.get_model("o1-preview")
-    # model = llm.get_model("o1-mini")
-    # model = llm.get_model("llama3.2")
-    # model = llm.get_model("gpt-4o")
-    resp = model.prompt(sys_prompt)
-    status = ""
-    headers = ""
-    click.echo(resp.text())
-    click.echo("Ok to execute?")
-    ans = click.prompt("y/n")
-    if ans == "y":
-        results = cur.execute(resp.text())
-    else:
-        results = None
-
-    return [(None, results, headers, status)]
 
 
 @special_command(

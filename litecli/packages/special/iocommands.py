@@ -1,22 +1,26 @@
 from __future__ import unicode_literals
-import os
-import re
+
 import locale
 import logging
-import subprocess
+import os
+import re
 import shlex
+import subprocess
 from io import open
 from time import sleep
+from typing import Optional, Tuple
 
 import click
+import llm
 import sqlparse
 from configobj import ConfigObj
 
-from . import export
-from .main import special_command, NO_QUERY, PARSED_QUERY
-from .favoritequeries import FavoriteQueries
-from .utils import handle_cd_command
 from litecli.packages.prompt_utils import confirm_destructive_query
+
+from . import export
+from .favoritequeries import FavoriteQueries
+from .main import NO_QUERY, PARSED_QUERY, special_command
+from .utils import handle_cd_command
 
 use_expanded_output = False
 PAGER_ENABLED = True
@@ -26,6 +30,8 @@ written_to_once_file = None
 pipe_once_process = None
 written_to_pipe_once_process = False
 favoritequeries = FavoriteQueries(ConfigObj())
+
+log = logging.getLogger(__name__)
 
 
 @export
@@ -93,9 +99,6 @@ def set_expanded_output(val):
 @export
 def is_expanded_output():
     return use_expanded_output
-
-
-_logger = logging.getLogger(__name__)
 
 
 @export
@@ -169,6 +172,97 @@ def open_external_editor(filename=None, sql=None):
         query = sql
 
     return (query, message)
+
+
+@export
+def is_llm_command(command) -> bool:
+    """
+    Is this an llm/ai command?
+    """
+    return (
+        command.strip().startswith("\\llm")
+        or command.strip().startswith("\\ai")
+        or command.strip().startswith(".llm")
+        or command.strip().startswith(".ai")
+    )
+
+
+@export
+def get_llm_question(command) -> Optional[str]:
+    """
+    Remove the llm/ai prefix
+    """
+    command = command.removeprefix("\\llm")
+    command = command.removeprefix("\\ai")
+    command = command.removeprefix(".llm")
+    command = command.removeprefix(".ai")
+    return command
+
+
+@export
+def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
+    _pattern = r"```sql\n(.*?)\n```"
+    schema_query = """
+        SELECT sql FROM sqlite_master
+        WHERE sql IS NOT NULL
+        ORDER BY tbl_name, type DESC, name
+    """
+    tables_query = """
+            SELECT name FROM sqlite_master
+            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+    """
+    sample_row_query = "SELECT * FROM {table} LIMIT 1"
+    log.debug(schema_query)
+    cur.execute(schema_query)
+    db_schema = "\n".join([x for (x,) in cur.fetchall()])
+    log.debug(tables_query)
+    cur.execute(tables_query)
+    sample_data = {}
+    for (table,) in cur.fetchall():
+        sample_row = sample_row_query.format(table=table)
+        cur.execute(sample_row)
+        cols = [x[0] for x in cur.description]
+        row = cur.fetchone()
+        if row is None:  # Skip empty tables
+            continue
+        sample_data[table] = list(zip(cols, row))
+
+    sys_prompt = f"""A SQLite database has the following schema:
+    {db_schema}
+
+    Here is a sample data for each table: {sample_data}
+
+    Use the provided schema and the sample data to construct a SQL query that
+    can be run in SQLite3 to answer
+
+    {question}
+
+    Explain the reason for choosing each table in the SQL query you have
+    written. Include a brief explanation of any built in SQLite3 functions.
+    Finally include the sql query in a code fence such as this one:
+
+    ```sql
+    SELECT count(*) FROM table_name;
+    ```
+    """
+    log.debug(sys_prompt)
+    # model = llm.get_model("llama3.3")
+    # model = llm.get_model("qwq")
+    # model = llm.get_model("o1-preview")
+    # model = llm.get_model("o1-mini")
+    # model = llm.get_model("llama3.2")
+    model = llm.get_model("gpt-4o")
+    # model = llm.get_model("claude-3.5-haiku")
+    resp = model.prompt(sys_prompt)
+    result = resp.text()
+    match = re.search(_pattern, result, re.DOTALL)
+    if match:
+        sql = match.group(1).strip()
+    else:
+        sql = ""
+
+    return result, sql
 
 
 @special_command(
