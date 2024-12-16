@@ -231,7 +231,7 @@ def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
     sys_prompt = f"""A SQLite database has the following schema:
     {db_schema}
 
-    Here is a sample data for each table: {sample_data}
+    Here is a sample row of data from each table: {sample_data}
 
     Use the provided schema and the sample data to construct a SQL query that
     can be run in SQLite3 to answer
@@ -253,6 +253,7 @@ def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
     # model = llm.get_model("o1-mini")
     # model = llm.get_model("llama3.2")
     model = llm.get_model("gpt-4o")
+    # model = llm.get_model("gemini-2.0-flash-exp")
     # model = llm.get_model("claude-3.5-haiku")
     resp = model.prompt(sys_prompt)
     result = resp.text()
