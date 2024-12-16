@@ -357,6 +357,18 @@ def test_sub_select_multiple_col_name_completion():
     )
 
 
+def test_suggested_multiple_column_names():
+    suggestions = suggest_type("SELECT id, from users", "SELECT id, ")
+    assert sorted_dicts(suggestions) == sorted_dicts(
+        [
+            {"type": "column", "tables": [(None, "users", None)]},
+            {"type": "function", "schema": []},
+            {"type": "alias", "aliases": ["users"]},
+            {"type": "keyword"},
+        ]
+    )
+
+
 def test_sub_select_dot_col_name_completion():
     suggestions = suggest_type("SELECT * FROM (SELECT t. FROM tabl t", "SELECT * FROM (SELECT t.")
     assert sorted_dicts(suggestions) == sorted_dicts(
