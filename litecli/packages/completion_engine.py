@@ -118,6 +118,11 @@ def suggest_special(text):
         else:
             return [{"type": "table", "schema": []}]
 
+    if cmd in [".llm", ".ai", "\\llm", "\\ai"]:
+        word_before_cursor = last_word(arg, include="many_punctuations")
+
+        return [{"type": "llm", "subcommand": word_before_cursor}]
+
     return [{"type": "keyword"}, {"type": "special"}]
 
 
