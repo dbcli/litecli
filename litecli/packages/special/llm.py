@@ -13,6 +13,7 @@ from .main import parse_special_command
 
 log = logging.getLogger(__name__)
 LLM_CLI_COMMANDS = list(cli.commands.keys())
+MODELS = {x.model_id: None for x in llm.get_models()}
 
 
 def build_command_tree(cmd):
@@ -27,8 +28,11 @@ def build_command_tree(cmd):
     tree = {}
     if isinstance(cmd, click.Group):
         for name, subcmd in cmd.commands.items():
-            # Recursively build the tree for subcommands
-            tree[name] = build_command_tree(subcmd)
+            if cmd.name == "models" and name == "default":
+                tree[name] = MODELS
+            else:
+                # Recursively build the tree for subcommands
+                tree[name] = build_command_tree(subcmd)
     else:
         # Leaf command with no subcommands
         tree = None

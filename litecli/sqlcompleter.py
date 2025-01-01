@@ -531,8 +531,11 @@ class SQLCompleter(Completer):
                 file_names = self.find_files(word_before_cursor)
                 completions.extend(file_names)
             elif suggestion["type"] == "llm":
-                tokens = document.text.split()
-                possible_entries = llm.get_completions(tokens[1:])
+                if not word_before_cursor:
+                    tokens = document.text.split()[1:]
+                else:
+                    tokens = document.text.split()[1:-1]
+                possible_entries = llm.get_completions(tokens)
                 subcommands = self.find_matches(
                     word_before_cursor,
                     possible_entries,
