@@ -9,6 +9,7 @@ from prompt_toolkit.completion import Completer, Completion
 from .packages.completion_engine import suggest_type
 from .packages.parseutils import last_word
 from .packages.special.iocommands import favoritequeries
+from .packages.special import llm
 from .packages.filepaths import parse_path, complete_path, suggest_path
 
 _logger = logging.getLogger(__name__)
@@ -529,6 +530,16 @@ class SQLCompleter(Completer):
             elif suggestion["type"] == "file_name":
                 file_names = self.find_files(word_before_cursor)
                 completions.extend(file_names)
+            elif suggestion["type"] == "llm":
+                tokens = document.text.split()
+                possible_entries = llm.get_completions(tokens[1:])
+                subcommands = self.find_matches(
+                    word_before_cursor,
+                    possible_entries,
+                    start_only=False,
+                    fuzzy=True,
+                )
+                completions.extend(subcommands)
 
         return completions
 

@@ -1,9 +1,8 @@
-from collections import defaultdict
 import logging
 import re
 import sys
-from typing import Optional, Tuple
 from runpy import run_module
+from typing import Optional, Tuple
 
 import click
 import llm
@@ -14,26 +13,55 @@ from .main import parse_special_command
 
 log = logging.getLogger(__name__)
 LLM_CLI_COMMANDS = list(cli.commands.keys())
-SUBCOMMANDS = []
-MODELS = []
 
 
-def list_all_commands(cmd, prefix=""):
-    """Recursively list all commands and subcommands.
+def build_command_tree(cmd):
+    """Recursively build a command tree for a Click app.
 
     Args:
         cmd (click.Command or click.Group): The Click command/group to inspect.
-        prefix (str): The command prefix for nested commands.
+
+    Returns:
+        dict: A nested dictionary representing the command structure.
     """
-    results = defaultdict(list)
+    tree = {}
     if isinstance(cmd, click.Group):
         for name, subcmd in cmd.commands.items():
-            results[name].append(subcmd)
-            if isinstance(subcmd, click.Group):
-                list_all_commands(subcmd, prefix=f"{full_command} ")
+            # Recursively build the tree for subcommands
+            tree[name] = build_command_tree(subcmd)
     else:
-        # It's a single command without subcommands
-        print(prefix + cmd.name)
+        # Leaf command with no subcommands
+        tree = None
+    return tree
+
+
+# Generate the tree
+COMMAND_TREE = build_command_tree(cli)
+
+
+def get_completions(tokens, tree=COMMAND_TREE):
+    """Get autocompletions for the current command tokens.
+
+    Args:
+        tree (dict): The command tree.
+        tokens (list): List of tokens (command arguments).
+
+    Returns:
+        list: List of possible completions.
+    """
+    current_tree = tree
+    for token in tokens:
+        if token.startswith("-"):
+            # Skip options (flags)
+            continue
+        if token in current_tree:
+            current_tree = current_tree[token]
+        else:
+            # No completions available
+            return []
+
+    # Return possible completions (keys of the current tree level)
+    return list(current_tree.keys()) if current_tree else []
 
 
 @export
