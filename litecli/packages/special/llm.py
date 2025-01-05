@@ -1,3 +1,4 @@
+import os
 import logging
 import re
 import sys
@@ -5,15 +6,21 @@ from runpy import run_module
 from typing import Optional, Tuple
 
 import click
-import llm
-from llm.cli import cli
+
+try:
+    import llm
+    from llm.cli import cli
+
+    LLM_CLI_COMMANDS = list(cli.commands.keys())
+    MODELS = {x.model_id: None for x in llm.get_models()}
+except ImportError:
+    llm = None
+    cli = None
 
 from . import export
 from .main import parse_special_command
 
 log = logging.getLogger(__name__)
-LLM_CLI_COMMANDS = list(cli.commands.keys())
-MODELS = {x.model_id: None for x in llm.get_models()}
 
 
 def build_command_tree(cmd):
@@ -53,19 +60,18 @@ def get_completions(tokens, tree=COMMAND_TREE):
     Returns:
         list: List of possible completions.
     """
-    current_tree = tree
     for token in tokens:
         if token.startswith("-"):
             # Skip options (flags)
             continue
-        if token in current_tree:
-            current_tree = current_tree[token]
+        if tree and token in tree:
+            tree = tree[token]
         else:
             # No completions available
             return []
 
     # Return possible completions (keys of the current tree level)
-    return list(current_tree.keys()) if current_tree else []
+    return list(tree.keys()) if tree else []
 
 
 @export
@@ -106,6 +112,26 @@ llm-ollama installed.
 @export
 def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     cmd, verbose, arg = parse_special_command(text)
+
+    if llm is None:
+        original_exe = sys.executable
+        original_args = sys.argv
+        # LLM is not installed.
+        # Offer to install it.
+        if click.confirm("This feature requires additional libraries. Install LLM library?", default=False):
+            click.echo("Installing LLM library. Please wait...")
+            sys.argv = ["pip", "install", "--quiet", "llm"]
+            try:
+                run_module("pip", run_name="__main__")
+            except SystemExit:
+                # output = [(None, None, None, "Please restart litecli to use this feature.")]
+                # raise FinishIteration(output)
+                pass
+            if click.confirm("LLM library installed. Would you like to restart litecli now?", default=True):
+                click.echo("Restarting litecli...")
+                os.execv(original_exe, [original_exe] + original_args)
+
+        raise FinishIteration(None)
 
     if not arg.strip():  # No question provided. Print usage and bail.
         output = [(None, None, None, USAGE)]
