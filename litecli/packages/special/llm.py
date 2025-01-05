@@ -1,6 +1,9 @@
-import os
+import contextlib
+import io
 import logging
+import os
 import re
+import shlex
 import sys
 from runpy import run_module
 from typing import Optional, Tuple
@@ -108,36 +111,62 @@ llm-ollama installed.
 # https://llm.datasette.io/en/stable/plugins/directory.html
 """
 
+PROMPT = """A SQLite database has the following schema:
+
+$db_schema
+
+Here is a sample row of data from each table: $sample_data
+
+Use the provided schema and the sample data to construct a SQL query that
+can be run in SQLite3 to answer
+
+$question
+
+Explain the reason for choosing each table in the SQL query you have
+written. Keep the explanation concise.
+Finally include a sql query in a code fence such as this one:
+
+```sql
+SELECT count(*) FROM table_name;
+```
+"""
+
+
+def initialize_llm():
+    # Initialize the LLM library.
+    # Create a template called litecli with the default prompt.
+    original_exe = sys.executable
+    original_args = sys.argv
+    if click.confirm("This feature requires additional libraries. Install LLM library?", default=True):
+        click.echo("Installing LLM library. Please wait...")
+        sys.argv = ["pip", "install", "--quiet", "llm"]
+        try:
+            run_module("pip", run_name="__main__")
+        except SystemExit:
+            pass
+        sys.argv = ["llm", PROMPT, "--save", "litecli"]  # TODO: check if the template already exists
+        try:
+            run_module("llm", run_name="__main__")
+        except SystemExit:
+            pass
+        click.echo("Restarting litecli...")
+        os.execv(original_exe, [original_exe] + original_args)
+
 
 @export
 def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
-    cmd, verbose, arg = parse_special_command(text)
+    _, verbose, arg = parse_special_command(text)
 
+    # LLM is not installed.
     if llm is None:
-        original_exe = sys.executable
-        original_args = sys.argv
-        # LLM is not installed.
-        # Offer to install it.
-        if click.confirm("This feature requires additional libraries. Install LLM library?", default=False):
-            click.echo("Installing LLM library. Please wait...")
-            sys.argv = ["pip", "install", "--quiet", "llm"]
-            try:
-                run_module("pip", run_name="__main__")
-            except SystemExit:
-                # output = [(None, None, None, "Please restart litecli to use this feature.")]
-                # raise FinishIteration(output)
-                pass
-            if click.confirm("LLM library installed. Would you like to restart litecli now?", default=True):
-                click.echo("Restarting litecli...")
-                os.execv(original_exe, [original_exe] + original_args)
-
+        initialize_llm()
         raise FinishIteration(None)
 
     if not arg.strip():  # No question provided. Print usage and bail.
         output = [(None, None, None, USAGE)]
         raise FinishIteration(output)
 
-    parts = arg.split()
+    parts = shlex.split(arg)
 
     if parts[0].startswith("-") or parts[0] in LLM_CLI_COMMANDS:
         # If the first argument is a flag or a valid llm command then
@@ -184,6 +213,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
     log.debug(schema_query)
     cur.execute(schema_query)
     db_schema = "\n".join([x for (x,) in cur.fetchall()])
+
     log.debug(tables_query)
     cur.execute(tables_query)
     sample_data = {}
@@ -196,35 +226,30 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
             continue
         sample_data[table] = list(zip(cols, row))
 
-    sys_prompt = f"""A SQLite database has the following schema:
-    {db_schema}
+    sys.argv = [
+        "llm",
+        "--no-stream",
+        "--template",
+        "litecli",
+        "--param",
+        "db_schema",
+        db_schema,
+        "--param",
+        "sample_data",
+        sample_data,
+        "--param",
+        "question",
+        question,
+        " ",  # Dummy argument to prevent llm from waiting on stdin
+    ]
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        try:
+            run_module("llm", run_name="__main__")
+        except SystemExit:
+            pass
 
-    Here is a sample row of data from each table: {sample_data}
-
-    Use the provided schema and the sample data to construct a SQL query that
-    can be run in SQLite3 to answer
-
-    {question}
-
-    Explain the reason for choosing each table in the SQL query you have
-    written. Keep the explanation concise and to the point.
-    Finally include the sql query in a code fence such as this one:
-
-    ```sql
-    SELECT count(*) FROM table_name;
-    ```
-    """
-    log.debug(sys_prompt)
-    # model = llm.get_model("llama3.3")
-    # model = llm.get_model("qwq")
-    # model = llm.get_model("o1-preview")
-    # model = llm.get_model("o1-mini")
-    # model = llm.get_model("llama3.2")
-    model = llm.get_model("gpt-4o")
-    # model = llm.get_model("gemini-2.0-flash-exp")
-    # model = llm.get_model("claude-3.5-haiku")
-    resp = model.prompt(sys_prompt)
-    result = resp.text()
+    result = buffer.getvalue()
     match = re.search(_pattern, result, re.DOTALL)
     if match:
         sql = match.group(1).strip()
