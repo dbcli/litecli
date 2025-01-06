@@ -13,8 +13,7 @@ import click
 import sqlparse
 from configobj import ConfigObj
 
-from litecli.packages.prompt_utils import confirm_destructive_query
-
+from ..prompt_utils import confirm_destructive_query
 from . import export
 from .favoritequeries import FavoriteQueries
 from .main import NO_QUERY, PARSED_QUERY, special_command

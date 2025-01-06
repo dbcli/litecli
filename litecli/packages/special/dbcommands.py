@@ -235,7 +235,7 @@ def describe(cur, arg, **_):
 
 
 @special_command(
-    ".itables_query",
+    ".import",
     ".import filename table",
     "Import data from filename into an existing table",
     arg_type=PARSED_QUERY,

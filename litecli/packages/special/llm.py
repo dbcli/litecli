@@ -111,6 +111,7 @@ llm-ollama installed.
 # https://llm.datasette.io/en/stable/plugins/directory.html
 """
 
+_SQL_CODE_FENCE = r"```sql\n(.*?)\n```"
 PROMPT = """A SQLite database has the following schema:
 
 $db_schema
@@ -171,11 +172,23 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     if parts[0].startswith("-") or parts[0] in LLM_CLI_COMMANDS:
         # If the first argument is a flag or a valid llm command then
         # invoke the llm cli.
+        # Check if there is a SQL fenced code and return it.
         sys.argv = ["llm"] + parts
-        try:
-            run_module("llm", run_name="__main__")
-        except SystemExit:
-            raise FinishIteration(None)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            try:
+                run_module("llm", run_name="__main__")
+            except SystemExit:
+                pass
+        result = buffer.getvalue()
+        match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
+        if match:
+            sql = match.group(1).strip()
+        else:
+            output = [(None, None, None, result)]
+            raise FinishIteration(output)
+
+        return result if verbose else "", sql
 
     try:
         context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
@@ -198,7 +211,6 @@ def is_llm_command(command) -> bool:
 
 @export
 def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]]:
-    _pattern = r"```sql\n(.*?)\n```"
     schema_query = """
         SELECT sql FROM sqlite_master
         WHERE sql IS NOT NULL
@@ -228,7 +240,6 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
 
     sys.argv = [
         "llm",
-        "--no-stream",
         "--template",
         "litecli",
         "--param",
@@ -250,7 +261,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
             pass
 
     result = buffer.getvalue()
-    match = re.search(_pattern, result, re.DOTALL)
+    match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
     if match:
         sql = match.group(1).strip()
     else:
