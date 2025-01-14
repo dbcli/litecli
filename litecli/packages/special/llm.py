@@ -156,6 +156,14 @@ def initialize_llm():
 
 @export
 def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
+    """This function handles the special command `\\llm`.
+
+    If it deals with a question that results in a SQL query then it will return
+    the query.
+    If it deals with a subcommand like `models` or `keys` then it will raise
+    FinishIteration() which will be caught by the main loop AND print any
+    output that was supplied (or None).
+    """
     _, verbose, arg = parse_special_command(text)
 
     # LLM is not installed.
@@ -169,26 +177,57 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
 
     parts = shlex.split(arg)
 
-    if parts[0].startswith("-") or parts[0] in LLM_CLI_COMMANDS:
-        # If the first argument is a flag or a valid llm command then
-        # invoke the llm cli.
-        # Check if there is a SQL fenced code and return it.
+    # If the parts has `-c` then capture the output and check for fenced SQL.
+    # User is continuing a previous question.
+    # eg: \llm -m ollama -c "Show ony the top 5 results"
+    if "-c" in parts:
+        capture_output = True
+        use_context = False
+    # If the parts has `pormpt` command without `-c` then use context to the prompt.
+    # \llm -m ollama prompt "Most visited urls?"
+    elif "prompt" in parts:  # User might invoke prompt with an option flag in the first argument.
+        capture_output = True
+        use_context = True
+    # If the parts starts with any of the known LLM_CLI_COMMANDS then invoke
+    # the llm and don't capture output. This is to handle commands like `models` or `keys`.
+    elif parts[0] in LLM_CLI_COMMANDS:
+        capture_output = False
+        use_context = False
+    # If the parts doesn't have any known LLM_CLI_COMMANDS then the user is
+    # invoking a question. eg: \llm -m ollama "Most visited urls?"
+    elif not set(parts).intersection(LLM_CLI_COMMANDS):
+        capture_output = True
+        use_context = True
+    # User invoked llm with a question without `prompt` subcommand. Capture the
+    # output and check for fenced SQL. eg: \llm "Most visited urls?"
+    else:
+        capture_output = True
+        use_context = True
+
+    if not use_context:
         sys.argv = ["llm"] + parts
-        buffer = io.StringIO()
-        with contextlib.redirect_stdout(buffer):
+        if capture_output:
+            buffer = io.StringIO()
+            with contextlib.redirect_stdout(buffer):
+                try:
+                    run_module("llm", run_name="__main__")
+                except SystemExit:
+                    pass
+            result = buffer.getvalue()
+            match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
+            if match:
+                sql = match.group(1).strip()
+            else:
+                output = [(None, None, None, result)]
+                raise FinishIteration(output)
+
+            return result if verbose else "", sql
+        else:
             try:
                 run_module("llm", run_name="__main__")
             except SystemExit:
                 pass
-        result = buffer.getvalue()
-        match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
-        if match:
-            sql = match.group(1).strip()
-        else:
-            output = [(None, None, None, result)]
-            raise FinishIteration(output)
-
-        return result if verbose else "", sql
+            raise FinishIteration(None)
 
     try:
         context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
