@@ -451,6 +451,8 @@ class LiteCli(object):
                         if context:
                             click.echo(context)
                         text = self.prompt_app.prompt(default=sql)
+                    except KeyboardInterrupt:
+                        return
                     except special.FinishIteration as e:
                         return output_res(e.results, start) if e.results else None
                     except RuntimeError as e:
