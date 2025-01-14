@@ -88,7 +88,7 @@ Use an LLM to create SQL queries to answer questions from your database.
 Examples:
 
 # Ask a question.
-> \\llm Most visited urls?
+> \\llm 'Most visited urls?'
 
 # List available models
 > \\llm models
