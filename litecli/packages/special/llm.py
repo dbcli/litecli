@@ -215,7 +215,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     restart = False
     # If the parts has `-c` then capture the output and check for fenced SQL.
     # User is continuing a previous question.
-    # eg: \llm -m ollama -c "Show ony the top 5 results"
+    # eg: \llm -m ollama -c "Show only the top 5 results"
     if "-c" in parts:
         capture_output = True
         use_context = False
