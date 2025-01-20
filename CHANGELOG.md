@@ -1,3 +1,11 @@
+## 1.14.0 - 2025-01-20
+
+### Features
+
+* Add LLM feature to ask an LLM to create a SQL query.
+    - This adds a new `\llm` special command
+    - eg: `\llm "Who is the largest customer based on revenue?"`
+
 ## 1.13.2 - 2024-11-24
 
 ### Internal
