@@ -42,6 +42,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "tox>=4.8.0",
     "pdbpp>=0.10.3",
+    "llm>=0.19.0",
 ]
 
 [tool.setuptools.packages.find]
