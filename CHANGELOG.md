@@ -6,6 +6,10 @@
     - This adds a new `\llm` special command
     - eg: `\llm "Who is the largest customer based on revenue?"`
 
+### Internal
+
+* Change min required python version to 3.9+
+
 ## 1.13.2 - 2024-11-24
 
 ### Internal

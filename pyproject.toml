@@ -3,7 +3,7 @@ name = "litecli"
 dynamic = ["version"]
 description = "CLI for SQLite Databases with auto-completion and syntax highlighting."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 license = { text = "BSD" }
 authors = [{ name = "dbcli", email = "litecli-users@googlegroups.com" }]
 urls = { "homepage" = "https://github.com/dbcli/litecli" }
