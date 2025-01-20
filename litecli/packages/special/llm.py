@@ -26,6 +26,40 @@ from .main import parse_special_command
 log = logging.getLogger(__name__)
 
 
+def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True):
+    original_exe = sys.executable
+    original_args = sys.argv
+
+    try:
+        sys.argv = [cmd] + list(args)
+        code = 0
+
+        if capture_output:
+            buffer = io.StringIO()
+            redirect = contextlib.redirect_stdout(buffer)
+        else:
+            # Use nullcontext to do nothing when not capturing output
+            redirect = contextlib.nullcontext()
+
+        with redirect:
+            try:
+                run_module(cmd, run_name="__main__")
+            except SystemExit as e:
+                code = e.code
+                if code != 0 and raise_exception:
+                    raise
+
+        if restart_cli and code == 0:
+            os.execv(original_exe, [original_exe] + original_args)
+
+        if capture_output:
+            return code, buffer.getvalue()
+        else:
+            return code, ""
+    finally:
+        sys.argv = original_args
+
+
 def build_command_tree(cmd):
     """Recursively build a command tree for a Click app.
 
@@ -135,23 +169,24 @@ SELECT count(*) FROM table_name;
 
 def initialize_llm():
     # Initialize the LLM library.
-    # Create a template called litecli with the default prompt.
-    original_exe = sys.executable
-    original_args = sys.argv
     if click.confirm("This feature requires additional libraries. Install LLM library?", default=True):
         click.echo("Installing LLM library. Please wait...")
-        sys.argv = ["pip", "install", "--quiet", "llm"]
-        try:
-            run_module("pip", run_name="__main__")
-        except SystemExit:
-            pass
-        sys.argv = ["llm", PROMPT, "--save", "litecli"]  # TODO: check if the template already exists
-        try:
-            run_module("llm", run_name="__main__")
-        except SystemExit:
-            pass
-        click.echo("Restarting litecli...")
-        os.execv(original_exe, [original_exe] + original_args)
+        run_external_cmd("pip", "install", "--quiet", "llm", restart_cli=True)
+        ensure_litecli_template()
+
+
+def ensure_litecli_template(replace=False):
+    """
+    Create a template called litecli with the default prompt.
+    """
+    if not replace:
+        # Check if it already exists.
+        code, _ = run_external_cmd("llm", "templates", "show", "litecli", capture_output=True, raise_exception=False)
+        if code == 0:  # Template already exists. No need to create it.
+            return
+
+    run_external_cmd("llm", PROMPT, "--save", "litecli")
+    return
 
 
 @export
@@ -177,6 +212,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
 
     parts = shlex.split(arg)
 
+    restart = False
     # If the parts has `-c` then capture the output and check for fenced SQL.
     # User is continuing a previous question.
     # eg: \llm -m ollama -c "Show ony the top 5 results"
@@ -188,6 +224,10 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     elif "prompt" in parts:  # User might invoke prompt with an option flag in the first argument.
         capture_output = True
         use_context = True
+    elif "install" in parts or "uninstall" in parts:
+        capture_output = False
+        use_context = False
+        restart = True
     # If the parts starts with any of the known LLM_CLI_COMMANDS then invoke
     # the llm and don't capture output. This is to handle commands like `models` or `keys`.
     elif parts[0] in LLM_CLI_COMMANDS:
@@ -205,15 +245,9 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
         use_context = True
 
     if not use_context:
-        sys.argv = ["llm"] + parts
+        args = parts
         if capture_output:
-            buffer = io.StringIO()
-            with contextlib.redirect_stdout(buffer):
-                try:
-                    run_module("llm", run_name="__main__")
-                except SystemExit:
-                    pass
-            result = buffer.getvalue()
+            _, result = run_external_cmd("llm", *args, capture_output=capture_output)
             match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
             if match:
                 sql = match.group(1).strip()
@@ -223,13 +257,11 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
 
             return result if verbose else "", sql
         else:
-            try:
-                run_module("llm", run_name="__main__")
-            except SystemExit:
-                pass
+            run_external_cmd("llm", *args, restart_cli=restart)
             raise FinishIteration(None)
 
     try:
+        ensure_litecli_template()
         context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
         if not verbose:
             context = ""
@@ -277,8 +309,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
             continue
         sample_data[table] = list(zip(cols, row))
 
-    sys.argv = [
-        "llm",
+    args = [
         "--template",
         "litecli",
         "--param",
@@ -292,14 +323,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
         question,
         " ",  # Dummy argument to prevent llm from waiting on stdin
     ]
-    buffer = io.StringIO()
-    with contextlib.redirect_stdout(buffer):
-        try:
-            run_module("llm", run_name="__main__")
-        except SystemExit:
-            pass
-
-    result = buffer.getvalue()
+    _, result = run_external_cmd("llm", *args, capture_output=True)
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
     if match:
         sql = match.group(1).strip()
