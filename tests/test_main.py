@@ -2,6 +2,8 @@ import os
 from collections import namedtuple
 from textwrap import dedent
 import shutil
+from datetime import datetime
+from unittest.mock import patch
 
 import click
 from click.testing import CliRunner
@@ -267,3 +269,64 @@ def test_startup_commands(executor):
     ]
 
     # implement tests on executions of the startupcommands
+
+
+@patch("litecli.main.datetime")  # Adjust if your module path is different
+def test_get_prompt(mock_datetime):
+    # We'll freeze time at 2025-01-20 13:37:42 for comedic effect.
+    # Because "leet" times call for 13:37!
+    frozen_time = datetime(2025, 1, 20, 13, 37, 42)
+    mock_datetime.now.return_value = frozen_time
+    # Ensure `datetime` class is still accessible for strftime usage
+    mock_datetime.datetime = datetime
+
+    # Instantiate and connect
+    lc = LiteCli()
+    lc.connect("/tmp/litecli_test.db")
+
+    # 1. Test \d => full path to the DB
+    assert lc.get_prompt(r"\d") == "/tmp/litecli_test.db"
+
+    # 2. Test \f => basename of the DB
+    #    (because "f" stands for "filename", presumably!)
+    assert lc.get_prompt(r"\f") == "litecli_test.db"
+
+    # 3. Test \_ => single space
+    assert lc.get_prompt(r"Hello\_World") == "Hello World"
+
+    # 4. Test \n => newline
+    #    Just to be sure we're only inserting a newline,
+    #    we can check length or assert the presence of "\n".
+    expected = f"Line1{os.linesep}Line2"
+    assert lc.get_prompt(r"Line1\nLine2") == expected
+
+    # 5. Test date/time placeholders (with frozen time):
+    #    \D => e.g. 'Mon Jan 20 13:37:42 2025'
+    expected_date_str = frozen_time.strftime("%a %b %d %H:%M:%S %Y")
+    assert lc.get_prompt(r"\D") == expected_date_str
+
+    # 6. Test \m => minutes
+    assert lc.get_prompt(r"\m") == "37"
+
+    # 7. Test \P => AM/PM
+    #    13:37 is PM
+    assert lc.get_prompt(r"\P") == "PM"
+
+    # 8. Test \R => 24-hour format hour
+    assert lc.get_prompt(r"\R") == "13"
+
+    # 9. Test \r => 12-hour format hour
+    #    13:37 is 01 in 12-hour format
+    assert lc.get_prompt(r"\r") == "01"
+
+    # 10. Test \s => seconds
+    assert lc.get_prompt(r"\s") == "42"
+
+    # 11. Test when dbname is None => (none)
+    lc.connect(None)  # Simulate no DB connection
+    assert lc.get_prompt(r"\d") == "(none)"
+    assert lc.get_prompt(r"\f") == "(none)"
+
+    # 12. Windows path
+    lc.connect("C:\\Users\\litecli\\litecli_test.db")
+    assert lc.get_prompt(r"\d") == "C:\\Users\\litecli\\litecli_test.db"
