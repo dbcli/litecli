@@ -385,6 +385,47 @@ class LiteCli(object):
         def show_suggestion_tip():
             return iterations < 2
 
+        def output_res(res, start):
+            result_count = 0
+            mutating = False
+            for title, cur, headers, status in res:
+                logger.debug("headers: %r", headers)
+                logger.debug("rows: %r", cur)
+                logger.debug("status: %r", status)
+                threshold = 1000
+                if is_select(status) and cur and cur.rowcount > threshold:
+                    self.echo(
+                        "The result set has more than {} rows.".format(threshold),
+                        fg="red",
+                    )
+                    if not confirm("Do you want to continue?"):
+                        self.echo("Aborted!", err=True, fg="red")
+                        break
+
+                if self.auto_vertical_output:
+                    max_width = self.prompt_app.output.get_size().columns
+                else:
+                    max_width = None
+
+                formatted = self.format_output(title, cur, headers, special.is_expanded_output(), max_width)
+
+                t = time() - start
+                try:
+                    if result_count > 0:
+                        self.echo("")
+                    try:
+                        self.output(formatted, status)
+                    except KeyboardInterrupt:
+                        pass
+                    self.echo("Time: %0.03fs" % t)
+                except KeyboardInterrupt:
+                    pass
+
+                start = time()
+                result_count += 1
+                mutating = mutating or is_mutating(status)
+            return mutating
+
         def one_iteration(text=None):
             if text is None:
                 try:
@@ -402,6 +443,24 @@ class LiteCli(object):
                     self.echo(str(e), err=True, fg="red")
                     return
 
+                if special.is_llm_command(text):
+                    try:
+                        start = time()
+                        cur = self.sqlexecute.conn.cursor()
+                        context, sql = special.handle_llm(text, cur)
+                        if context:
+                            click.echo(context)
+                        text = self.prompt_app.prompt(default=sql)
+                    except KeyboardInterrupt:
+                        return
+                    except special.FinishIteration as e:
+                        return output_res(e.results, start) if e.results else None
+                    except RuntimeError as e:
+                        logger.error("sql: %r, error: %r", text, e)
+                        logger.error("traceback: %r", traceback.format_exc())
+                        self.echo(str(e), err=True, fg="red")
+                        return
+
             if not text.strip():
                 return
 
@@ -415,9 +474,6 @@ class LiteCli(object):
                     self.echo("Wise choice!")
                     return
 
-            # Keep track of whether or not the query is mutating. In case
-            # of a multi-statement query, the overall query is considered
-            # mutating if any one of the component statements is mutating
             mutating = False
 
             try:
@@ -434,44 +490,11 @@ class LiteCli(object):
                 res = sqlexecute.run(text)
                 self.formatter.query = text
                 successful = True
-                result_count = 0
-                for title, cur, headers, status in res:
-                    logger.debug("headers: %r", headers)
-                    logger.debug("rows: %r", cur)
-                    logger.debug("status: %r", status)
-                    threshold = 1000
-                    if is_select(status) and cur and cur.rowcount > threshold:
-                        self.echo(
-                            "The result set has more than {} rows.".format(threshold),
-                            fg="red",
-                        )
-                        if not confirm("Do you want to continue?"):
-                            self.echo("Aborted!", err=True, fg="red")
-                            break
-
-                    if self.auto_vertical_output:
-                        max_width = self.prompt_app.output.get_size().columns
-                    else:
-                        max_width = None
-
-                    formatted = self.format_output(title, cur, headers, special.is_expanded_output(), max_width)
-
-                    t = time() - start
-                    try:
-                        if result_count > 0:
-                            self.echo("")
-                        try:
-                            self.output(formatted, status)
-                        except KeyboardInterrupt:
-                            pass
-                        self.echo("Time: %0.03fs" % t)
-                    except KeyboardInterrupt:
-                        pass
-
-                    start = time()
-                    result_count += 1
-                    mutating = mutating or is_mutating(status)
                 special.unset_once_if_written()
+                # Keep track of whether or not the query is mutating. In case
+                # of a multi-statement query, the overall query is considered
+                # mutating if any one of the component statements is mutating
+                mutating = output_res(res, start)
                 special.unset_pipe_once_if_written()
             except EOFError as e:
                 raise e

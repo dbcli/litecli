@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
-import os
-import re
+
 import locale
 import logging
-import subprocess
+import os
+import re
 import shlex
+import subprocess
 from io import open
 from time import sleep
 
@@ -12,11 +13,11 @@ import click
 import sqlparse
 from configobj import ConfigObj
 
+from ..prompt_utils import confirm_destructive_query
 from . import export
-from .main import special_command, NO_QUERY, PARSED_QUERY
 from .favoritequeries import FavoriteQueries
+from .main import NO_QUERY, PARSED_QUERY, special_command
 from .utils import handle_cd_command
-from litecli.packages.prompt_utils import confirm_destructive_query
 
 use_expanded_output = False
 PAGER_ENABLED = True
@@ -26,6 +27,8 @@ written_to_once_file = None
 pipe_once_process = None
 written_to_pipe_once_process = False
 favoritequeries = FavoriteQueries(ConfigObj())
+
+log = logging.getLogger(__name__)
 
 
 @export
@@ -93,9 +96,6 @@ def set_expanded_output(val):
 @export
 def is_expanded_output():
     return use_expanded_output
-
-
-_logger = logging.getLogger(__name__)
 
 
 @export

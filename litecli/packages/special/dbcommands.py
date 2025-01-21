@@ -6,6 +6,7 @@ import sys
 import platform
 import shlex
 
+
 from litecli import __version__
 from litecli.packages.special import iocommands
 from .main import special_command, RAW_QUERY, PARSED_QUERY

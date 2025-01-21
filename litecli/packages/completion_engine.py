@@ -118,6 +118,9 @@ def suggest_special(text):
         else:
             return [{"type": "table", "schema": []}]
 
+    if cmd in [".llm", ".ai", "\\llm", "\\ai"]:
+        return [{"type": "llm"}]
+
     return [{"type": "keyword"}, {"type": "special"}]
 
 
