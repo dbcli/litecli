@@ -8,7 +8,8 @@
 
 ### Bug Fixes
 
-* Fix the windows path shown in prompt to remove escaping.
+* Fix the [windows path](https://github.com/dbcli/litecli/issues/187) shown in prompt to remove escaping.
+* Fix a bug where if column name was same as table name it was [crashing](https://github.com/dbcli/litecli/issues/155) the autocompletion.
 
 ### Internal
 
