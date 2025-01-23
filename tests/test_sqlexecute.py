@@ -38,13 +38,15 @@ def test_binary(executor):
 
 
 ## Failing in Travis for some unknown reason.
-# @dbtest
-# def test_table_and_columns_query(executor):
-#     run(executor, "create table a(x text, y text)")
-#     run(executor, "create table b(z text)")
+@dbtest
+def test_table_and_columns_query(executor):
+    run(executor, "create table a(x text, y text)")
+    run(executor, "create table b(z text)")
+    run(executor, "create table t(t text)")
 
-#     assert set(executor.tables()) == set([("a",), ("b",)])
-#     assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z")])
+    assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
+    assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
+    assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
 
 
 @dbtest
