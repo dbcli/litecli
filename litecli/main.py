@@ -1,52 +1,50 @@
-from __future__ import unicode_literals
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
-import os
-import sys
-import traceback
+import itertools
 import logging
+import os
+import re
+import shutil
+import sys
 import threading
-from time import time
+import traceback
+from collections import namedtuple
 from datetime import datetime
 from io import open
-from collections import namedtuple
 from sqlite3 import OperationalError, sqlite_version
-import shutil
+from time import time
 
-from cli_helpers.tabular_output import TabularOutputFormatter
-from cli_helpers.tabular_output import preprocessors
 import click
 import sqlparse
+from cli_helpers.tabular_output import TabularOutputFormatter, preprocessors
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import DynamicCompleter
-from prompt_toolkit.enums import DEFAULT_BUFFER, EditingMode
-from prompt_toolkit.shortcuts import PromptSession, CompleteStyle
 from prompt_toolkit.document import Document
+from prompt_toolkit.enums import DEFAULT_BUFFER, EditingMode
 from prompt_toolkit.filters import HasFocus, IsDone
 from prompt_toolkit.formatted_text import ANSI
+from prompt_toolkit.history import FileHistory
 from prompt_toolkit.layout.processors import (
-    HighlightMatchingBracketProcessor,
     ConditionalProcessor,
+    HighlightMatchingBracketProcessor,
 )
 from prompt_toolkit.lexers import PygmentsLexer
-from prompt_toolkit.history import FileHistory
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
 
-from .packages.special.main import NO_QUERY
-from .packages.prompt_utils import confirm, confirm_destructive_query
-from .packages import special
-from .sqlcompleter import SQLCompleter
-from .clitoolbar import create_toolbar_tokens_func
-from .clistyle import style_factory, style_factory_output
-from .sqlexecute import SQLExecute
+from .__init__ import __version__
 from .clibuffer import cli_is_multiline
+from .clistyle import style_factory, style_factory_output
+from .clitoolbar import create_toolbar_tokens_func
 from .completion_refresher import CompletionRefresher
 from .config import config_location, ensure_dir_exists, get_config
 from .key_bindings import cli_bindings
 from .lexer import LiteCliLexer
-from .__init__ import __version__
+from .packages import special
 from .packages.filepaths import dir_path_exists
-
-import itertools
+from .packages.prompt_utils import confirm, confirm_destructive_query
+from .packages.special.main import NO_QUERY
+from .sqlcompleter import SQLCompleter
+from .sqlexecute import SQLExecute
 
 click.disable_unicode_literals_warning = True
 
@@ -758,20 +756,32 @@ class LiteCli(object):
             return self.completer.get_completions(Document(text=text, cursor_position=cursor_positition), None)
 
     def get_prompt(self, string):
-        self.logger.debug("Getting prompt")
+        self.logger.debug("Getting prompt %r", string)
         sqlexecute = self.sqlexecute
         now = datetime.now()
-        string = string.replace("\\d", sqlexecute.dbname or "(none)")
-        string = string.replace("\\f", os.path.basename(sqlexecute.dbname or "(none)"))
-        string = string.replace("\\n", "\n")
-        string = string.replace("\\D", now.strftime("%a %b %d %H:%M:%S %Y"))
-        string = string.replace("\\m", now.strftime("%M"))
-        string = string.replace("\\P", now.strftime("%p"))
-        string = string.replace("\\R", now.strftime("%H"))
-        string = string.replace("\\r", now.strftime("%I"))
-        string = string.replace("\\s", now.strftime("%S"))
-        string = string.replace("\\_", " ")
-        return string
+
+        # Prepare the replacements dictionary
+        replacements = {
+            r"\d": sqlexecute.dbname or "(none)",
+            r"\f": os.path.basename(sqlexecute.dbname or "(none)"),
+            r"\n": "\n",
+            r"\D": now.strftime("%a %b %d %H:%M:%S %Y"),
+            r"\m": now.strftime("%M"),
+            r"\P": now.strftime("%p"),
+            r"\R": now.strftime("%H"),
+            r"\r": now.strftime("%I"),
+            r"\s": now.strftime("%S"),
+            r"\_": " ",
+        }
+        # Compile a regex pattern that matches any of the keys in replacements
+        pattern = re.compile("|".join(re.escape(key) for key in replacements.keys()))
+
+        # Define the replacement function
+        def replacer(match):
+            return replacements[match.group(0)]
+
+        # Perform the substitution
+        return pattern.sub(replacer, string)
 
     def run_query(self, query, new_line=True):
         """Runs *query*."""

@@ -6,6 +6,10 @@
     - This adds a new `\llm` special command
     - eg: `\llm "Who is the largest customer based on revenue?"`
 
+### Bug Fixes
+
+* Fix the windows path shown in prompt to remove escaping.
+
 ### Internal
 
 * Change min required python version to 3.9+
