@@ -32,7 +32,7 @@ class SQLExecute(object):
     table_columns_query = """
         SELECT m.name as tableName, p.name as columnName
         FROM sqlite_master m
-        LEFT OUTER JOIN pragma_table_info((m.name)) p ON m.name <> p.name
+        JOIN pragma_table_info((m.name)) p
         WHERE m.type IN ('table','view') AND m.name NOT LIKE 'sqlite_%'
         ORDER BY tableName, columnName
     """
