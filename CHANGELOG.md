@@ -1,3 +1,9 @@
+## 1.14.1 - 2025-01-25
+
+### Bug Fixes
+
+* Capture stderr in addition to stdout when capturing output from `llm` cli.
+
 ## 1.14.0 - 2025-01-22
 
 ### Features

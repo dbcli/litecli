@@ -36,9 +36,10 @@ def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_
 
         if capture_output:
             buffer = io.StringIO()
-            redirect = contextlib.redirect_stdout(buffer)
+            redirect = contextlib.ExitStack()
+            redirect.enter_context(contextlib.redirect_stdout(buffer))
+            redirect.enter_context(contextlib.redirect_stderr(buffer))
         else:
-            # Use nullcontext to do nothing when not capturing output
             redirect = contextlib.nullcontext()
 
         with redirect:
@@ -172,7 +173,6 @@ def initialize_llm():
     if click.confirm("This feature requires additional libraries. Install LLM library?", default=True):
         click.echo("Installing LLM library. Please wait...")
         run_external_cmd("pip", "install", "--quiet", "llm", restart_cli=True)
-        ensure_litecli_template()
 
 
 def ensure_litecli_template(replace=False):
