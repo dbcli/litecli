@@ -6,8 +6,8 @@
 
 A command-line client for SQLite databases that has auto-completion and syntax highlighting.
 
-![Completion](screenshots/litecli.png)
-![CompletionGif](screenshots/litecli.gif)
+![Completion](https://raw.githubusercontent.com/dbcli/litecli/refs/heads/main/screenshots/litecli.png)
+![CompletionGif](https://raw.githubusercontent.com/dbcli/litecli/refs/heads/main/screenshots/litecli.gif)
 
 ## Installation
 
