@@ -1,3 +1,9 @@
+## 1.14.2 - 2025-01-26
+
+### Bug Fixes
+
+* Catch errors surfaced by `llm` cli and surface them as runtime errors.
+
 ## 1.14.1 - 2025-01-25
 
 ### Bug Fixes
