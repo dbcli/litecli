@@ -48,7 +48,10 @@ def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_
             except SystemExit as e:
                 code = e.code
                 if code != 0 and raise_exception:
-                    raise
+                    if capture_output:
+                        raise RuntimeError(buffer.getvalue())
+                    else:
+                        raise RuntimeError(f"Command {cmd} failed with exit code {code}.")
 
         if restart_cli and code == 0:
             os.execv(original_exe, [original_exe] + original_args)
