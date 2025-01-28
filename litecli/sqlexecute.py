@@ -138,16 +138,19 @@ class SQLExecute(object):
         # e.g. SELECT.
         if cursor.description is not None:
             headers = [x[0] for x in cursor.description]
-            status = "{0} row{1} in set"
+            status = "{count} row{s} in set"
             cursor = list(cursor)
             rowcount = len(cursor)
         else:
             _logger.debug("No rows in result.")
-            status = "Query OK, {0} row{1} affected"
-            rowcount = 0 if cursor.rowcount == -1 else cursor.rowcount
+            if cursor.rowcount == -1:
+                status = "Query OK"
+            else:
+                status = "Query OK, {count} row{s} affected"
+            rowcount = cursor.rowcount
             cursor = None
 
-        status = status.format(rowcount, "" if rowcount == 1 else "s")
+        status = status.format(count=rowcount, s="" if rowcount == 1 else "s")
 
         return (title, cursor, headers, status)
 
