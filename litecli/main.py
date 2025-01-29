@@ -444,7 +444,7 @@ class LiteCli(object):
                 if special.is_llm_command(text):
                     try:
                         start = time()
-                        cur = self.sqlexecute.conn.cursor()
+                        cur = self.sqlexecute.conn and self.sqlexecute.conn.cursor()
                         context, sql = special.handle_llm(text, cur)
                         if context:
                             click.echo(context)

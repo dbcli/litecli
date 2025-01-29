@@ -285,6 +285,8 @@ def is_llm_command(command) -> bool:
 
 @export
 def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]]:
+    if cur is None:
+        raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """
         SELECT sql FROM sqlite_master
         WHERE sql IS NOT NULL
