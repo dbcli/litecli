@@ -1,9 +1,10 @@
-## TBD
+## 1.14.3 - 2025-01-29
 
 ### Bug Fixes
 
 * Fix [misleading "0 rows affected" status for CTEs](https://github.com/dbcli/litecli/issues/203)
   by never displaying rows affected when the connector tells us -1
+* Show an error message when `\llm "question"` is invoked without a database connection.
 
 ## 1.14.2 - 2025-01-26
 
