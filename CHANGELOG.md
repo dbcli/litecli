@@ -1,3 +1,10 @@
+## TBD
+
+### Bug Fixes
+
+* Fix [misleading "0 rows affected" status for CTEs](https://github.com/dbcli/litecli/issues/203)
+  by never displaying rows affected when the connector tells us -1
+
 ## 1.14.2 - 2025-01-26
 
 ### Bug Fixes
