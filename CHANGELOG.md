@@ -1,3 +1,9 @@
+## 1.14.4 - 2025-01-31
+
+### Bug Fixes
+
+* Fix the usage instructions in the `\llm` command.
+
 ## 1.14.3 - 2025-01-29
 
 ### Bug Fixes

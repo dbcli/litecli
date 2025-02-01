@@ -138,14 +138,14 @@ qwq
 > \\llm models default llama3
 
 # Set api key (not required for local models)
-> \\llm keys set openai sg-1234
-API key set for openai.
+> \\llm keys set openai
+
 
 # Install a model plugin
 > \\llm install llm-ollama
 llm-ollama installed.
 
-# Models directory
+# Plugins directory
 # https://llm.datasette.io/en/stable/plugins/directory.html
 """
 
