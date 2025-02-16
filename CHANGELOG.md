@@ -1,3 +1,9 @@
+## TBD
+
+### Features
+
+* Make the history file location configurable. ([#206](https://github.com/dbcli/litecli/issues/206))
+
 ## 1.14.4 - 2025-01-31
 
 ### Bug Fixes
