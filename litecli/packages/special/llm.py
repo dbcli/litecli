@@ -163,12 +163,12 @@ $question
 
 Explain the reason for choosing each table in the SQL query you have
 written. Keep the explanation concise.
+When the user request for multiple sql queries, include each SQL query in a separate code fence.
 Finally include a sql query in a code fence such as this one:
 
 ```sql
 SELECT count(*) FROM table_name;
 ```
-When the user requests for multiple sql queries, separate them with in a separate code fence.
 """
 
 
