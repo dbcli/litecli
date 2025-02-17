@@ -1,3 +1,9 @@
+## 1.14.5 - 2025-02-17
+
+### Internal
+
+* Fix typo `pormpt`to `prompt` in `special/llm.py`.
+
 ## 1.14.4 - 2025-01-31
 
 ### Bug Fixes
