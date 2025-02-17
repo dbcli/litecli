@@ -1,8 +1,14 @@
+
 ## TBD
 
 ### Features
 
 * Make the history file location configurable. ([#206](https://github.com/dbcli/litecli/issues/206))
+
+### Internal
+
+* Fix typo `pormpt`to `prompt` in `special/llm.py`.
+
 
 ## 1.14.4 - 2025-01-31
 
