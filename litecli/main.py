@@ -352,7 +352,10 @@ class LiteCli(object):
         self.configure_pager()
         self.refresh_completions()
 
-        history_file = config_location() + "history"
+        history_file = self.config["main"]["history_file"]
+        if history_file == "default":
+            history_file = config_location() + "history"
+        history_file = os.path.expanduser(history_file)
         if dir_path_exists(history_file):
             history = FileHistory(history_file)
         else:

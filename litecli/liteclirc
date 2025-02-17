@@ -18,6 +18,12 @@ destructive_warning = True
 # %USERPROFILE% is typically C:\Users\{username}
 log_file = default
 
+# history_file location.
+# In Unix/Linux: ~/.config/litecli/history
+# In Windows: %USERPROFILE%\AppData\Local\dbcli\litecli\history
+# %USERPROFILE% is typically C:\Users\{username}
+history_file = default
+
 # Default log level. Possible values: "CRITICAL", "ERROR", "WARNING", "INFO"
 # and "DEBUG". "NONE" disables logging.
 log_level = INFO
