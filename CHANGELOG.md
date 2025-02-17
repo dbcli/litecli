@@ -1,6 +1,6 @@
 ## 1.14.5 - 2025-02-17
 
-### Internal
+### Bug Fixes
 
 * Enhance llm prompt to include each SQL query in a separate code fence.
 
