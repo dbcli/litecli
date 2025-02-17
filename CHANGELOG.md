@@ -2,7 +2,7 @@
 
 ### Internal
 
-* Fix typo `pormpt`to `prompt` in `special/llm.py`.
+* Enhance llm prompt to include on SQL query in code fence.
 
 ## 1.14.4 - 2025-01-31
 

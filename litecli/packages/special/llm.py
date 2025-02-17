@@ -168,6 +168,7 @@ Finally include a sql query in a code fence such as this one:
 ```sql
 SELECT count(*) FROM table_name;
 ```
+When the user requests for multiple sql queries, separate them with in a separate code fence.
 """
 
 
@@ -222,7 +223,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     if "-c" in parts:
         capture_output = True
         use_context = False
-    # If the parts has `prompt` command without `-c` then use context to the prompt.
+    # If the parts has `pormpt` command without `-c` then use context to the prompt.
     # \llm -m ollama prompt "Most visited urls?"
     elif "prompt" in parts:  # User might invoke prompt with an option flag in the first argument.
         capture_output = True
