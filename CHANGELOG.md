@@ -2,7 +2,7 @@
 
 ### Internal
 
-* Enhance llm prompt to include on SQL query in code fence.
+* Enhance llm prompt to include each SQL query in a separate code fence.
 
 ## 1.14.4 - 2025-01-31
 
