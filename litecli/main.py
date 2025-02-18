@@ -444,7 +444,7 @@ class LiteCli(object):
                     self.echo(str(e), err=True, fg="red")
                     return
 
-                if special.is_llm_command(text):
+                while special.is_llm_command(text):
                     try:
                         start = time()
                         cur = self.sqlexecute.conn and self.sqlexecute.conn.cursor()
