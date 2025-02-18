@@ -58,7 +58,7 @@ class SQLExecute(object):
 
     def connect(self, database=None):
         db = database or self.dbname
-        _logger.debug("Connection DB Params: \n" "\tdatabase: %r", database)
+        _logger.debug("Connection DB Params: \n" "\tdatabase: %r", db)
 
         db_name = os.path.expanduser(db)
         db_dir_name = os.path.dirname(os.path.abspath(db_name))

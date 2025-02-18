@@ -320,6 +320,7 @@ class SQLCompleter(Completer):
         try:
             data = [self.escaped_names(d) for d in data]
         except Exception:
+            _logger.exception("Failed to get relation names.")
             data = []
 
         # dbmetadata['tables'][$schema_name][$table_name] should be a list of
@@ -351,6 +352,7 @@ class SQLCompleter(Completer):
         try:
             column_data = [self.escaped_names(d) for d in column_data]
         except Exception:
+            _logger.exception("Failed to get column names.")
             column_data = []
 
         metadata = self.dbmetadata[kind]
@@ -366,6 +368,7 @@ class SQLCompleter(Completer):
         try:
             func_data = [self.escaped_names(d) for d in func_data]
         except Exception:
+            _logger.exception("Failed to get function names.")
             func_data = []
 
         # dbmetadata['functions'][$schema_name][$function_name] should return
