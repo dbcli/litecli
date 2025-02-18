@@ -5,6 +5,10 @@
 
 * Make the history file location configurable. ([#206](https://github.com/dbcli/litecli/issues/206))
 
+### Bug Fixes
+
+* Fix a bug where the `\llm` command on alternate invocations weren't detected correctly. (#211)
+
 ### Internal
 
 * Fix typo `pormpt`to `prompt` in `special/llm.py`.
