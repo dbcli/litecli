@@ -87,6 +87,23 @@ def test_llm_command_known_subcommand(mock_run_cmd, mock_llm, executor):
     # And the function should raise FinishIteration(None)
     assert exc_info.value.args[0] is None
 
+@patch("litecli.packages.special.llm.llm")
+@patch("litecli.packages.special.llm.run_external_cmd")
+def test_llm_command_with_help_flag(mock_run_cmd, mock_llm, executor):
+    """
+    If the parts[0] is --help, we do NOT capture output, we just call run_external_cmd
+    and then raise FinishIteration.
+    """
+    # Let's assume 'models' is in LLM_CLI_COMMANDS
+    test_text = r"\llm --help"
+
+    with pytest.raises(FinishIteration) as exc_info:
+        handle_llm(test_text, executor)
+
+    # We check that run_external_cmd was called with these arguments:
+    mock_run_cmd.assert_called_once_with("llm", "--help", restart_cli=False)
+    # And the function should raise FinishIteration(None)
+    assert exc_info.value.args[0] is None
 
 @patch("litecli.packages.special.llm.llm")
 @patch("litecli.packages.special.llm.run_external_cmd")

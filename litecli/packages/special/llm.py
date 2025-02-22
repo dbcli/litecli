@@ -236,6 +236,10 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     elif parts[0] in LLM_CLI_COMMANDS:
         capture_output = False
         use_context = False
+    # If the user wants to use --help option to see each command and it's description
+    elif "--help" == parts[0]:
+        capture_output = False
+        use_context = False
     # If the parts doesn't have any known LLM_CLI_COMMANDS then the user is
     # invoking a question. eg: \llm -m ollama "Most visited urls?"
     elif not set(parts).intersection(LLM_CLI_COMMANDS):

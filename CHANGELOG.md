@@ -2,7 +2,7 @@
 ## TBD
 
 ### Features
-
+* Support `--help` in the `\llm`and `\llm+` command. ([#214](https://github.com/dbcli/litecli/pull/214))
 * Make the history file location configurable. ([#206](https://github.com/dbcli/litecli/issues/206))
 
 ### Internal
