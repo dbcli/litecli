@@ -59,7 +59,7 @@ def test_llm_command_with_c_flag_and_fenced_sql(mock_run_cmd, mock_llm, executor
 
     test_text = r"\llm -c 'Rewrite the SQL without CTE'"
 
-    result, sql = handle_llm(test_text, executor)
+    result, sql, duration = handle_llm(test_text, executor)
 
     # We expect the function to return (result, sql), but result might be "" if verbose is not set
     # By default, `verbose` is false unless text has something like \llm --verbose?
@@ -67,6 +67,7 @@ def test_llm_command_with_c_flag_and_fenced_sql(mock_run_cmd, mock_llm, executor
     # Our test_text doesn't set verbose => we expect "" for the returned context.
     assert result == ""
     assert sql == "SELECT * FROM table;"
+    assert isinstance(duration, float)
 
 
 @patch("litecli.packages.special.llm.llm")
@@ -133,7 +134,7 @@ def test_llm_command_with_prompt(mock_sql_using_llm, mock_ensure_template, mock_
     mock_sql_using_llm.return_value = ("context from LLM", "SELECT 1;")
 
     test_text = r"\llm prompt 'Magic happening here?'"
-    context, sql = handle_llm(test_text, executor)
+    context, sql, duration = handle_llm(test_text, executor)
 
     # ensure_litecli_template should be called
     mock_ensure_template.assert_called_once()
@@ -143,6 +144,7 @@ def test_llm_command_with_prompt(mock_sql_using_llm, mock_ensure_template, mock_
     mock_sql_using_llm.assert_called()
     assert context == ""
     assert sql == "SELECT 1;"
+    assert isinstance(duration, float)
 
 
 @patch("litecli.packages.special.llm.llm")
@@ -155,12 +157,13 @@ def test_llm_command_question_with_context(mock_sql_using_llm, mock_ensure_templ
     mock_sql_using_llm.return_value = ("You have context!", "SELECT 2;")
 
     test_text = r"\llm 'Top 10 downloads by size.'"
-    context, sql = handle_llm(test_text, executor)
+    context, sql, duration = handle_llm(test_text, executor)
 
     mock_ensure_template.assert_called_once()
     mock_sql_using_llm.assert_called()
     assert context == ""
     assert sql == "SELECT 2;"
+    assert isinstance(duration, float)
 
 
 @patch("litecli.packages.special.llm.llm")
@@ -173,7 +176,9 @@ def test_llm_command_question_verbose(mock_sql_using_llm, mock_ensure_template, 
     mock_sql_using_llm.return_value = ("Verbose context, oh yeah!", "SELECT 42;")
 
     test_text = r"\llm+ 'Top 10 downloads by size.'"
-    context, sql = handle_llm(test_text, executor)
+    context, sql, duration = handle_llm(test_text, executor)
 
     assert context == "Verbose context, oh yeah!"
     assert sql == "SELECT 42;"
+
+    assert isinstance(duration, float)

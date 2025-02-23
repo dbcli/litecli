@@ -192,21 +192,8 @@ def ensure_litecli_template(replace=False):
     run_external_cmd("llm", PROMPT, "--save", "litecli")
     return
 
-
-@contextlib.contextmanager
-def timer():
-    start = time.perf_counter()
-    try:
-        click.echo("Calling llm command")
-        yield  # Code inside the 'with' block runs here
-    finally:
-        end = time.perf_counter()
-        elapsed = end - start
-        click.echo(f"llm command took: {elapsed:.6f} seconds")
-
-
 @export
-def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
+def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     """This function handles the special command `\\llm`.
 
     If it deals with a question that results in a SQL query then it will return
@@ -267,8 +254,9 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     if not use_context:
         args = parts
         if capture_output:
-            with timer():
-                _, result = run_external_cmd("llm", *args, capture_output=capture_output)
+            start = time.perf_counter()
+            _, result = run_external_cmd("llm", *args, capture_output=capture_output)
+            end = time.perf_counter()
             match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
             if match:
                 sql = match.group(1).strip()
@@ -276,18 +264,21 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
                 output = [(None, None, None, result)]
                 raise FinishIteration(output)
 
-            return result if verbose else "", sql
+            return result if verbose else "", sql, end - start
         else:
             run_external_cmd("llm", *args, restart_cli=restart)
             raise FinishIteration(None)
 
     try:
         ensure_litecli_template()
-        with timer():
-            context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
+        # Measure end to end llm command invocation.
+        # This measures the internal DB command to pull the schema
+        start = time.perf_counter()
+        context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
+        end = time.perf_counter()
         if not verbose:
             context = ""
-        return context, sql
+        return context, sql, end - start
     except Exception as e:
         # Something went wrong. Raise an exception and bail.
         raise RuntimeError(e)
