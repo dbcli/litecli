@@ -7,6 +7,7 @@ import shlex
 import sys
 from runpy import run_module
 from typing import Optional, Tuple
+import time
 
 import click
 
@@ -192,6 +193,18 @@ def ensure_litecli_template(replace=False):
     return
 
 
+@contextlib.contextmanager
+def timer():
+    start = time.perf_counter()
+    try:
+        click.echo("Calling llm command")
+        yield  # Code inside the 'with' block runs here
+    finally:
+        end = time.perf_counter()
+        elapsed = end - start
+        click.echo(f"llm command took: {elapsed:.6f} seconds")
+
+
 @export
 def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     """This function handles the special command `\\llm`.
@@ -254,7 +267,8 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     if not use_context:
         args = parts
         if capture_output:
-            _, result = run_external_cmd("llm", *args, capture_output=capture_output)
+            with timer():
+                _, result = run_external_cmd("llm", *args, capture_output=capture_output)
             match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
             if match:
                 sql = match.group(1).strip()
@@ -269,7 +283,8 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
 
     try:
         ensure_litecli_template()
-        context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
+        with timer():
+            context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
         if not verbose:
             context = ""
         return context, sql
