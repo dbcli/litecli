@@ -448,13 +448,12 @@ class LiteCli(object):
                     try:
                         start = time()
                         cur = self.sqlexecute.conn and self.sqlexecute.conn.cursor()
-                        click.echo("Calling llm command")
                         context, sql, duration = special.handle_llm(text, cur)
                         if context:
                             click.echo("LLM Reponse:")
                             click.echo(context)
                             click.echo('---')
-                        click.echo(f"llm command took {duration:.2f} seconds to complete the operation")
+                        click.echo(f"Time: {duration:.2f} seconds")
                         text = self.prompt_app.prompt(default=sql)
                     except KeyboardInterrupt:
                         return

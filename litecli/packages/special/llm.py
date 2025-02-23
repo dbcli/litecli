@@ -254,6 +254,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     if not use_context:
         args = parts
         if capture_output:
+            click.echo("Calling llm command")
             start = time.perf_counter()
             _, result = run_external_cmd("llm", *args, capture_output=capture_output)
             end = time.perf_counter()
@@ -307,6 +308,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
             WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
             ORDER BY 1
     """
+    click.echo("Preparing schema information to feed the llm")
     sample_row_query = "SELECT * FROM {table} LIMIT 1"
     log.debug(schema_query)
     cur.execute(schema_query)
@@ -338,7 +340,9 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
         question,
         " ",  # Dummy argument to prevent llm from waiting on stdin
     ]
+    click.echo("Invoking llm command with schema information")
     _, result = run_external_cmd("llm", *args, capture_output=True)
+    click.echo("Received response from the llm command")
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
     if match:
         sql = match.group(1).strip()
