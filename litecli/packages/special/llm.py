@@ -7,7 +7,7 @@ import shlex
 import sys
 from runpy import run_module
 from typing import Optional, Tuple
-import time
+from time import time
 
 import click
 
@@ -255,9 +255,9 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
         args = parts
         if capture_output:
             click.echo("Calling llm command")
-            start = time.perf_counter()
+            start = time()
             _, result = run_external_cmd("llm", *args, capture_output=capture_output)
-            end = time.perf_counter()
+            end = time()
             match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
             if match:
                 sql = match.group(1).strip()
@@ -274,9 +274,9 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
         ensure_litecli_template()
         # Measure end to end llm command invocation.
         # This measures the internal DB command to pull the schema and llm command
-        start = time.perf_counter()
+        start = time()
         context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
-        end = time.perf_counter()
+        end = time()
         if not verbose:
             context = ""
         return context, sql, end - start
