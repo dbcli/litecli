@@ -7,6 +7,7 @@ import shlex
 import sys
 from runpy import run_module
 from typing import Optional, Tuple
+from time import time
 
 import click
 
@@ -191,9 +192,8 @@ def ensure_litecli_template(replace=False):
     run_external_cmd("llm", PROMPT, "--save", "litecli")
     return
 
-
 @export
-def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
+def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     """This function handles the special command `\\llm`.
 
     If it deals with a question that results in a SQL query then it will return
@@ -254,7 +254,10 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
     if not use_context:
         args = parts
         if capture_output:
+            click.echo("Calling llm command")
+            start = time()
             _, result = run_external_cmd("llm", *args, capture_output=capture_output)
+            end = time()
             match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
             if match:
                 sql = match.group(1).strip()
@@ -262,17 +265,21 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str]]:
                 output = [(None, None, None, result)]
                 raise FinishIteration(output)
 
-            return result if verbose else "", sql
+            return result if verbose else "", sql, end - start
         else:
             run_external_cmd("llm", *args, restart_cli=restart)
             raise FinishIteration(None)
 
     try:
         ensure_litecli_template()
+        # Measure end to end llm command invocation.
+        # This measures the internal DB command to pull the schema and llm command
+        start = time()
         context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
+        end = time()
         if not verbose:
             context = ""
-        return context, sql
+        return context, sql, end - start
     except Exception as e:
         # Something went wrong. Raise an exception and bail.
         raise RuntimeError(e)
@@ -301,6 +308,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
             WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
             ORDER BY 1
     """
+    click.echo("Preparing schema information to feed the llm")
     sample_row_query = "SELECT * FROM {table} LIMIT 1"
     log.debug(schema_query)
     cur.execute(schema_query)
@@ -332,7 +340,9 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
         question,
         " ",  # Dummy argument to prevent llm from waiting on stdin
     ]
+    click.echo("Invoking llm command with schema information")
     _, result = run_external_cmd("llm", *args, capture_output=True)
+    click.echo("Received response from the llm command")
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
     if match:
         sql = match.group(1).strip()
