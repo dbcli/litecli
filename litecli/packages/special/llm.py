@@ -273,7 +273,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     try:
         ensure_litecli_template()
         # Measure end to end llm command invocation.
-        # This measures the internal DB command to pull the schema
+        # This measures the internal DB command to pull the schema and llm command
         start = time.perf_counter()
         context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
         end = time.perf_counter()
