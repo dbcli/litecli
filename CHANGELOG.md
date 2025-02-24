@@ -10,9 +10,9 @@
 
 * Fix a bug where the `\llm` command on alternate invocations weren't detected correctly. (#211)
 
-### Internal
+### Bug Fixes
 
-* Fix typo `pormpt`to `prompt` in `special/llm.py`.
+* Enhance llm prompt to include each SQL query in a separate code fence.
 
 
 ## 1.14.4 - 2025-01-31
