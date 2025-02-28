@@ -13,6 +13,7 @@
 ### Internal
 
 * Fix typo `pormpt`to `prompt` in `special/llm.py`.
+* Update pip install to work in both bash and zsh.
 
 
 ## 1.14.4 - 2025-01-31
