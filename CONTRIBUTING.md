@@ -44,7 +44,7 @@ You'll always get credit for your work.
 5. Install the dependencies and development tools:
 
     ```bash
-    $ pip install --editable .[dev]
+    $ pip install --editable ".[dev]"
     ```
 
 6. Create a branch for your bugfix or feature based off the `main` branch:
