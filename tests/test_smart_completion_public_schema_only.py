@@ -40,6 +40,18 @@ def complete_event():
     return Mock()
 
 
+def test_escape_name(completer):
+
+    for name, expected_name in [# Upper case name shouldn't be escaped
+        ("BAR", "BAR"),
+        # This name is escaped and should start with back tick
+        ("2025todos", "`2025todos`"),
+        # normal case
+        ("people", "people"),
+        # table name with _underscore should not be escaped
+        ("django_users", "django_users")]:
+        assert completer.escape_name(name) == expected_name
+
 def test_empty_string_completion(completer, complete_event):
     text = ""
     position = 0
@@ -302,7 +314,7 @@ def test_auto_escaped_col_names(completer, complete_event):
     result = list(completer.get_completions(Document(text=text, cursor_position=position), complete_event))
     assert result == [
         Completion(text="*", start_position=0),
-        Completion(text="`ABC`", start_position=0),
+        Completion(text="ABC", start_position=0),
         Completion(text="`insert`", start_position=0),
         Completion(text="id", start_position=0),
     ] + list(map(Completion, completer.functions)) + [Completion(text="select", start_position=0)] + list(
@@ -317,7 +329,7 @@ def test_un_escaped_table_names(completer, complete_event):
     assert result == list(
         [
             Completion(text="*", start_position=0),
-            Completion(text="`ABC`", start_position=0),
+            Completion(text="ABC", start_position=0),
             Completion(text="`insert`", start_position=0),
             Completion(text="id", start_position=0),
         ]

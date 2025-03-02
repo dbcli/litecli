@@ -9,6 +9,7 @@
 ### Bug Fixes
 
 * Fix a bug where the `\llm` command on alternate invocations weren't detected correctly. (#211)
+* Do not escape upper table or column name. [(#185)](https://github.com/dbcli/litecli/issues/185)
 
 ### Internal
 
