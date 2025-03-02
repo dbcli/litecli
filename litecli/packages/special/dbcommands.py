@@ -57,6 +57,40 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
 
 
 @special_command(
+    ".views",
+    "\\dv",
+    "List views.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\dv",),
+)
+def list_views(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+    if arg:
+        args = ("{0}%".format(arg),)
+        query = """
+            SELECT name FROM sqlite_master
+            WHERE type = 'view' AND name LIKE ? AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+        """
+    else:
+        args = tuple()
+        query = """
+            SELECT name FROM sqlite_master
+            WHERE type = 'view' AND name NOT LIKE 'sqlite_%'
+            ORDER BY 1
+        """
+    log.debug(query)
+    cur.execute(query, args)
+    views = cur.fetchall()
+    status = ""
+    if cur.description:
+        headers = [x[0] for x in cur.description]
+    else:
+        return [(None, None, None, "")]
+    return [(None, views, headers, status)]
+
+
+@special_command(
     ".schema",
     ".schema[+] [table]",
     "The complete schema for the database or a single table",
