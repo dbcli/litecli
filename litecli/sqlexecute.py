@@ -38,7 +38,7 @@ class SQLExecute(object):
     """
 
     indexes_query = """
-        SELECT name
+        SELECT name, sql
         FROM sqlite_master
         WHERE type = 'index' AND name NOT LIKE 'sqlite_%'
         ORDER BY 1
