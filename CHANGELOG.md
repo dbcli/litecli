@@ -10,6 +10,7 @@
 
 * Fix a bug where the `\llm` command on alternate invocations weren't detected correctly. (#211)
 * Do not escape upper table or column name. [(#185)](https://github.com/dbcli/litecli/issues/185)
+* Return indices when `.schema` command is run. Also update the output to contain the `sql` for the `indexes` command. [(#149)](https://github.com/dbcli/litecli/issues/149)
 
 ### Internal
 
