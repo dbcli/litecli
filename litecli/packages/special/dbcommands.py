@@ -68,7 +68,7 @@ def show_schema(cur, arg=None, **_):
         args = (arg,)
         query = """
             SELECT sql FROM sqlite_master
-            WHERE name==? AND sql IS NOT NULL
+            WHERE tbl_name==? AND sql IS NOT NULL
             ORDER BY tbl_name, type DESC, name
         """
     else:
@@ -86,9 +86,9 @@ def show_schema(cur, arg=None, **_):
     if cur.description:
         headers = [x[0] for x in cur.description]
     else:
-        return [(None, None, None, "")] + _list_indexes(cur, arg=arg)
+        return [(None, None, None, "")]
 
-    return [(None, tables, headers, status)] + _list_indexes(cur, arg=arg)
+    return [(None, tables, headers, status)]
 
 @special_command(
     ".databases",
@@ -108,9 +108,15 @@ def list_databases(cur, **_):
     else:
         return [(None, None, None, "")]
 
-
-# This is private to make sure .schemas special command can call the function to retreive the index
-def _list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+@special_command(
+    ".indexes",
+    ".indexes [tablename]",
+    "List indexes.",
+    arg_type=PARSED_QUERY,
+    case_sensitive=True,
+    aliases=("\\di",),
+)
+def list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     if arg:
         args = ("{0}%".format(arg),)
         query = """
@@ -135,17 +141,6 @@ def _list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     else:
         return [(None, None, None, "")]
     return [(None, indexes, headers, status)]
-
-@special_command(
-    ".indexes",
-    ".indexes [tablename]",
-    "List indexes.",
-    arg_type=PARSED_QUERY,
-    case_sensitive=True,
-    aliases=("\\di",),
-)
-def list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
-    return _list_indexes(cur, arg=arg, arg_type=arg_type, verbose=verbose)
 
 
 @special_command(
