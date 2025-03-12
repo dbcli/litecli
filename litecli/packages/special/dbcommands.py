@@ -102,7 +102,7 @@ def show_schema(cur, arg=None, **_):
         args = (arg,)
         query = """
             SELECT sql FROM sqlite_master
-            WHERE name==? AND sql IS NOT NULL
+            WHERE tbl_name==? AND sql IS NOT NULL
             ORDER BY tbl_name, type DESC, name
         """
     else:
@@ -124,7 +124,6 @@ def show_schema(cur, arg=None, **_):
 
     return [(None, tables, headers, status)]
 
-
 @special_command(
     ".databases",
     ".databases",
@@ -143,7 +142,6 @@ def list_databases(cur, **_):
     else:
         return [(None, None, None, "")]
 
-
 @special_command(
     ".indexes",
     ".indexes [tablename]",
@@ -156,14 +154,14 @@ def list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     if arg:
         args = ("{0}%".format(arg),)
         query = """
-            SELECT name FROM sqlite_master
+            SELECT name, sql FROM sqlite_master
             WHERE type = 'index' AND tbl_name LIKE ? AND name NOT LIKE 'sqlite_%'
             ORDER BY 1
         """
     else:
         args = tuple()
         query = """
-            SELECT name FROM sqlite_master
+            SELECT name, sql FROM sqlite_master
             WHERE type = 'index' AND name NOT LIKE 'sqlite_%'
             ORDER BY 1
         """

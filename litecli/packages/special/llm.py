@@ -20,6 +20,8 @@ try:
 except ImportError:
     llm = None
     cli = None
+    LLM_CLI_COMMANDS = []
+    MODELS = {}
 
 from . import export
 from .main import parse_special_command
