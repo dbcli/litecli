@@ -1,5 +1,5 @@
 
-## TBD
+## 1.15.0 - 2025-03-15
 
 ### Features
 * Add logs while invoking `\llm`and `\\m+` command. [(#215)](https://github.com/dbcli/litecli/pull/215)
