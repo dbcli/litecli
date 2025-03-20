@@ -1,5 +1,5 @@
 import logging
-import sqlite3
+import sqlean as sqlite3
 from contextlib import closing
 from sqlite3 import OperationalError
 from litecli.packages.special.utils import check_if_sqlitedotcommand
