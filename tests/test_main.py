@@ -74,7 +74,7 @@ def test_batch_mode(executor):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
 
-    sql = "select count(*) from test;\n" "select * from test limit 1;"
+    sql = "select count(*) from test;\nselect * from test limit 1;"
 
     runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS, input=sql)
@@ -88,7 +88,7 @@ def test_batch_mode_table(executor):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
 
-    sql = "select count(*) from test;\n" "select * from test limit 1;"
+    sql = "select count(*) from test;\nselect * from test limit 1;"
 
     runner = CliRunner()
     result = runner.invoke(cli, args=CLI_ARGS + ["-t"], input=sql)

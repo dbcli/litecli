@@ -260,7 +260,7 @@ class LiteCli(object):
             )
             return
 
-        formatter = logging.Formatter("%(asctime)s (%(process)d/%(threadName)s) " "%(name)s %(levelname)s - %(message)s")
+        formatter = logging.Formatter("%(asctime)s (%(process)d/%(threadName)s) %(name)s %(levelname)s - %(message)s")
 
         handler.setFormatter(formatter)
 
@@ -361,7 +361,7 @@ class LiteCli(object):
         else:
             history = None
             self.echo(
-                'Error: Unable to open the history file "{}". ' "Your query history will not be saved.".format(history_file),
+                'Error: Unable to open the history file "{}". Your query history will not be saved.'.format(history_file),
                 err=True,
                 fg="red",
             )
@@ -927,7 +927,7 @@ def cli(
 
     litecli.connect(database)
 
-    litecli.logger.debug("Launch Params: \n" "\tdatabase: %r", database)
+    litecli.logger.debug("Launch Params: \n\tdatabase: %r", database)
 
     #  --execute argument
     if execute:

@@ -256,7 +256,7 @@ def test_favorite_query_multiple_statement(executor):
 
     results = run(
         executor,
-        "\\fs test-ad select * from test where a like 'a%'; " "select * from test where a like 'd%'",
+        "\\fs test-ad select * from test where a like 'a%'; select * from test where a like 'd%'",
     )
     assert_result_equal(results, status="Saved.")
 

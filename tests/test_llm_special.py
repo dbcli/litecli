@@ -54,7 +54,7 @@ def test_llm_command_with_c_flag(mock_run_cmd, mock_llm, executor):
 @patch("litecli.packages.special.llm.run_external_cmd")
 def test_llm_command_with_c_flag_and_fenced_sql(mock_run_cmd, mock_llm, executor):
     # The luscious SQL is inside triple backticks
-    return_text = "Here is your query:\n" "```sql\nSELECT * FROM table;\n```"
+    return_text = "Here is your query:\n```sql\nSELECT * FROM table;\n```"
     mock_run_cmd.return_value = (0, return_text)
 
     test_text = r"\llm -c 'Rewrite the SQL without CTE'"
