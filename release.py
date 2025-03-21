@@ -100,7 +100,7 @@ if __name__ == "__main__":
         action="store_true",
         dest="confirm_steps",
         default=False,
-        help=("Confirm every step. If the step is not " "confirmed, it will be skipped."),
+        help=("Confirm every step. If the step is not confirmed, it will be skipped."),
     )
     parser.add_option(
         "-d",

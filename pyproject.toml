@@ -14,8 +14,9 @@ dependencies = [
     "prompt-toolkit>=3.0.3,<4.0.0",
     "pygments>=1.6",
     "sqlparse>=0.4.4",
-    "setuptools",                   # Required by llm commands to install models
+    "setuptools", # Required by llm commands to install models
     "pip",
+    "sqlean-py>=3.47.0",
 ]
 
 [build-system]

@@ -124,6 +124,7 @@ def show_schema(cur, arg=None, **_):
 
     return [(None, tables, headers, status)]
 
+
 @special_command(
     ".databases",
     ".databases",
@@ -141,6 +142,7 @@ def list_databases(cur, **_):
         return [(None, cur, headers, "")]
     else:
         return [(None, None, None, "")]
+
 
 @special_command(
     ".indexes",

@@ -2,11 +2,11 @@
 
 ### Features
 
-*
+* Replace sqlite3 library with [sqlean](https://antonz.org/sqlean/). It's a drop-in replacement for sqlite3.
 
 ### Bug Fixes
 
-*
+* Fix missing sqlite extensions using sqlean. Note. support only limited set of extensions. [(#119)](https://github.com/dbcli/litecli/issues/119)
 
 
 ## 1.15.0 - 2025-03-15

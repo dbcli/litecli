@@ -1,7 +1,8 @@
 import logging
-import sqlite3
+import sqlean as sqlite3
+
 from contextlib import closing
-from sqlite3 import OperationalError
+from sqlean import OperationalError
 from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
@@ -9,6 +10,7 @@ import os.path
 
 from .packages import special
 
+sqlite3.extensions.enable_all()
 _logger = logging.getLogger(__name__)
 
 # FIELD_TYPES = decoders.copy()
@@ -58,7 +60,7 @@ class SQLExecute(object):
 
     def connect(self, database=None):
         db = database or self.dbname
-        _logger.debug("Connection DB Params: \n" "\tdatabase: %r", db)
+        _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
 
         db_name = os.path.expanduser(db)
         db_dir_name = os.path.dirname(os.path.abspath(db_name))
