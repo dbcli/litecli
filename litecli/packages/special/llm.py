@@ -194,6 +194,7 @@ def ensure_litecli_template(replace=False):
     run_external_cmd("llm", PROMPT, "--save", "litecli")
     return
 
+
 @export
 def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     """This function handles the special command `\\llm`.

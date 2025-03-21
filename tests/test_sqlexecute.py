@@ -5,7 +5,7 @@ import os
 import pytest
 
 from utils import run, dbtest, set_expanded_output, is_expanded_output, assert_result_equal
-from sqlite3 import OperationalError, ProgrammingError
+from sqlean import OperationalError, ProgrammingError
 
 
 @dbtest
@@ -44,9 +44,13 @@ def test_table_and_columns_query(executor):
     run(executor, "create table b(z text)")
     run(executor, "create table t(t text)")
 
-    assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
-    assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
-    assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
+    assert set(executor.tables()) == set([("sqlean_define",), ("a",), ("b",), ("t",)])
+    assert set(executor.table_columns()) == set(
+        [("sqlean_define", "type"), ("sqlean_define", "body"), ("sqlean_define", "name"), ("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")]
+    )
+    assert set(executor.table_columns()) == set(
+        [("sqlean_define", "type"), ("sqlean_define", "body"), ("sqlean_define", "name"), ("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")]
+    )
 
 
 @dbtest

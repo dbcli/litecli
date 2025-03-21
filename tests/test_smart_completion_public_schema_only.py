@@ -41,16 +41,17 @@ def complete_event():
 
 
 def test_escape_name(completer):
-
-    for name, expected_name in [# Upper case name shouldn't be escaped
+    for name, expected_name in [  # Upper case name shouldn't be escaped
         ("BAR", "BAR"),
         # This name is escaped and should start with back tick
         ("2025todos", "`2025todos`"),
         # normal case
         ("people", "people"),
         # table name with _underscore should not be escaped
-        ("django_users", "django_users")]:
+        ("django_users", "django_users"),
+    ]:
         assert completer.escape_name(name) == expected_name
+
 
 def test_empty_string_completion(completer, complete_event):
     text = ""

@@ -1,8 +1,9 @@
 import logging
 import sqlean as sqlite3
+
 sqlite3.extensions.enable_all()
 from contextlib import closing
-from sqlite3 import OperationalError
+from sqlean import OperationalError
 from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse

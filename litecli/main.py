@@ -11,7 +11,7 @@ import traceback
 from collections import namedtuple
 from datetime import datetime
 from io import open
-from sqlite3 import OperationalError, sqlite_version
+from sqlean import OperationalError, sqlite_version
 from time import time
 
 import click
@@ -452,7 +452,7 @@ class LiteCli(object):
                         if context:
                             click.echo("LLM Reponse:")
                             click.echo(context)
-                            click.echo('---')
+                            click.echo("---")
                         click.echo(f"Time: {duration:.2f} seconds")
                         text = self.prompt_app.prompt(default=sql)
                     except KeyboardInterrupt:

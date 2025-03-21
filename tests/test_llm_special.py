@@ -88,6 +88,7 @@ def test_llm_command_known_subcommand(mock_run_cmd, mock_llm, executor):
     # And the function should raise FinishIteration(None)
     assert exc_info.value.args[0] is None
 
+
 @patch("litecli.packages.special.llm.llm")
 @patch("litecli.packages.special.llm.run_external_cmd")
 def test_llm_command_with_help_flag(mock_run_cmd, mock_llm, executor):
@@ -105,6 +106,7 @@ def test_llm_command_with_help_flag(mock_run_cmd, mock_llm, executor):
     mock_run_cmd.assert_called_once_with("llm", "--help", restart_cli=False)
     # And the function should raise FinishIteration(None)
     assert exc_info.value.args[0] is None
+
 
 @patch("litecli.packages.special.llm.llm")
 @patch("litecli.packages.special.llm.run_external_cmd")

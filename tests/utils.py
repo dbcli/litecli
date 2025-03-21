@@ -7,7 +7,7 @@ import platform
 import multiprocessing
 from contextlib import closing
 
-import sqlite3
+import sqlean as sqlite3
 import pytest
 
 from litecli.main import special
