@@ -1,8 +1,15 @@
 import logging
-import sqlean as sqlite3
 
 from contextlib import closing
-from sqlean import OperationalError
+
+try:
+    import sqlean as sqlite3
+    from sqlean import OperationalError
+
+    sqlite3.extensions.enable_all()
+except ImportError:
+    import sqlite3
+    from sqlite3 import OperationalError
 from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
@@ -10,7 +17,6 @@ import os.path
 
 from .packages import special
 
-sqlite3.extensions.enable_all()
 _logger = logging.getLogger(__name__)
 
 # FIELD_TYPES = decoders.copy()

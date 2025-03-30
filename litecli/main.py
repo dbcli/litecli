@@ -11,7 +11,11 @@ import traceback
 from collections import namedtuple
 from datetime import datetime
 from io import open
-from sqlean import OperationalError, sqlite_version
+
+try:
+    from sqlean import OperationalError, sqlite_version
+except ImportError:
+    from sqlite3 import OperationalError, sqlite_version
 from time import time
 
 import click

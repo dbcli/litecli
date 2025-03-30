@@ -16,19 +16,7 @@ If you already know how to install python packages, then you can install it via 
 You might need sudo on linux.
 
 ```
-$ pip install -U litecli
-```
-
-The package is also available on Arch Linux through AUR in two versions: [litecli](https://aur.archlinux.org/packages/litecli/) is based the latest release (git tag) and [litecli-git](https://aur.archlinux.org/packages/litecli-git/) is based on the master branch of the git repo. You can install them manually or with an AUR helper such as `yay`:
-
-```
-$ yay -S litecli
-```
-
-or
-
-```
-$ yay -S litecli-git
+$ pip install -U litecli[sqlean]
 ```
 
 For MacOS users, you can also use Homebrew to install it:

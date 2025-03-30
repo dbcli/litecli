@@ -5,7 +5,11 @@ import os
 import pytest
 
 from utils import run, dbtest, set_expanded_output, is_expanded_output, assert_result_equal
-from sqlean import OperationalError, ProgrammingError
+
+try:
+    from sqlean import OperationalError, ProgrammingError
+except ImportError:
+    from sqlite3 import OperationalError, ProgrammingError
 
 
 @dbtest
