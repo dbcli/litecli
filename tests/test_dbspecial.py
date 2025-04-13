@@ -1,8 +1,13 @@
-from litecli.packages.completion_engine import suggest_type
 from test_completion_engine import sorted_dicts
-from litecli.packages.special.utils import format_uptime
-from litecli.packages.special.utils import check_if_sqlitedotcommand
-from utils import run, dbtest, assert_result_equal
+from utils import assert_result_equal, dbtest, run
+
+from litecli.packages.completion_engine import suggest_type
+from litecli.packages.special.utils import check_if_sqlitedotcommand, format_uptime
+
+try:
+    import sqlean as sqlite3
+except ImportError:
+    import sqlite3
 
 
 def test_import_first_argument():
@@ -96,8 +101,11 @@ def test_special_d(executor):
     run(executor, """create table tst_tbl1(a text)""")
     results = run(executor, """\\d""")
 
-    # 'sqlean_define' is a table created by sqlean. Details: https://github.com/nalgeon/sqlean/blob/main/docs/define.md?plain=1#L3
-    assert_result_equal(results, headers=["name"], rows=[("sqlean_define",), ("tst_tbl1",)], status="")
+    if "sqlean" in sqlite3.__file__:
+        # 'sqlean_define' is a table created by sqlean. Details: https://github.com/nalgeon/sqlean/blob/main/docs/define.md?plain=1#L3
+        assert_result_equal(results, headers=["name"], rows=[("sqlean_define",), ("tst_tbl1",)], status="")
+    else:
+        assert_result_equal(results, headers=["name"], rows=[("tst_tbl1",)], status="")
 
 
 @dbtest

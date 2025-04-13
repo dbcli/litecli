@@ -7,8 +7,10 @@ import pytest
 from utils import run, dbtest, set_expanded_output, is_expanded_output, assert_result_equal
 
 try:
+    import sqlean as sqlite3
     from sqlean import OperationalError, ProgrammingError
 except ImportError:
+    import sqlite3
     from sqlite3 import OperationalError, ProgrammingError
 
 
@@ -41,20 +43,40 @@ def test_binary(executor):
     assert_result_equal(results, headers=["blb"], rows=[(expected,)])
 
 
-## Failing in Travis for some unknown reason.
 @dbtest
-def test_table_and_columns_query(executor):
+def test_table_and_columns_query_w_sqlean(executor):
     run(executor, "create table a(x text, y text)")
     run(executor, "create table b(z text)")
     run(executor, "create table t(t text)")
 
-    assert set(executor.tables()) == set([("sqlean_define",), ("a",), ("b",), ("t",)])
-    assert set(executor.table_columns()) == set(
-        [("sqlean_define", "type"), ("sqlean_define", "body"), ("sqlean_define", "name"), ("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")]
-    )
-    assert set(executor.table_columns()) == set(
-        [("sqlean_define", "type"), ("sqlean_define", "body"), ("sqlean_define", "name"), ("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")]
-    )
+    if "sqlean" in sqlite3.__file__:
+        assert set(executor.tables()) == set([("sqlean_define",), ("a",), ("b",), ("t",)])
+        assert set(executor.table_columns()) == set(
+            [
+                ("sqlean_define", "type"),
+                ("sqlean_define", "body"),
+                ("sqlean_define", "name"),
+                ("a", "x"),
+                ("a", "y"),
+                ("b", "z"),
+                ("t", "t"),
+            ]
+        )
+        assert set(executor.table_columns()) == set(
+            [
+                ("sqlean_define", "type"),
+                ("sqlean_define", "body"),
+                ("sqlean_define", "name"),
+                ("a", "x"),
+                ("a", "y"),
+                ("b", "z"),
+                ("t", "t"),
+            ]
+        )
+    else:
+        assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
+        assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
+        assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
 
 
 @dbtest
