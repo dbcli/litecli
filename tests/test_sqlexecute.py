@@ -50,12 +50,9 @@ def test_table_and_columns_query_w_sqlean(executor):
     run(executor, "create table t(t text)")
 
     if "sqlean" in sqlite3.__file__:
-        assert set(executor.tables()) == set([("sqlean_define",), ("a",), ("b",), ("t",)])
+        assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
         assert set(executor.table_columns()) == set(
             [
-                ("sqlean_define", "type"),
-                ("sqlean_define", "body"),
-                ("sqlean_define", "name"),
                 ("a", "x"),
                 ("a", "y"),
                 ("b", "z"),
@@ -64,9 +61,6 @@ def test_table_and_columns_query_w_sqlean(executor):
         )
         assert set(executor.table_columns()) == set(
             [
-                ("sqlean_define", "type"),
-                ("sqlean_define", "body"),
-                ("sqlean_define", "name"),
                 ("a", "x"),
                 ("a", "y"),
                 ("b", "z"),

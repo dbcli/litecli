@@ -101,11 +101,7 @@ def test_special_d(executor):
     run(executor, """create table tst_tbl1(a text)""")
     results = run(executor, """\\d""")
 
-    if "sqlean" in sqlite3.__file__:
-        # 'sqlean_define' is a table created by sqlean. Details: https://github.com/nalgeon/sqlean/blob/main/docs/define.md?plain=1#L3
-        assert_result_equal(results, headers=["name"], rows=[("sqlean_define",), ("tst_tbl1",)], status="")
-    else:
-        assert_result_equal(results, headers=["name"], rows=[("tst_tbl1",)], status="")
+    assert_result_equal(results, headers=["name"], rows=[("tst_tbl1",)], status="")
 
 
 @dbtest

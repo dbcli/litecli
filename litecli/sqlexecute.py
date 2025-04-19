@@ -41,7 +41,7 @@ class SQLExecute(object):
         SELECT m.name as tableName, p.name as columnName
         FROM sqlite_master m
         JOIN pragma_table_info((m.name)) p
-        WHERE m.type IN ('table','view') AND m.name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_define'
+        WHERE m.type IN ('table','view') AND m.name NOT LIKE 'sqlite_%' AND m.name NOT LIKE 'sqlean_define'
         ORDER BY tableName, columnName
     """
 
