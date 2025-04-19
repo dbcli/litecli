@@ -7,10 +7,8 @@ import pytest
 from utils import run, dbtest, set_expanded_output, is_expanded_output, assert_result_equal
 
 try:
-    import sqlean as sqlite3
     from sqlean import OperationalError, ProgrammingError
 except ImportError:
-    import sqlite3
     from sqlite3 import OperationalError, ProgrammingError
 
 

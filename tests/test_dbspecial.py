@@ -4,11 +4,6 @@ from utils import assert_result_equal, dbtest, run
 from litecli.packages.completion_engine import suggest_type
 from litecli.packages.special.utils import check_if_sqlitedotcommand, format_uptime
 
-try:
-    import sqlean as sqlite3
-except ImportError:
-    import sqlite3
-
 
 def test_import_first_argument():
     test_cases = [
