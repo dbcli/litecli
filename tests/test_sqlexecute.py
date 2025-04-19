@@ -44,33 +44,14 @@ def test_binary(executor):
 
 
 @dbtest
-def test_table_and_columns_query_w_sqlean(executor):
+def test_table_and_columns_query(executor):
     run(executor, "create table a(x text, y text)")
     run(executor, "create table b(z text)")
     run(executor, "create table t(t text)")
 
-    if "sqlean" in sqlite3.__file__:
-        assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
-        assert set(executor.table_columns()) == set(
-            [
-                ("a", "x"),
-                ("a", "y"),
-                ("b", "z"),
-                ("t", "t"),
-            ]
-        )
-        assert set(executor.table_columns()) == set(
-            [
-                ("a", "x"),
-                ("a", "y"),
-                ("b", "z"),
-                ("t", "t"),
-            ]
-        )
-    else:
-        assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
-        assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
-        assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
+    assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
+    assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
+    assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
 
 
 @dbtest
