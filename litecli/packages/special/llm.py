@@ -308,7 +308,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
     """
     tables_query = """
             SELECT name FROM sqlite_master
-            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
+            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_define'
             ORDER BY 1
     """
     click.echo("Preparing schema information to feed the llm")

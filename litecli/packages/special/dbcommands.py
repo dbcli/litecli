@@ -27,14 +27,14 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
         args = ("{0}%".format(arg),)
         query = """
             SELECT name FROM sqlite_master
-            WHERE type IN ('table','view') AND name LIKE ? AND name NOT LIKE 'sqlite_%'
+            WHERE type IN ('table','view') AND name LIKE ? AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_define'
             ORDER BY 1
         """
     else:
         args = tuple()
         query = """
             SELECT name FROM sqlite_master
-            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
+            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_define'
             ORDER BY 1
         """
 
@@ -69,14 +69,14 @@ def list_views(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
         args = ("{0}%".format(arg),)
         query = """
             SELECT name FROM sqlite_master
-            WHERE type = 'view' AND name LIKE ? AND name NOT LIKE 'sqlite_%'
+            WHERE type = 'view' AND name LIKE ? AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_define'
             ORDER BY 1
         """
     else:
         args = tuple()
         query = """
             SELECT name FROM sqlite_master
-            WHERE type = 'view' AND name NOT LIKE 'sqlite_%'
+            WHERE type = 'view' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_define'
             ORDER BY 1
         """
     log.debug(query)
