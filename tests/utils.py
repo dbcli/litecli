@@ -6,9 +6,12 @@ import signal
 import platform
 import multiprocessing
 from contextlib import closing
-
-import sqlite3
 import pytest
+
+try:
+    import sqlean as sqlite3
+except ImportError:
+    import sqlite3
 
 from litecli.main import special
 

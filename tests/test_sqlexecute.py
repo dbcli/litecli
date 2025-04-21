@@ -5,7 +5,11 @@ import os
 import pytest
 
 from utils import run, dbtest, set_expanded_output, is_expanded_output, assert_result_equal
-from sqlite3 import OperationalError, ProgrammingError
+
+try:
+    from sqlean import OperationalError, ProgrammingError
+except ImportError:
+    from sqlite3 import OperationalError, ProgrammingError
 
 
 @dbtest
@@ -37,7 +41,6 @@ def test_binary(executor):
     assert_result_equal(results, headers=["blb"], rows=[(expected,)])
 
 
-## Failing in Travis for some unknown reason.
 @dbtest
 def test_table_and_columns_query(executor):
     run(executor, "create table a(x text, y text)")
@@ -252,7 +255,7 @@ def test_favorite_query_multiple_statement(executor):
 
     results = run(
         executor,
-        "\\fs test-ad select * from test where a like 'a%'; " "select * from test where a like 'd%'",
+        "\\fs test-ad select * from test where a like 'a%'; select * from test where a like 'd%'",
     )
     assert_result_equal(results, status="Saved.")
 

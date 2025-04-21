@@ -33,6 +33,7 @@ litecli = "litecli.main:cli"
 
 [project.optional-dependencies]
 ai = ["llm"]
+sqlean = ["sqlean-py>=3.47.0"]
 
 dev = [
     "behave>=1.2.6",

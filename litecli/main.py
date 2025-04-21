@@ -11,7 +11,11 @@ import traceback
 from collections import namedtuple
 from datetime import datetime
 from io import open
-from sqlite3 import OperationalError, sqlite_version
+
+try:
+    from sqlean import OperationalError, sqlite_version
+except ImportError:
+    from sqlite3 import OperationalError, sqlite_version
 from time import time
 
 import click
@@ -260,7 +264,7 @@ class LiteCli(object):
             )
             return
 
-        formatter = logging.Formatter("%(asctime)s (%(process)d/%(threadName)s) " "%(name)s %(levelname)s - %(message)s")
+        formatter = logging.Formatter("%(asctime)s (%(process)d/%(threadName)s) %(name)s %(levelname)s - %(message)s")
 
         handler.setFormatter(formatter)
 
@@ -361,7 +365,7 @@ class LiteCli(object):
         else:
             history = None
             self.echo(
-                'Error: Unable to open the history file "{}". ' "Your query history will not be saved.".format(history_file),
+                'Error: Unable to open the history file "{}". Your query history will not be saved.'.format(history_file),
                 err=True,
                 fg="red",
             )
@@ -452,7 +456,7 @@ class LiteCli(object):
                         if context:
                             click.echo("LLM Reponse:")
                             click.echo(context)
-                            click.echo('---')
+                            click.echo("---")
                         click.echo(f"Time: {duration:.2f} seconds")
                         text = self.prompt_app.prompt(default=sql)
                     except KeyboardInterrupt:
@@ -927,7 +931,7 @@ def cli(
 
     litecli.connect(database)
 
-    litecli.logger.debug("Launch Params: \n" "\tdatabase: %r", database)
+    litecli.logger.debug("Launch Params: \n\tdatabase: %r", database)
 
     #  --execute argument
     if execute:

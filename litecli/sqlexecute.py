@@ -1,7 +1,15 @@
 import logging
-import sqlite3
+
 from contextlib import closing
-from sqlite3 import OperationalError
+
+try:
+    import sqlean as sqlite3
+    from sqlean import OperationalError
+
+    sqlite3.extensions.enable_all()
+except ImportError:
+    import sqlite3
+    from sqlite3 import OperationalError
 from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
@@ -25,7 +33,7 @@ class SQLExecute(object):
     tables_query = """
         SELECT name
         FROM sqlite_master
-        WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
+        WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_%'
         ORDER BY 1
     """
 
@@ -33,7 +41,7 @@ class SQLExecute(object):
         SELECT m.name as tableName, p.name as columnName
         FROM sqlite_master m
         JOIN pragma_table_info((m.name)) p
-        WHERE m.type IN ('table','view') AND m.name NOT LIKE 'sqlite_%'
+        WHERE m.type IN ('table','view') AND m.name NOT LIKE 'sqlite_%' AND m.name NOT LIKE 'sqlean_%'
         ORDER BY tableName, columnName
     """
 
@@ -58,7 +66,7 @@ class SQLExecute(object):
 
     def connect(self, database=None):
         db = database or self.dbname
-        _logger.debug("Connection DB Params: \n" "\tdatabase: %r", db)
+        _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
 
         db_name = os.path.expanduser(db)
         db_dir_name = os.path.dirname(os.path.abspath(db_name))

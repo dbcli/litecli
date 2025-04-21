@@ -194,6 +194,7 @@ def ensure_litecli_template(replace=False):
     run_external_cmd("llm", PROMPT, "--save", "litecli")
     return
 
+
 @export
 def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     """This function handles the special command `\\llm`.
@@ -307,7 +308,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
     """
     tables_query = """
             SELECT name FROM sqlite_master
-            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%'
+            WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_%'
             ORDER BY 1
     """
     click.echo("Preparing schema information to feed the llm")

@@ -1,8 +1,8 @@
-from litecli.packages.completion_engine import suggest_type
 from test_completion_engine import sorted_dicts
-from litecli.packages.special.utils import format_uptime
-from litecli.packages.special.utils import check_if_sqlitedotcommand
-from utils import run, dbtest, assert_result_equal
+from utils import assert_result_equal, dbtest, run
+
+from litecli.packages.completion_engine import suggest_type
+from litecli.packages.special.utils import check_if_sqlitedotcommand, format_uptime
 
 
 def test_import_first_argument():
