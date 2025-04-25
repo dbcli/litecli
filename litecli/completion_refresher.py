@@ -42,7 +42,7 @@ class CompletionRefresher(object):
                     args=(executor, callbacks, completer_options),
                     name="completion_refresh",
                 )
-                self._completer_thread.setDaemon(True)
+                self._completer_thread.daemon = True
                 self._completer_thread.start()
                 return [
                     (
