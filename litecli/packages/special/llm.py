@@ -28,8 +28,10 @@ from .main import parse_special_command
 
 log = logging.getLogger(__name__)
 
+LLM_TEMPLATE_NAME = "litecli-llm-template"
 
-def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True):
+
+def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True) -> Tuple[int, str]:
     original_exe = sys.executable
     original_args = sys.argv
 
@@ -55,6 +57,13 @@ def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_
                         raise RuntimeError(buffer.getvalue())
                     else:
                         raise RuntimeError(f"Command {cmd} failed with exit code {code}.")
+            except Exception as e:
+                code = 1
+                if raise_exception:
+                    if capture_output:
+                        raise RuntimeError(buffer.getvalue())
+                    else:
+                        raise RuntimeError(f"Command {cmd} failed: {e}")
 
         if restart_cli and code == 0:
             os.execv(original_exe, [original_exe] + original_args)
@@ -171,6 +180,9 @@ Finally include a sql query in a code fence such as this one:
 ```sql
 SELECT count(*) FROM table_name;
 ```
+
+If the question cannot be answered based on the database schema respond with "I
+cannot answer that question" in a sql code fence.
 """
 
 
@@ -187,11 +199,11 @@ def ensure_litecli_template(replace=False):
     """
     if not replace:
         # Check if it already exists.
-        code, _ = run_external_cmd("llm", "templates", "show", "litecli", capture_output=True, raise_exception=False)
+        code, _ = run_external_cmd("llm", "templates", "show", LLM_TEMPLATE_NAME, capture_output=True, raise_exception=False)
         if code == 0:  # Template already exists. No need to create it.
             return
 
-    run_external_cmd("llm", PROMPT, "--save", "litecli")
+    run_external_cmd("llm", PROMPT, "--save", LLM_TEMPLATE_NAME)
     return
 
 
@@ -205,7 +217,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     FinishIteration() which will be caught by the main loop AND print any
     output that was supplied (or None).
     """
-    _, verbose, arg = parse_special_command(text)
+    _, nocontenxt, arg = parse_special_command(text)
 
     # LLM is not installed.
     if llm is None:
@@ -268,7 +280,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
                 output = [(None, None, None, result)]
                 raise FinishIteration(output)
 
-            return result if verbose else "", sql, end - start
+            return ("" if nocontenxt else result), sql, end - start
         else:
             run_external_cmd("llm", *args, restart_cli=restart)
             raise FinishIteration(None)
@@ -278,9 +290,9 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
         # Measure end to end llm command invocation.
         # This measures the internal DB command to pull the schema and llm command
         start = time()
-        context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
+        context, sql = sql_using_llm(cur=cur, question=arg)
         end = time()
-        if not verbose:
+        if nocontenxt:
             context = ""
         return context, sql, end - start
     except Exception as e:
@@ -298,7 +310,7 @@ def is_llm_command(command) -> bool:
 
 
 @export
-def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]]:
+def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
     if cur is None:
         raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """
@@ -331,7 +343,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
 
     args = [
         "--template",
-        "litecli",
+        LLM_TEMPLATE_NAME,
         "--param",
         "db_schema",
         db_schema,
