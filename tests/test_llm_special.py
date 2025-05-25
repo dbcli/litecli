@@ -61,11 +61,8 @@ def test_llm_command_with_c_flag_and_fenced_sql(mock_run_cmd, mock_llm, executor
 
     result, sql, duration = handle_llm(test_text, executor)
 
-    # We expect the function to return (result, sql), but result might be "" if verbose is not set
-    # By default, `verbose` is false unless text has something like \llm --verbose?
-    # The function code: return result if verbose else "", sql
-    # Our test_text doesn't set verbose => we expect "" for the returned context.
-    assert result == ""
+    # In regular mode, context is returned
+    assert result == return_text
     assert sql == "SELECT * FROM table;"
     assert isinstance(duration, float)
 
@@ -133,7 +130,7 @@ def test_llm_command_with_prompt(mock_sql_using_llm, mock_ensure_template, mock_
     Should use context, capture output, and call sql_using_llm.
     """
     # Mock out the return from sql_using_llm
-    mock_sql_using_llm.return_value = ("context from LLM", "SELECT 1;")
+    mock_sql_using_llm.return_value = ("context from LLM", "SELECT 1;", None)
 
     test_text = r"\llm prompt 'Magic happening here?'"
     context, sql, duration = handle_llm(test_text, executor)
@@ -144,7 +141,7 @@ def test_llm_command_with_prompt(mock_sql_using_llm, mock_ensure_template, mock_
     # Actually, the question is the entire "prompt 'Magic happening here?'" minus the \llm
     # But in the function we do parse shlex.split.
     mock_sql_using_llm.assert_called()
-    assert context == ""
+    assert context == "context from LLM"
     assert sql == "SELECT 1;"
     assert isinstance(duration, float)
 
@@ -156,14 +153,14 @@ def test_llm_command_question_with_context(mock_sql_using_llm, mock_ensure_templ
     """
     If arg doesn't contain any known command, it's treated as a question => capture output + context.
     """
-    mock_sql_using_llm.return_value = ("You have context!", "SELECT 2;")
+    mock_sql_using_llm.return_value = ("You have context!", "SELECT 2;", None)
 
     test_text = r"\llm 'Top 10 downloads by size.'"
     context, sql, duration = handle_llm(test_text, executor)
 
     mock_ensure_template.assert_called_once()
     mock_sql_using_llm.assert_called()
-    assert context == ""
+    assert context == "You have context!"
     assert sql == "SELECT 2;"
     assert isinstance(duration, float)
 
@@ -175,7 +172,7 @@ def test_llm_command_question_verbose(mock_sql_using_llm, mock_ensure_template, 
     r"""
     Invoking \llm+ returns the context and the SQL query.
     """
-    mock_sql_using_llm.return_value = ("Verbose context, oh yeah!", "SELECT 42;")
+    mock_sql_using_llm.return_value = ("Verbose context, oh yeah!", "SELECT 42;", None)
 
     test_text = r"\llm+ 'Top 10 downloads by size.'"
     context, sql, duration = handle_llm(test_text, executor)
