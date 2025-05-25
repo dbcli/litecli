@@ -37,7 +37,7 @@ class CommandNotFound(Exception):
     pass
 
 
-class CommandMode(Enum):
+class Verbosity(Enum):
     """Mode for special command invocation: regular, verbose (+), or succinct (-)."""
 
     REGULAR = "regular"
@@ -57,11 +57,11 @@ def parse_special_command(sql):
     # strip out any + or - modifiers to get the actual command name
     command = raw.strip().rstrip("+-")
     if is_verbose:
-        mode = CommandMode.VERBOSE
+        mode = Verbosity.VERBOSE
     elif is_succinct:
-        mode = CommandMode.SUCCINCT
+        mode = Verbosity.SUCCINCT
     else:
-        mode = CommandMode.REGULAR
+        mode = Verbosity.REGULAR
     return (command, mode, arg.strip())
 
 
@@ -137,7 +137,7 @@ def execute(cur, sql):
     if special_cmd.arg_type == NO_QUERY:
         return special_cmd.handler()
     elif special_cmd.arg_type == PARSED_QUERY:
-        return special_cmd.handler(cur=cur, arg=arg, verbose=(mode is CommandMode.VERBOSE))
+        return special_cmd.handler(cur=cur, arg=arg, verbose=(mode is Verbosity.VERBOSE))
     elif special_cmd.arg_type == RAW_QUERY:
         return special_cmd.handler(cur=cur, query=sql)
 
