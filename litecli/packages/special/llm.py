@@ -284,8 +284,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
                 output = [(None, None, None, result)]
                 raise FinishIteration(output)
 
-            # In succinct mode without verbose, suppress context
-            context = "" if (is_succinct and not is_verbose) else result
+            context = "" if is_succinct else result
             return context, sql, end - start
         else:
             run_external_cmd("llm", *args, restart_cli=restart)
@@ -295,18 +294,12 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
         ensure_litecli_template()
         # Measure end-to-end LLM command invocation (schema gathering and LLM call)
         start = time()
-        if is_verbose:
-            context, sql, prompt = sql_using_llm(cur=cur, question=arg, verbose=True)
-        else:
-            context, sql, _ = sql_using_llm(cur=cur, question=arg)
+        result, sql, prompt_text = sql_using_llm(cur=cur, question=arg, verbose=is_verbose)
         end = time()
-        # Suppress context in succinct mode (unless verbose)
-        if is_succinct and not is_verbose:
-            context = ""
-        # In verbose mode, show the prompt sent to the LLM
-        if is_verbose:
+        context = "" if is_succinct else result
+        if is_verbose and prompt_text is not None:
             click.echo("LLM Prompt:")
-            click.echo(prompt)
+            click.echo(prompt_text)
             click.echo("---")
         return context, sql, end - start
     except Exception as e:
