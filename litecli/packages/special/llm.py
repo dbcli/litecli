@@ -10,6 +10,7 @@ from typing import Optional, Tuple
 from time import time
 
 import click
+import pprint
 
 try:
     import llm
@@ -24,7 +25,7 @@ except ImportError:
     MODELS = {}
 
 from . import export
-from .main import parse_special_command
+from .main import parse_special_command, CommandMode
 
 log = logging.getLogger(__name__)
 
@@ -217,7 +218,10 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     FinishIteration() which will be caught by the main loop AND print any
     output that was supplied (or None).
     """
-    _, nocontenxt, arg = parse_special_command(text)
+    # Determine invocation mode: regular, verbose (+), or succinct (-)
+    _, mode, arg = parse_special_command(text)
+    is_verbose = mode is CommandMode.VERBOSE
+    is_succinct = mode is CommandMode.SUCCINCT
 
     # LLM is not installed.
     if llm is None:
@@ -280,20 +284,30 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
                 output = [(None, None, None, result)]
                 raise FinishIteration(output)
 
-            return ("" if nocontenxt else result), sql, end - start
+            # In succinct mode without verbose, suppress context
+            context = "" if (is_succinct and not is_verbose) else result
+            return context, sql, end - start
         else:
             run_external_cmd("llm", *args, restart_cli=restart)
             raise FinishIteration(None)
 
     try:
         ensure_litecli_template()
-        # Measure end to end llm command invocation.
-        # This measures the internal DB command to pull the schema and llm command
+        # Measure end-to-end LLM command invocation (schema gathering and LLM call)
         start = time()
-        context, sql = sql_using_llm(cur=cur, question=arg)
+        if is_verbose:
+            context, sql, prompt = sql_using_llm(cur=cur, question=arg, verbose=True)
+        else:
+            context, sql, _ = sql_using_llm(cur=cur, question=arg)
         end = time()
-        if nocontenxt:
+        # Suppress context in succinct mode (unless verbose)
+        if is_succinct and not is_verbose:
             context = ""
+        # In verbose mode, show the prompt sent to the LLM
+        if is_verbose:
+            click.echo("LLM Prompt:")
+            click.echo(prompt)
+            click.echo("---")
         return context, sql, end - start
     except Exception as e:
         # Something went wrong. Raise an exception and bail.
@@ -305,12 +319,12 @@ def is_llm_command(command) -> bool:
     """
     Is this an llm/ai command?
     """
-    cmd, _, _ = parse_special_command(command)
+    cmd, mode, arg = parse_special_command(command)
     return cmd in ("\\llm", "\\ai", ".llm", ".ai")
 
 
 @export
-def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
+def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str], Optional[str]]:
     if cur is None:
         raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """
@@ -359,9 +373,16 @@ def sql_using_llm(cur, question=None) -> Tuple[str, Optional[str]]:
     _, result = run_external_cmd("llm", *args, capture_output=True)
     click.echo("Received response from the llm command")
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
-    if match:
-        sql = match.group(1).strip()
-    else:
-        sql = ""
+    sql = match.group(1).strip() if match else ""
 
-    return result, sql
+    # When verbose, build and return the rendered prompt text
+    prompt_text = None
+    if verbose:
+        # Render the prompt by substituting schema, sample_data, and question
+        prompt_text = PROMPT
+        prompt_text = prompt_text.replace("$db_schema", db_schema)
+        prompt_text = prompt_text.replace("$sample_data", pprint.pformat(sample_data))
+        prompt_text = prompt_text.replace("$question", question or "")
+    if verbose:
+        return result, sql, prompt_text
+    return result, sql, None

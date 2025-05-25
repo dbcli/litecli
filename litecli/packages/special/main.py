@@ -3,6 +3,7 @@ import logging
 from collections import namedtuple
 
 from . import export
+from enum import Enum
 
 log = logging.getLogger(__name__)
 
@@ -36,12 +37,32 @@ class CommandNotFound(Exception):
     pass
 
 
+class CommandMode(Enum):
+    """Mode for special command invocation: regular, verbose (+), or succinct (-)."""
+
+    REGULAR = "regular"
+    VERBOSE = "verbose"
+    SUCCINCT = "succinct"
+
+
 @export
 def parse_special_command(sql):
-    command, _, arg = sql.partition(" ")
-    verbose = "+" in command
-    command = command.strip().replace("+", "")
-    return (command, verbose, arg.strip())
+    """
+    Parse a special command prefix, extracting the base command name,
+    an invocation mode (regular, verbose, or succinct), and the argument.
+    """
+    raw, _, arg = sql.partition(" ")
+    is_verbose = raw.endswith("+")
+    is_succinct = raw.endswith("-")
+    # strip out any + or - modifiers to get the actual command name
+    command = raw.strip().rstrip("+-")
+    if is_verbose:
+        mode = CommandMode.VERBOSE
+    elif is_succinct:
+        mode = CommandMode.SUCCINCT
+    else:
+        mode = CommandMode.REGULAR
+    return (command, mode, arg.strip())
 
 
 @export
@@ -101,7 +122,7 @@ def execute(cur, sql):
     """Execute a special command and return the results. If the special command
     is not supported a KeyError will be raised.
     """
-    command, verbose, arg = parse_special_command(sql)
+    command, mode, arg = parse_special_command(sql)
 
     if (command not in COMMANDS) and (command.lower() not in COMMANDS):
         raise CommandNotFound
@@ -116,7 +137,7 @@ def execute(cur, sql):
     if special_cmd.arg_type == NO_QUERY:
         return special_cmd.handler()
     elif special_cmd.arg_type == PARSED_QUERY:
-        return special_cmd.handler(cur=cur, arg=arg, verbose=verbose)
+        return special_cmd.handler(cur=cur, arg=arg, verbose=(mode is CommandMode.VERBOSE))
     elif special_cmd.arg_type == RAW_QUERY:
         return special_cmd.handler(cur=cur, query=sql)
 
