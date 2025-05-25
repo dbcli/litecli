@@ -25,7 +25,7 @@ except ImportError:
     MODELS = {}
 
 from . import export
-from .main import parse_special_command, CommandMode
+from .main import parse_special_command, Verbosity
 
 log = logging.getLogger(__name__)
 
@@ -220,8 +220,8 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     """
     # Determine invocation mode: regular, verbose (+), or succinct (-)
     _, mode, arg = parse_special_command(text)
-    is_verbose = mode is CommandMode.VERBOSE
-    is_succinct = mode is CommandMode.SUCCINCT
+    is_verbose = mode is Verbosity.VERBOSE
+    is_succinct = mode is Verbosity.SUCCINCT
 
     # LLM is not installed.
     if llm is None:
