@@ -4,6 +4,12 @@
 
 * Replace sqlite3 library with [sqlean](https://antonz.org/sqlean/). It's a drop-in replacement for sqlite3.
 * Add support for `.output` to write the results to a file.
+* The 'llm' library is now a default dependency not installed on demand.
+* The `\llm` command now has three modes. Succinct, Regular and Verbose.
+
+  Succinct = `\llm-` - This will return just the sql query. No explanation.
+  Regular = `\llm` - This will return just the sql query and the explanation.
+  Verbose = `\llm+` - This will print the prompt sent to the LLM and the sql query and the explanation.
 
 ### Bug Fixes
 
