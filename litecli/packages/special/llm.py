@@ -2,34 +2,26 @@ import contextlib
 import io
 import logging
 import os
+import pprint
 import re
 import shlex
 import sys
 from runpy import run_module
-from typing import Optional, Tuple
 from time import time
+from typing import Optional, Tuple
 
 import click
-import pprint
-
-try:
-    import llm
-    from llm.cli import cli
-
-    LLM_CLI_COMMANDS = list(cli.commands.keys())
-    MODELS = {x.model_id: None for x in llm.get_models()}
-except ImportError:
-    llm = None
-    cli = None
-    LLM_CLI_COMMANDS = []
-    MODELS = {}
+import llm
+from llm.cli import cli
 
 from . import export
-from .main import parse_special_command, Verbosity
+from .main import Verbosity, parse_special_command
 
 log = logging.getLogger(__name__)
 
 LLM_TEMPLATE_NAME = "litecli-llm-template"
+LLM_CLI_COMMANDS = list(cli.commands.keys())
+MODELS = {x.model_id: None for x in llm.get_models()}
 
 
 def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True) -> Tuple[int, str]:
@@ -187,13 +179,6 @@ cannot answer that question" in a sql code fence.
 """
 
 
-def initialize_llm():
-    # Initialize the LLM library.
-    if click.confirm("This feature requires additional libraries. Install LLM library?", default=True):
-        click.echo("Installing LLM library. Please wait...")
-        run_external_cmd("pip", "install", "--quiet", "llm", restart_cli=True)
-
-
 def ensure_litecli_template(replace=False):
     """
     Create a template called litecli with the default prompt.
@@ -222,11 +207,6 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     _, mode, arg = parse_special_command(text)
     is_verbose = mode is Verbosity.VERBOSE
     is_succinct = mode is Verbosity.SUCCINCT
-
-    # LLM is not installed.
-    if llm is None:
-        initialize_llm()
-        raise FinishIteration(None)
 
     if not arg.strip():  # No question provided. Print usage and bail.
         output = [(None, None, None, USAGE)]
