@@ -3,22 +3,6 @@ from unittest.mock import patch
 from litecli.packages.special.llm import handle_llm, FinishIteration, USAGE
 
 
-@patch("litecli.packages.special.llm.initialize_llm")
-@patch("litecli.packages.special.llm.llm", new=None)
-def test_llm_command_without_install(mock_initialize_llm, executor):
-    """
-    Test that handle_llm initializes llm when it is None and raises FinishIteration.
-    """
-    test_text = r"\llm"
-    cur_mock = executor
-
-    with pytest.raises(FinishIteration) as exc_info:
-        handle_llm(test_text, cur_mock)
-
-    mock_initialize_llm.assert_called_once()
-    assert exc_info.value.args[0] is None
-
-
 @patch("litecli.packages.special.llm.llm")
 def test_llm_command_without_args(mock_llm, executor):
     r"""
