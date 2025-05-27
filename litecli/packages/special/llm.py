@@ -292,7 +292,7 @@ def is_llm_command(command) -> bool:
     """
     Is this an llm/ai command?
     """
-    cmd, mode, arg = parse_special_command(command)
+    cmd, _, _ = parse_special_command(command)
     return cmd in ("\\llm", "\\ai", ".llm", ".ai")
 
 
