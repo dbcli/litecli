@@ -3,6 +3,7 @@
 ### Features
 
 * Replace sqlite3 library with [sqlean](https://antonz.org/sqlean/). It's a drop-in replacement for sqlite3.
+* Add support for `.output` to write the results to a file.
 
 ### Bug Fixes
 
