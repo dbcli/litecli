@@ -334,9 +334,10 @@ def parseargfile(arg):
 
 
 @special_command(
-    "tee",
-    "tee [-o] filename",
+    ".output",
+    ".output [-o] filename",
     "Append all results to an output file (overwrite using -o).",
+    aliases=("tee",),
 )
 def set_tee(arg, **_):
     global tee_file
@@ -408,7 +409,12 @@ def unset_once_if_written():
         once_file = written_to_once_file = None
 
 
-@special_command("\\pipe_once", "\\| command", "Send next result to a subprocess.", aliases=("\\|",))
+@special_command(
+    "\\pipe_once",
+    "\\| command",
+    "Send next result to a subprocess.",
+    aliases=("\\|",),
+)
 def set_pipe_once(arg, **_):
     global pipe_once_process, written_to_pipe_once_process
     pipe_once_cmd = shlex.split(arg)
