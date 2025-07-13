@@ -4,6 +4,7 @@ import tempfile
 import pytest
 
 import litecli.packages.special
+from litecli.packages.special.main import parse_special_command, Verbosity
 
 
 def test_once_command():
@@ -57,3 +58,32 @@ def test_pipe_once_command():
             litecli.packages.special.unset_pipe_once_if_written()
             f.seek(0)
             assert f.read() == b"hello world\n"
+
+
+@pytest.mark.parametrize(
+    "sql,expected",
+    [
+        (r"\d table_name", ("\\d", Verbosity.REGULAR, "table_name")),
+        (r"\d+ table_name", ("\\d", Verbosity.VERBOSE, "table_name")),
+        (r"\?", ("\\?", Verbosity.REGULAR, "")),
+        (r"\llm Question", ("\\llm", Verbosity.REGULAR, "Question")),
+        (r"\llm-", ("\\llm", Verbosity.SUCCINCT, "")),
+        (r"\llm+", ("\\llm", Verbosity.VERBOSE, "")),
+    ],
+)
+def test_parse_special_command(sql, expected):
+    """
+    Ensure parse_special_command correctly splits the command and mode.
+    """
+    result = parse_special_command(sql)
+    assert result == expected
+
+
+def test_parse_special_command_error():
+    sql = r"\llm* Question"
+    with pytest.raises(ValueError):
+        parse_special_command(sql)
+
+    sql = r"\llm+- Question"
+    with pytest.raises(ValueError):
+        parse_special_command(sql)

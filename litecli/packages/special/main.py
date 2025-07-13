@@ -52,17 +52,30 @@ def parse_special_command(sql):
     an invocation mode (regular, verbose, or succinct), and the argument.
     """
     raw, _, arg = sql.partition(" ")
-    is_verbose = raw.endswith("+")
-    is_succinct = raw.endswith("-")
-    # strip out any + or - modifiers to get the actual command name
-    command = raw.strip().rstrip("+-")
-    if is_verbose:
-        mode = Verbosity.VERBOSE
-    elif is_succinct:
-        mode = Verbosity.SUCCINCT
+    raw = raw.strip()
+
+    suffix_count = 0
+    idx = len(raw) - 1
+    while idx >= 0 and raw[idx] in "+-":
+        suffix_count += 1
+        idx -= 1
+    if suffix_count > 1:
+        raise ValueError("Invalid special command: %s" % raw)
+
+    if suffix_count == 1:
+        suffix = raw[-1]
+        base_cmd = raw[:-1]
+        mode = Verbosity.VERBOSE if suffix == "+" else Verbosity.SUCCINCT
     else:
+        suffix = None
+        base_cmd = raw
         mode = Verbosity.REGULAR
-    return (command, mode, arg.strip())
+
+    last_char = base_cmd[-1] if base_cmd else None
+    if suffix is None and last_char and not (last_char.isalnum() or last_char in "?."):
+        raise ValueError("Invalid special command: %s" % raw)
+
+    return (base_cmd, mode, arg.strip())
 
 
 @export

@@ -155,27 +155,32 @@ llm-ollama installed.
 """
 
 _SQL_CODE_FENCE = r"```sql\n(.*?)\n```"
-PROMPT = """A SQLite database has the following schema:
+PROMPT = """
+You are a helpful assistant who is a SQLite expert. You are embedded in a SQLite
+cli tool called litecli.
 
-$db_schema
-
-Here is a sample row of data from each table: $sample_data
-
-Use the provided schema and the sample data to construct a SQL query that
-can be run in SQLite3 to answer
+Answer this question:
 
 $question
 
-Explain the reason for choosing each table in the SQL query you have
-written. Keep the explanation concise.
-Finally include a sql query in a code fence such as this one:
+Use the following context if it is relevant to answering the question. If the
+question is not about the current database then ignore the context.
+
+You are connected to a SQLite database with the following schema:
+
+$db_schema
+
+Here is a sample row of data from each table:
+
+$sample_data
+
+If the answer can be found using a SQL query, include a sql query in a code
+fence such as this one:
 
 ```sql
 SELECT count(*) FROM table_name;
 ```
-
-If the question cannot be answered based on the database schema respond with "I
-cannot answer that question" in a sql code fence.
+Keep your explanation concise and focused on the question asked.
 """
 
 
