@@ -1,8 +1,8 @@
-## TBD
+## 1.16.0 - 2025-08-16
 
 ### Features
 
-* Replace sqlite3 library with [sqlean](https://antonz.org/sqlean/). It's a drop-in replacement for sqlite3.
+* Use [sqlean](https://antonz.org/sqlean/) when available. It's a drop-in replacement for sqlite3.
 * Add support for `.output` to write the results to a file.
 * The 'llm' library is now a default dependency not installed on demand.
 * The `\llm` command now has three modes. Succinct, Regular and Verbose.
