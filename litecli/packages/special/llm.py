@@ -2,34 +2,29 @@ import contextlib
 import io
 import logging
 import os
+import pprint
 import re
 import shlex
 import sys
 from runpy import run_module
-from typing import Optional, Tuple
 from time import time
+from typing import Optional, Tuple
 
 import click
-
-try:
-    import llm
-    from llm.cli import cli
-
-    LLM_CLI_COMMANDS = list(cli.commands.keys())
-    MODELS = {x.model_id: None for x in llm.get_models()}
-except ImportError:
-    llm = None
-    cli = None
-    LLM_CLI_COMMANDS = []
-    MODELS = {}
+import llm
+from llm.cli import cli
 
 from . import export
-from .main import parse_special_command
+from .main import Verbosity, parse_special_command
 
 log = logging.getLogger(__name__)
 
+LLM_TEMPLATE_NAME = "litecli-llm-template"
+LLM_CLI_COMMANDS = list(cli.commands.keys())
+MODELS = {x.model_id: None for x in llm.get_models()}
 
-def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True):
+
+def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True) -> Tuple[int, str]:
     original_exe = sys.executable
     original_args = sys.argv
 
@@ -55,6 +50,13 @@ def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_
                         raise RuntimeError(buffer.getvalue())
                     else:
                         raise RuntimeError(f"Command {cmd} failed with exit code {code}.")
+            except Exception as e:
+                code = 1
+                if raise_exception:
+                    if capture_output:
+                        raise RuntimeError(buffer.getvalue())
+                    else:
+                        raise RuntimeError(f"Command {cmd} failed: {e}")
 
         if restart_cli and code == 0:
             os.execv(original_exe, [original_exe] + original_args)
@@ -153,32 +155,33 @@ llm-ollama installed.
 """
 
 _SQL_CODE_FENCE = r"```sql\n(.*?)\n```"
-PROMPT = """A SQLite database has the following schema:
+PROMPT = """
+You are a helpful assistant who is a SQLite expert. You are embedded in a SQLite
+cli tool called litecli.
 
-$db_schema
-
-Here is a sample row of data from each table: $sample_data
-
-Use the provided schema and the sample data to construct a SQL query that
-can be run in SQLite3 to answer
+Answer this question:
 
 $question
 
-Explain the reason for choosing each table in the SQL query you have
-written. Keep the explanation concise.
-Finally include a sql query in a code fence such as this one:
+Use the following context if it is relevant to answering the question. If the
+question is not about the current database then ignore the context.
+
+You are connected to a SQLite database with the following schema:
+
+$db_schema
+
+Here is a sample row of data from each table:
+
+$sample_data
+
+If the answer can be found using a SQL query, include a sql query in a code
+fence such as this one:
 
 ```sql
 SELECT count(*) FROM table_name;
 ```
+Keep your explanation concise and focused on the question asked.
 """
-
-
-def initialize_llm():
-    # Initialize the LLM library.
-    if click.confirm("This feature requires additional libraries. Install LLM library?", default=True):
-        click.echo("Installing LLM library. Please wait...")
-        run_external_cmd("pip", "install", "--quiet", "llm", restart_cli=True)
 
 
 def ensure_litecli_template(replace=False):
@@ -187,11 +190,11 @@ def ensure_litecli_template(replace=False):
     """
     if not replace:
         # Check if it already exists.
-        code, _ = run_external_cmd("llm", "templates", "show", "litecli", capture_output=True, raise_exception=False)
+        code, _ = run_external_cmd("llm", "templates", "show", LLM_TEMPLATE_NAME, capture_output=True, raise_exception=False)
         if code == 0:  # Template already exists. No need to create it.
             return
 
-    run_external_cmd("llm", PROMPT, "--save", "litecli")
+    run_external_cmd("llm", PROMPT, "--save", LLM_TEMPLATE_NAME)
     return
 
 
@@ -205,12 +208,10 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
     FinishIteration() which will be caught by the main loop AND print any
     output that was supplied (or None).
     """
-    _, verbose, arg = parse_special_command(text)
-
-    # LLM is not installed.
-    if llm is None:
-        initialize_llm()
-        raise FinishIteration(None)
+    # Determine invocation mode: regular, verbose (+), or succinct (-)
+    _, mode, arg = parse_special_command(text)
+    is_verbose = mode is Verbosity.VERBOSE
+    is_succinct = mode is Verbosity.SUCCINCT
 
     if not arg.strip():  # No question provided. Print usage and bail.
         output = [(None, None, None, USAGE)]
@@ -268,20 +269,23 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
                 output = [(None, None, None, result)]
                 raise FinishIteration(output)
 
-            return result if verbose else "", sql, end - start
+            context = "" if is_succinct else result
+            return context, sql, end - start
         else:
             run_external_cmd("llm", *args, restart_cli=restart)
             raise FinishIteration(None)
 
     try:
         ensure_litecli_template()
-        # Measure end to end llm command invocation.
-        # This measures the internal DB command to pull the schema and llm command
+        # Measure end-to-end LLM command invocation (schema gathering and LLM call)
         start = time()
-        context, sql = sql_using_llm(cur=cur, question=arg, verbose=verbose)
+        result, sql, prompt_text = sql_using_llm(cur=cur, question=arg, verbose=is_verbose)
         end = time()
-        if not verbose:
-            context = ""
+        context = "" if is_succinct else result
+        if is_verbose and prompt_text is not None:
+            click.echo("LLM Prompt:")
+            click.echo(prompt_text)
+            click.echo("---")
         return context, sql, end - start
     except Exception as e:
         # Something went wrong. Raise an exception and bail.
@@ -298,7 +302,7 @@ def is_llm_command(command) -> bool:
 
 
 @export
-def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]]:
+def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str], Optional[str]]:
     if cur is None:
         raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """
@@ -331,7 +335,7 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
 
     args = [
         "--template",
-        "litecli",
+        LLM_TEMPLATE_NAME,
         "--param",
         "db_schema",
         db_schema,
@@ -347,9 +351,16 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
     _, result = run_external_cmd("llm", *args, capture_output=True)
     click.echo("Received response from the llm command")
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
-    if match:
-        sql = match.group(1).strip()
-    else:
-        sql = ""
+    sql = match.group(1).strip() if match else ""
 
-    return result, sql
+    # When verbose, build and return the rendered prompt text
+    prompt_text = None
+    if verbose:
+        # Render the prompt by substituting schema, sample_data, and question
+        prompt_text = PROMPT
+        prompt_text = prompt_text.replace("$db_schema", db_schema)
+        prompt_text = prompt_text.replace("$sample_data", pprint.pformat(sample_data))
+        prompt_text = prompt_text.replace("$question", question or "")
+    if verbose:
+        return result, sql, prompt_text
+    return result, sql, None
