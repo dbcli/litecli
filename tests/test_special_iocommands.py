@@ -63,10 +63,10 @@ def test_pipe_once_command():
 @pytest.mark.parametrize(
     "sql,expected",
     [
-        (r"\d table_name", ("\\d", Verbosity.REGULAR, "table_name")),
+        (r"\d table_name", ("\\d", Verbosity.NORMAL, "table_name")),
         (r"\d+ table_name", ("\\d", Verbosity.VERBOSE, "table_name")),
-        (r"\?", ("\\?", Verbosity.REGULAR, "")),
-        (r"\llm Question", ("\\llm", Verbosity.REGULAR, "Question")),
+        (r"\?", ("\\?", Verbosity.NORMAL, "")),
+        (r"\llm Question", ("\\llm", Verbosity.NORMAL, "Question")),
         (r"\llm-", ("\\llm", Verbosity.SUCCINCT, "")),
         (r"\llm+", ("\\llm", Verbosity.VERBOSE, "")),
     ],
@@ -79,11 +79,11 @@ def test_parse_special_command(sql, expected):
     assert result == expected
 
 
-def test_parse_special_command_error():
+def test_parse_special_command_edge_cases():
+    # mycli-compatible behavior: no ValueError on special characters; it parses leniently.
     sql = r"\llm* Question"
-    with pytest.raises(ValueError):
-        parse_special_command(sql)
+    assert parse_special_command(sql) == ("\\llm*", Verbosity.NORMAL, "Question")
 
     sql = r"\llm+- Question"
-    with pytest.raises(ValueError):
-        parse_special_command(sql)
+    # '+' in command sets verbosity; strip('+-') removes both suffixes
+    assert parse_special_command(sql) == ("\\llm", Verbosity.VERBOSE, "Question")

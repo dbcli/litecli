@@ -38,44 +38,28 @@ class CommandNotFound(Exception):
 
 
 class Verbosity(Enum):
-    """Mode for special command invocation: regular, verbose (+), or succinct (-)."""
+    """Invocation verbosity: succinct (-), normal, or verbose (+)."""
 
-    REGULAR = "regular"
-    VERBOSE = "verbose"
     SUCCINCT = "succinct"
+    NORMAL = "normal"
+    VERBOSE = "verbose"
 
 
 @export
 def parse_special_command(sql):
     """
-    Parse a special command prefix, extracting the base command name,
-    an invocation mode (regular, verbose, or succinct), and the argument.
+    Parse a special command, extracting the base command name, verbosity
+    (normal, verbose (+), or succinct (-)), and the remaining argument.
+    Mirrors mycli's behavior.
     """
-    raw, _, arg = sql.partition(" ")
-    raw = raw.strip()
-
-    suffix_count = 0
-    idx = len(raw) - 1
-    while idx >= 0 and raw[idx] in "+-":
-        suffix_count += 1
-        idx -= 1
-    if suffix_count > 1:
-        raise ValueError("Invalid special command: %s" % raw)
-
-    if suffix_count == 1:
-        suffix = raw[-1]
-        base_cmd = raw[:-1]
-        mode = Verbosity.VERBOSE if suffix == "+" else Verbosity.SUCCINCT
-    else:
-        suffix = None
-        base_cmd = raw
-        mode = Verbosity.REGULAR
-
-    last_char = base_cmd[-1] if base_cmd else None
-    if suffix is None and last_char and not (last_char.isalnum() or last_char in "?."):
-        raise ValueError("Invalid special command: %s" % raw)
-
-    return (base_cmd, mode, arg.strip())
+    command, _, arg = sql.partition(" ")
+    verbosity = Verbosity.NORMAL
+    if "+" in command:
+        verbosity = Verbosity.VERBOSE
+    elif "-" in command:
+        verbosity = Verbosity.SUCCINCT
+    command = command.strip().strip("+-")
+    return (command, verbosity, arg.strip())
 
 
 @export
@@ -135,7 +119,7 @@ def execute(cur, sql):
     """Execute a special command and return the results. If the special command
     is not supported a KeyError will be raised.
     """
-    command, mode, arg = parse_special_command(sql)
+    command, verbosity, arg = parse_special_command(sql)
 
     if (command not in COMMANDS) and (command.lower() not in COMMANDS):
         raise CommandNotFound
@@ -150,7 +134,7 @@ def execute(cur, sql):
     if special_cmd.arg_type == NO_QUERY:
         return special_cmd.handler()
     elif special_cmd.arg_type == PARSED_QUERY:
-        return special_cmd.handler(cur=cur, arg=arg, verbose=(mode is Verbosity.VERBOSE))
+        return special_cmd.handler(cur=cur, arg=arg, verbose=(verbosity == Verbosity.VERBOSE))
     elif special_cmd.arg_type == RAW_QUERY:
         return special_cmd.handler(cur=cur, query=sql)
 
