@@ -10,7 +10,7 @@ import shlex
 import subprocess
 from io import open
 from time import sleep
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple, TextIO
 
 import click
 import sqlparse
@@ -24,10 +24,10 @@ from .utils import handle_cd_command
 
 use_expanded_output: bool = False
 PAGER_ENABLED: bool = True
-tee_file: Any = None
-once_file: Any = None
-written_to_once_file: Optional[bool] = None
-pipe_once_process: Any = None
+tee_file: Optional[TextIO] = None
+once_file: Optional[TextIO] = None
+written_to_once_file: bool = False
+pipe_once_process: Optional[subprocess.Popen[str]] = None
 written_to_pipe_once_process: bool = False
 favoritequeries: FavoriteQueries = FavoriteQueries(ConfigObj())
 

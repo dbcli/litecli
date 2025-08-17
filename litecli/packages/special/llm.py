@@ -16,7 +16,7 @@ import shlex
 import sys
 from runpy import run_module
 from time import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Protocol, Sequence
 
 import click
 import llm
@@ -219,7 +219,18 @@ def ensure_litecli_template(replace: bool = False) -> None:
 
 
 @export
-def handle_llm(text: str, cur: Any) -> Tuple[str, Optional[str], float]:
+class DBCursor(Protocol):
+    description: Optional[Sequence[Sequence[Any]]]
+
+    def execute(self, sql: str, params: Any = ...) -> Any: ...
+
+    def fetchall(self) -> List[Tuple[Any, ...]]: ...
+
+    def fetchone(self) -> Optional[Tuple[Any, ...]]: ...
+
+
+@export
+def handle_llm(text: str, cur: DBCursor) -> Tuple[str, Optional[str], float]:
     """This function handles the special command `\\llm`.
 
     If it deals with a question that results in a SQL query then it will return
@@ -323,7 +334,7 @@ def is_llm_command(command: str) -> bool:
 
 @export
 def sql_using_llm(
-    cur: Any,
+    cur: DBCursor,
     question: Optional[str] = None,
     verbose: bool = False,
 ) -> Tuple[str, Optional[str], Optional[str]]:

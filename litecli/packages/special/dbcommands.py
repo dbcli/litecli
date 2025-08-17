@@ -8,7 +8,7 @@ import os
 import sys
 import platform
 import shlex
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Protocol, Sequence
 
 
 from litecli import __version__
@@ -16,6 +16,16 @@ from litecli.packages.special import iocommands
 from .main import special_command, RAW_QUERY, PARSED_QUERY
 
 log = logging.getLogger(__name__)
+
+
+class DBCursor(Protocol):
+    description: Optional[Sequence[Sequence[Any]]]
+
+    def execute(self, sql: str, params: Any = ...) -> Any: ...
+
+    def fetchall(self) -> List[Tuple[Any, ...]]: ...
+
+    def fetchone(self) -> Optional[Tuple[Any, ...]]: ...
 
 
 @special_command(
@@ -27,7 +37,7 @@ log = logging.getLogger(__name__)
     aliases=("\\dt",),
 )
 def list_tables(
-    cur: Any,
+    cur: DBCursor,
     arg: Optional[str] = None,
     arg_type: int = PARSED_QUERY,
     verbose: bool = False,
@@ -74,7 +84,7 @@ def list_tables(
     aliases=("\\dv",),
 )
 def list_views(
-    cur: Any,
+    cur: DBCursor,
     arg: Optional[str] = None,
     arg_type: int = PARSED_QUERY,
     verbose: bool = False,
@@ -111,7 +121,7 @@ def list_views(
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def show_schema(cur: Any, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
+def show_schema(cur: DBCursor, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
     if arg:
         args = (arg,)
         query = """
@@ -147,7 +157,7 @@ def show_schema(cur: Any, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
     case_sensitive=True,
     aliases=("\\l",),
 )
-def list_databases(cur: Any, **_: Any) -> List[Tuple]:
+def list_databases(cur: DBCursor, **_: Any) -> List[Tuple]:
     query = "PRAGMA database_list"
     log.debug(query)
     cur.execute(query)
@@ -167,7 +177,7 @@ def list_databases(cur: Any, **_: Any) -> List[Tuple]:
     aliases=("\\di",),
 )
 def list_indexes(
-    cur: Any,
+    cur: DBCursor,
     arg: Optional[str] = None,
     arg_type: int = PARSED_QUERY,
     verbose: bool = False,
@@ -206,7 +216,7 @@ def list_indexes(
     aliases=("\\s",),
     case_sensitive=True,
 )
-def status(cur: Any, **_: Any) -> List[Tuple]:
+def status(cur: DBCursor, **_: Any) -> List[Tuple]:
     # Create output buffers.
     footer = []
     footer.append("--------------")
@@ -267,7 +277,7 @@ def load_extension(cur, arg, **_):
     case_sensitive=True,
     aliases=("\\d", "desc"),
 )
-def describe(cur: Any, arg: Optional[str], **_: Any) -> List[Tuple]:
+def describe(cur: DBCursor, arg: Optional[str], **_: Any) -> List[Tuple]:
     if arg:
         query = """
             PRAGMA table_info({})
@@ -294,7 +304,7 @@ def describe(cur: Any, arg: Optional[str], **_: Any) -> List[Tuple]:
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def import_file(cur: Any, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
+def import_file(cur: DBCursor, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
     def split(s):
         # this is a modification of shlex.split function, just to make it support '`',
         # because table name might contain '`' character.
