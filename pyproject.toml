@@ -11,6 +11,7 @@ dependencies = [
     "cli-helpers[styles]>=2.2.1",
     "click>=4.1",
     "configobj>=5.0.5",
+    "mypy>=1.17.1",
     "prompt-toolkit>=3.0.3,<4.0.0",
     "pygments>=1.6",
     "sqlparse>=0.4.4",
