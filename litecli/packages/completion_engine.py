@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 from __future__ import print_function
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where

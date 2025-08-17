@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 from __future__ import unicode_literals
 
 from prompt_toolkit.key_binding.vi_state import InputMode

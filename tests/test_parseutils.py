@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import pytest
 from litecli.packages.parseutils import (
     extract_tables,

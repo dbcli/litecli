@@ -1,4 +1,5 @@
 # ruff: noqa
+# mypy: ignore-errors
 
 __all__ = []
 

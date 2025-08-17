@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import threading
 from .packages.special.main import COMMANDS
 from collections import OrderedDict

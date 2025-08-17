@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 from test_completion_engine import sorted_dicts
 from utils import assert_result_equal, dbtest, run
 

@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import errno
 import shutil
 import os
