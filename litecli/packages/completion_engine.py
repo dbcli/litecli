@@ -1,13 +1,16 @@
 # mypy: ignore-errors
 
-from __future__ import print_function
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional
+
 import sqlparse
-from sqlparse.sql import Comparison, Identifier, Where
+from sqlparse.sql import Comparison, Identifier, Where, Token
 from .parseutils import last_word, extract_tables, find_prev_keyword
 from .special import parse_special_command
 
 
-def suggest_type(full_text, text_before_cursor):
+def suggest_type(full_text: str, text_before_cursor: str) -> List[Dict[str, Any]]:
     """Takes the full_text that is typed so far and also the text before the
     cursor to suggest completion type and scope.
 
@@ -17,7 +20,7 @@ def suggest_type(full_text, text_before_cursor):
 
     word_before_cursor = last_word(text_before_cursor, include="many_punctuations")
 
-    identifier = None
+    identifier: Optional[Identifier] = None
 
     # here should be removed once sqlparse has been fixed
     try:
@@ -86,7 +89,7 @@ def suggest_type(full_text, text_before_cursor):
     return suggest_based_on_last_token(last_token, text_before_cursor, full_text, identifier)
 
 
-def suggest_special(text):
+def suggest_special(text: str) -> List[Dict[str, Any]]:
     text = text.lstrip()
     cmd, _, arg = parse_special_command(text)
 
@@ -126,7 +129,7 @@ def suggest_special(text):
     return [{"type": "keyword"}, {"type": "special"}]
 
 
-def _expecting_arg_idx(arg, text):
+def _expecting_arg_idx(arg: str, text: str) -> int:
     """Return the index of expecting argument.
 
     >>> _expecting_arg_idx("./da", ".import ./da")
@@ -142,7 +145,12 @@ def _expecting_arg_idx(arg, text):
     return len(args) + int(text[-1].isspace())
 
 
-def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier):
+def suggest_based_on_last_token(
+    token: Optional[str | Token],
+    text_before_cursor: str,
+    full_text: str,
+    identifier: Optional[Identifier],
+) -> List[Dict[str, Any]]:
     if isinstance(token, str):
         token_v = token.lower()
     elif isinstance(token, Comparison):
@@ -163,8 +171,8 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
     else:
         token_v = token.value.lower()
 
-    def is_operand(x):
-        return x and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
+    def is_operand(x: Optional[str]) -> bool:
+        return bool(x) and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
 
     if not token:
         return [{"type": "keyword"}, {"type": "special"}]
@@ -253,7 +261,7 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
                 {"type": "alias", "aliases": aliases},
                 {"type": "keyword"},
             ]
-    elif (token_v.endswith("join") and token.is_keyword) or (
+    elif (token_v.endswith("join") and isinstance(token, Token) and token.is_keyword) or (
         token_v in ("copy", "from", "update", "into", "describe", "truncate", "desc", "explain")
     ):
         schema = (identifier and identifier.get_parent_name()) or []
@@ -322,5 +330,5 @@ def suggest_based_on_last_token(token, text_before_cursor, full_text, identifier
         return [{"type": "keyword"}]
 
 
-def identifies(id, schema, table, alias):
+def identifies(id: Any, schema: Optional[str], table: str, alias: Optional[str]) -> bool:
     return id == alias or id == table or (schema and (id == schema + "." + table))
