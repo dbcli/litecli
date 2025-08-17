@@ -273,3 +273,17 @@
 [Irina Truong]: https://github.com/j-bennet
 [Zhaolong Zhu]: https://github.com/zzl0
 [Zhiming Wang]: https://github.com/zmwangx
+## Unreleased
+
+### Internal
+
+- Introduce a shared `DBCursor` Protocol (packages/special/types.py) and adopt it across special modules.
+- Add comprehensive type hints in core modules (special/, sqlcompleter, sqlexecute, key bindings, config, filepaths, lexer, completion_refresher).
+- Remove remaining `# mypy: ignore-errors` headers in special modules; reduce use of `Any`.
+- Tighten mypy configuration (target Python 3.9; disallow untyped/incomplete defs; no implicit Optional; warn on Any).
+- Remove references to “mycli” from comments and docs.
+- Minor refactors for clarity; ruff + mypy pass repo-wide.
+
+### Bug Fixes
+
+- Make `check_if_sqlitedotcommand` robust for non-string inputs.
