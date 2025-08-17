@@ -1,4 +1,4 @@
-"""SQL completer with typed interfaces aligned to mycli."""
+"""SQL completer with typed interfaces for LiteCLI."""
 
 # mypy: ignore-errors
 

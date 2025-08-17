@@ -51,7 +51,7 @@ def parse_special_command(sql: str) -> Tuple[str, "Verbosity", str]:
     """
     Parse a special command, extracting the base command name, verbosity
     (normal, verbose (+), or succinct (-)), and the remaining argument.
-    Mirrors mycli's behavior.
+    Mirrors the behavior used in similar CLI tools.
     """
     command, _, arg = sql.partition(" ")
     verbosity = Verbosity.NORMAL
