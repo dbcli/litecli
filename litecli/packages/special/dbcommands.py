@@ -1,12 +1,14 @@
 # mypy: ignore-errors
 
-from __future__ import unicode_literals, print_function
+from __future__ import annotations
+
 import csv
 import logging
 import os
 import sys
 import platform
 import shlex
+from typing import Any, List, Optional, Tuple
 
 
 from litecli import __version__
@@ -24,7 +26,12 @@ log = logging.getLogger(__name__)
     case_sensitive=True,
     aliases=("\\dt",),
 )
-def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+def list_tables(
+    cur: Any,
+    arg: Optional[str] = None,
+    arg_type: int = PARSED_QUERY,
+    verbose: bool = False,
+) -> List[Tuple]:
     if arg:
         args = ("{0}%".format(arg),)
         query = """
@@ -66,7 +73,12 @@ def list_tables(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     case_sensitive=True,
     aliases=("\\dv",),
 )
-def list_views(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+def list_views(
+    cur: Any,
+    arg: Optional[str] = None,
+    arg_type: int = PARSED_QUERY,
+    verbose: bool = False,
+) -> List[Tuple]:
     if arg:
         args = ("{0}%".format(arg),)
         query = """
@@ -99,7 +111,7 @@ def list_views(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def show_schema(cur, arg=None, **_):
+def show_schema(cur: Any, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
     if arg:
         args = (arg,)
         query = """
@@ -135,7 +147,7 @@ def show_schema(cur, arg=None, **_):
     case_sensitive=True,
     aliases=("\\l",),
 )
-def list_databases(cur, **_):
+def list_databases(cur: Any, **_: Any) -> List[Tuple]:
     query = "PRAGMA database_list"
     log.debug(query)
     cur.execute(query)
@@ -154,7 +166,12 @@ def list_databases(cur, **_):
     case_sensitive=True,
     aliases=("\\di",),
 )
-def list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
+def list_indexes(
+    cur: Any,
+    arg: Optional[str] = None,
+    arg_type: int = PARSED_QUERY,
+    verbose: bool = False,
+) -> List[Tuple]:
     if arg:
         args = ("{0}%".format(arg),)
         query = """
@@ -189,7 +206,7 @@ def list_indexes(cur, arg=None, arg_type=PARSED_QUERY, verbose=False):
     aliases=("\\s",),
     case_sensitive=True,
 )
-def status(cur, **_):
+def status(cur: Any, **_: Any) -> List[Tuple]:
     # Create output buffers.
     footer = []
     footer.append("--------------")
@@ -250,7 +267,7 @@ def load_extension(cur, arg, **_):
     case_sensitive=True,
     aliases=("\\d", "desc"),
 )
-def describe(cur, arg, **_):
+def describe(cur: Any, arg: Optional[str], **_: Any) -> List[Tuple]:
     if arg:
         query = """
             PRAGMA table_info({})
@@ -277,7 +294,7 @@ def describe(cur, arg, **_):
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def import_file(cur, arg=None, **_):
+def import_file(cur: Any, arg: Optional[str] = None, **_: Any) -> List[Tuple]:
     def split(s):
         # this is a modification of shlex.split function, just to make it support '`',
         # because table name might contain '`' character.

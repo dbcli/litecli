@@ -1,10 +1,14 @@
 # mypy: ignore-errors
 
+from __future__ import annotations
+
+from typing import List, Tuple, Optional
+
 import os
 import subprocess
 
 
-def handle_cd_command(arg):
+def handle_cd_command(arg: str) -> Tuple[bool, Optional[str]]:
     """Handles a `cd` shell command by calling python's os.chdir."""
     CD_CMD = "cd"
     tokens = arg.split(CD_CMD + " ")
@@ -19,7 +23,7 @@ def handle_cd_command(arg):
         return False, e.strerror
 
 
-def format_uptime(uptime_in_seconds):
+def format_uptime(uptime_in_seconds: str) -> str:
     """Format number of seconds into human-readable string.
 
     :param uptime_in_seconds: The server uptime in seconds.
@@ -34,7 +38,7 @@ def format_uptime(uptime_in_seconds):
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
 
-    uptime_values = []
+    uptime_values: List[str] = []
 
     for value, unit in ((d, "days"), (h, "hours"), (m, "min"), (s, "sec")):
         if value == 0 and not uptime_values:
@@ -50,7 +54,7 @@ def format_uptime(uptime_in_seconds):
     return uptime
 
 
-def check_if_sqlitedotcommand(command):
+def check_if_sqlitedotcommand(command: str) -> bool:
     """Does a check if the command supplied is in the list of SQLite dot commands.
 
     :param command: A command (str) supplied from the user

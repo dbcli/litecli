@@ -1,11 +1,12 @@
 # mypy: ignore-errors
 
-from __future__ import unicode_literals
+from __future__ import annotations
 import logging
 from collections import namedtuple
+from enum import Enum
+from typing import Any, Callable, List, Tuple
 
 from . import export
-from enum import Enum
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class Verbosity(Enum):
 
 
 @export
-def parse_special_command(sql):
+def parse_special_command(sql: str) -> Tuple[str, "Verbosity", str]:
     """
     Parse a special command, extracting the base command name, verbosity
     (normal, verbose (+), or succinct (-)), and the remaining argument.
@@ -66,15 +67,15 @@ def parse_special_command(sql):
 
 @export
 def special_command(
-    command,
-    shortcut,
-    description,
-    arg_type=PARSED_QUERY,
-    hidden=False,
-    case_sensitive=False,
-    aliases=(),
-):
-    def wrapper(wrapped):
+    command: str,
+    shortcut: str,
+    description: str,
+    arg_type: int = PARSED_QUERY,
+    hidden: bool = False,
+    case_sensitive: bool = False,
+    aliases: Tuple[str, ...] = (),
+) -> Callable:
+    def wrapper(wrapped: Callable) -> Callable:
         register_special_command(
             wrapped,
             command,
@@ -92,15 +93,15 @@ def special_command(
 
 @export
 def register_special_command(
-    handler,
-    command,
-    shortcut,
-    description,
-    arg_type=PARSED_QUERY,
-    hidden=False,
-    case_sensitive=False,
-    aliases=(),
-):
+    handler: Callable,
+    command: str,
+    shortcut: str,
+    description: str,
+    arg_type: int = PARSED_QUERY,
+    hidden: bool = False,
+    case_sensitive: bool = False,
+    aliases: Tuple[str, ...] = (),
+) -> None:
     cmd = command.lower() if not case_sensitive else command
     COMMANDS[cmd] = SpecialCommand(handler, command, shortcut, description, arg_type, hidden, case_sensitive)
     for alias in aliases:
@@ -117,7 +118,7 @@ def register_special_command(
 
 
 @export
-def execute(cur, sql):
+def execute(cur: Any, sql: str) -> List[Tuple]:
     """Execute a special command and return the results. If the special command
     is not supported a KeyError will be raised.
     """
@@ -142,7 +143,7 @@ def execute(cur, sql):
 
 
 @special_command("help", "\\?", "Show this help.", arg_type=NO_QUERY, aliases=("\\?", "?"))
-def show_help():  # All the parameters are ignored.
+def show_help() -> List[Tuple]:  # All the parameters are ignored.
     headers = ["Command", "Shortcut", "Description"]
     result = []
 
@@ -154,7 +155,7 @@ def show_help():  # All the parameters are ignored.
 
 @special_command(".exit", "\\q", "Exit.", arg_type=NO_QUERY, aliases=("\\q", "exit"))
 @special_command("quit", "\\q", "Quit.", arg_type=NO_QUERY)
-def quit(*_args):
+def quit(*_args: Any) -> None:
     raise EOFError
 
 
