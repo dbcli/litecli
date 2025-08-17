@@ -1,6 +1,9 @@
 # mypy: ignore-errors
 
+from __future__ import annotations
+
 import logging
+from typing import Any, Generator, Iterable, Optional, Tuple
 
 from contextlib import closing
 
@@ -57,7 +60,7 @@ class SQLExecute(object):
     functions_query = '''SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
 
-    def __init__(self, database):
+    def __init__(self, database: Optional[str]):
         self.dbname = database
         self._server_type = None
         self.conn = None
@@ -66,7 +69,7 @@ class SQLExecute(object):
             return
         self.connect()
 
-    def connect(self, database=None):
+    def connect(self, database: Optional[str] = None) -> None:
         db = database or self.dbname
         _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
 
@@ -85,7 +88,7 @@ class SQLExecute(object):
         # successful connection.
         self.dbname = db
 
-    def run(self, statement):
+    def run(self, statement: str) -> Iterable[Tuple]:
         """Execute the sql in the database and return the results. The results
         are a list of tuples. Each tuple has 4 values
         (title, rows, headers, status).
@@ -140,7 +143,7 @@ class SQLExecute(object):
                     cur.execute(sql)
                     yield self.get_result(cur)
 
-    def get_result(self, cursor):
+    def get_result(self, cursor: Any) -> Tuple[Optional[str], Optional[list], Optional[list], str]:
         """Get the current result's data from the cursor."""
         title = headers = None
 
@@ -164,7 +167,7 @@ class SQLExecute(object):
 
         return (title, cursor, headers, status)
 
-    def tables(self):
+    def tables(self) -> Generator[Tuple[str], None, None]:
         """Yields table names"""
 
         with closing(self.conn.cursor()) as cur:
@@ -173,7 +176,7 @@ class SQLExecute(object):
             for row in cur:
                 yield row
 
-    def table_columns(self):
+    def table_columns(self) -> Generator[Tuple[str, str], None, None]:
         """Yields column names"""
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Columns Query. sql: %r", self.table_columns_query)
@@ -181,7 +184,7 @@ class SQLExecute(object):
             for row in cur:
                 yield row
 
-    def databases(self):
+    def databases(self) -> Iterable[str]:
         if not self.conn:
             return
 
@@ -190,7 +193,7 @@ class SQLExecute(object):
             for row in cur.execute(self.databases_query):
                 yield row[1]
 
-    def functions(self):
+    def functions(self) -> Iterable[Tuple]:
         """Yields tuples of (schema_name, function_name)"""
 
         with closing(self.conn.cursor()) as cur:
@@ -199,7 +202,7 @@ class SQLExecute(object):
             for row in cur:
                 yield row
 
-    def show_candidates(self):
+    def show_candidates(self) -> Iterable[Any]:
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Show Query. sql: %r", self.show_candidates_query)
             try:
@@ -211,6 +214,6 @@ class SQLExecute(object):
                 for row in cur:
                     yield (row[0].split(None, 1)[-1],)
 
-    def server_type(self):
+    def server_type(self) -> Tuple[str, str]:
         self._server_type = ("sqlite3", "3")
         return self._server_type
