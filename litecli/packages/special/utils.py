@@ -52,7 +52,7 @@ def format_uptime(uptime_in_seconds: str) -> str:
     return uptime
 
 
-def check_if_sqlitedotcommand(command: str) -> bool:
+def check_if_sqlitedotcommand(command: object) -> bool:
     """Does a check if the command supplied is in the list of SQLite dot commands.
 
     :param command: A command (str) supplied from the user
@@ -128,5 +128,7 @@ def check_if_sqlitedotcommand(command: str) -> bool:
         ".width",
     ]
 
-    command = command.split(" ", 1)[0].lower()
-    return command in sqlite3dotcommands
+    if isinstance(command, str):
+        head = command.split(" ", 1)[0].lower()
+        return head in sqlite3dotcommands
+    return False

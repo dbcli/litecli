@@ -135,42 +135,28 @@ def get_editor_query(sql: str) -> str:
 
 @export
 def open_external_editor(filename: Optional[str] = None, sql: Optional[str] = None) -> Tuple[str, Optional[str]]:
-    """Open external editor, wait for the user to type in their query, return
-    the query.
-
-    :return: list with one tuple, query as first element.
-
-    """
-
-    message = None
-    filename = filename.strip().split(" ", 1)[0] if filename else None
-
+    """Open external editor, wait for the user to type in their query, return the query."""
+    message: Optional[str] = None
     sql = sql or ""
     MARKER = "# Type your query above this line.\n"
 
-    # Populate the editor buffer with the partial sql (if available) and a
-    # placeholder comment.
-    query = click.edit(
-        "{sql}\n\n{marker}".format(sql=sql, marker=MARKER),
-        filename=filename,
-        extension=".sql",
-    )
-
     if filename:
+        filename = filename.strip().split(" ", 1)[0]
+        click.edit(filename=filename)
         try:
             with open(filename, encoding="utf-8") as f:
-                query = f.read()
+                text = f.read()
         except IOError:
-            message = "Error reading file: %s." % filename
+            message = f"Error reading file: {filename}."
+            text = sql
+        return (text, message)
 
-    if query is not None:
-        query = query.split(MARKER, 1)[0].rstrip("\n")
+    edited = click.edit(f"{sql}\n\n{MARKER}", extension=".sql")
+    if edited:
+        edited = edited.split(MARKER, 1)[0].rstrip("\n")
     else:
-        # Don't return None for the caller to deal with.
-        # Empty string is ok.
-        query = sql
-
-    return (query, message)
+        edited = sql
+    return (edited, None)
 
 
 @special_command(
@@ -310,13 +296,9 @@ def execute_system_command(arg: str, **_: Any) -> List[Tuple]:
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
         raw = output if not error else error
-
         # Python 3 returns bytes. This needs to be decoded to a string.
-        if isinstance(raw, bytes):
-            encoding = locale.getpreferredencoding(False)
-            response = raw.decode(encoding)
-        else:
-            response = raw
+        encoding = locale.getpreferredencoding(False)
+        response: str = raw.decode(encoding) if isinstance(raw, bytes) else str(raw)
 
         return [(None, None, None, response)]
     except OSError as e:
@@ -348,7 +330,9 @@ def set_tee(arg: str, **_: Any) -> List[Tuple]:
 
     try:
         file, mode = parseargfile(arg)
-        tee_file = open(file, mode)
+        from typing import cast
+
+        tee_file = cast(TextIO, open(file, mode))
     except (IOError, OSError) as e:
         raise OSError("Cannot write to file '{}': {}".format(e.filename, e.strerror))
 
@@ -387,7 +371,10 @@ def write_tee(output: str) -> None:
 def set_once(arg: str, **_: Any) -> List[Tuple]:
     global once_file, written_to_once_file
     try:
-        once_file = open(**parseargfile(arg))
+        file, mode = parseargfile(arg)
+        from typing import cast
+
+        once_file = cast(TextIO, open(file, mode))
     except (IOError, OSError) as e:
         raise OSError("Cannot write to file '{}': {}".format(e.filename, e.strerror))
     written_to_once_file = False
@@ -480,7 +467,7 @@ def watch_query(arg: str, **kwargs: Any) -> Generator[Tuple, None, None]:
     if not arg:
         yield (None, None, None, usage)
         raise StopIteration
-    seconds = 5
+    seconds: float = 5.0
     clear_screen = False
     statement = None
     while statement is None:

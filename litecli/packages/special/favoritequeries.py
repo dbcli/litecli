@@ -39,7 +39,7 @@ Examples:
     def __init__(self, config: Any) -> None:
         self.config = config
 
-    def list(self) -> List[Optional[str]]:
+    def list(self) -> List[str]:
         return self.config.get(self.section_name, [])
 
     def get(self, name: str) -> Optional[str]:
