@@ -8,24 +8,15 @@ import os
 import sys
 import platform
 import shlex
-from typing import Any, List, Optional, Tuple, Protocol, Sequence
+from typing import Any, List, Optional, Tuple
 
 
 from litecli import __version__
 from litecli.packages.special import iocommands
 from .main import special_command, RAW_QUERY, PARSED_QUERY
+from .types import DBCursor
 
 log = logging.getLogger(__name__)
-
-
-class DBCursor(Protocol):
-    description: Optional[Sequence[Sequence[Any]]]
-
-    def execute(self, sql: str, params: Any = ...) -> Any: ...
-
-    def fetchall(self) -> List[Tuple[Any, ...]]: ...
-
-    def fetchone(self) -> Optional[Tuple[Any, ...]]: ...
 
 
 @special_command(

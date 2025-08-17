@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 import locale
@@ -10,7 +8,7 @@ import shlex
 import subprocess
 from io import open
 from time import sleep
-from typing import Any, Dict, Generator, List, Optional, Tuple, TextIO
+from typing import Any, Generator, List, Optional, Tuple, TextIO
 
 import click
 import sqlparse
@@ -115,8 +113,9 @@ def editor_command(command: str) -> bool:
 @export
 def get_filename(sql: str) -> Optional[str]:
     if sql.strip().startswith("\\e"):
-        command, _, filename = sql.partition(" ")
+        _cmd, _sep, filename = sql.partition(" ")
         return filename.strip() or None
+    return None
 
 
 @export
@@ -188,7 +187,7 @@ def execute_favorite_query(cur: Any, arg: str, verbose: bool = False, **_: Any) 
             yield result
 
     """Parse out favorite name and optional substitution parameters"""
-    name, _, arg_str = arg.partition(" ")
+    name, _sep, arg_str = arg.partition(" ")
     args = shlex.split(arg_str)
 
     query = favoritequeries.get(name)
@@ -269,7 +268,7 @@ def save_favorite_query(arg: str, **_: Any) -> List[Tuple]:
     if not arg:
         return [(None, None, None, usage)]
 
-    name, _, query = arg.partition(" ")
+    name, _sep, query = arg.partition(" ")
 
     # If either name or query is missing then print the usage and complain.
     if (not name) or (not query):
@@ -310,19 +309,21 @@ def execute_system_command(arg: str, **_: Any) -> List[Tuple]:
         args = arg.split(" ")
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
-        response = output if not error else error
+        raw = output if not error else error
 
         # Python 3 returns bytes. This needs to be decoded to a string.
-        if isinstance(response, bytes):
+        if isinstance(raw, bytes):
             encoding = locale.getpreferredencoding(False)
-            response = response.decode(encoding)
+            response = raw.decode(encoding)
+        else:
+            response = raw
 
         return [(None, None, None, response)]
     except OSError as e:
         return [(None, None, None, "OSError: %s" % e.strerror)]
 
 
-def parseargfile(arg: str) -> Dict[str, str]:
+def parseargfile(arg: str) -> Tuple[str, str]:
     if arg.startswith("-o "):
         mode = "w"
         filename = arg[3:]
@@ -333,7 +334,7 @@ def parseargfile(arg: str) -> Dict[str, str]:
     if not filename:
         raise TypeError("You must provide a filename.")
 
-    return {"file": os.path.expanduser(filename), "mode": mode}
+    return (os.path.expanduser(filename), mode)
 
 
 @special_command(
@@ -346,7 +347,8 @@ def set_tee(arg: str, **_: Any) -> List[Tuple]:
     global tee_file
 
     try:
-        tee_file = open(**parseargfile(arg))
+        file, mode = parseargfile(arg)
+        tee_file = open(file, mode)
     except (IOError, OSError) as e:
         raise OSError("Cannot write to file '{}': {}".format(e.filename, e.strerror))
 
@@ -409,7 +411,8 @@ def unset_once_if_written() -> None:
     global once_file, written_to_once_file
     if once_file and written_to_once_file:
         once_file.close()
-        once_file = written_to_once_file = None
+        once_file = None
+        written_to_once_file = False
 
 
 @special_command(
@@ -453,7 +456,7 @@ def write_pipe_once(output: str) -> None:
 def unset_pipe_once_if_written() -> None:
     """Unset the pipe_once cmd, if it has been written to."""
     global pipe_once_process, written_to_pipe_once_process
-    if written_to_pipe_once_process:
+    if written_to_pipe_once_process and pipe_once_process:
         (stdout_data, stderr_data) = pipe_once_process.communicate()
         if len(stdout_data) > 0:
             print(stdout_data.rstrip("\n"))

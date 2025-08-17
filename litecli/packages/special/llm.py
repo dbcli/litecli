@@ -16,7 +16,7 @@ import shlex
 import sys
 from runpy import run_module
 from time import time
-from typing import Any, Dict, List, Optional, Tuple, Protocol, Sequence
+from typing import Any, Dict, List, Optional, Tuple
 
 import click
 import llm
@@ -24,6 +24,7 @@ from llm.cli import cli
 
 from . import export
 from .main import Verbosity, parse_special_command
+from .types import DBCursor
 
 log = logging.getLogger(__name__)
 
@@ -216,17 +217,6 @@ def ensure_litecli_template(replace: bool = False) -> None:
 
     run_external_cmd("llm", PROMPT, "--save", LLM_TEMPLATE_NAME)
     return
-
-
-@export
-class DBCursor(Protocol):
-    description: Optional[Sequence[Sequence[Any]]]
-
-    def execute(self, sql: str, params: Any = ...) -> Any: ...
-
-    def fetchall(self) -> List[Tuple[Any, ...]]: ...
-
-    def fetchone(self) -> Optional[Tuple[Any, ...]]: ...
 
 
 @export

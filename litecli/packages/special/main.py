@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-
 from __future__ import annotations
 import logging
 from collections import namedtuple
@@ -140,6 +138,8 @@ def execute(cur: Any, sql: str) -> List[Tuple]:
         return special_cmd.handler(cur=cur, arg=arg, verbose=(verbosity == Verbosity.VERBOSE))
     elif special_cmd.arg_type == RAW_QUERY:
         return special_cmd.handler(cur=cur, query=sql)
+
+    raise CommandNotFound(f"Command type not found: {command}")
 
 
 @special_command("help", "\\?", "Show this help.", arg_type=NO_QUERY, aliases=("\\?", "?"))

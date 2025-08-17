@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 from typing import List, Tuple, Optional
@@ -130,8 +128,5 @@ def check_if_sqlitedotcommand(command: str) -> bool:
         ".width",
     ]
 
-    if isinstance(command, str):
-        command = command.split(" ", 1)[0].lower()
-        return command in sqlite3dotcommands
-    else:
-        return False
+    command = command.split(" ", 1)[0].lower()
+    return command in sqlite3dotcommands
