@@ -1,32 +1,39 @@
+"""LiteCLI configuration helpers with typing."""
+
 # mypy: ignore-errors
+
+from __future__ import annotations
 
 import errno
 import shutil
 import os
 import platform
 from os.path import expanduser, exists, dirname
+from typing import Optional
+
 from configobj import ConfigObj
 
 
-def config_location():
+def config_location() -> str:
     if "XDG_CONFIG_HOME" in os.environ:
         return "%s/litecli/" % expanduser(os.environ["XDG_CONFIG_HOME"])
     elif platform.system() == "Windows":
-        return os.getenv("USERPROFILE") + "\\AppData\\Local\\dbcli\\litecli\\"
+        userprofile = os.getenv("USERPROFILE", "")
+        return userprofile + "\\AppData\\Local\\dbcli\\litecli\\"
     else:
         return expanduser("~/.config/litecli/")
 
 
-def load_config(usr_cfg, def_cfg=None):
+def load_config(usr_cfg: str, def_cfg: Optional[str] = None) -> ConfigObj:
     cfg = ConfigObj()
-    cfg.merge(ConfigObj(def_cfg, interpolation=False))
+    if def_cfg:
+        cfg.merge(ConfigObj(def_cfg, interpolation=False))
     cfg.merge(ConfigObj(expanduser(usr_cfg), interpolation=False, encoding="utf-8"))
     cfg.filename = expanduser(usr_cfg)
-
     return cfg
 
 
-def ensure_dir_exists(path):
+def ensure_dir_exists(path: str) -> None:
     parent_dir = expanduser(dirname(path))
     try:
         os.makedirs(parent_dir)
@@ -36,27 +43,25 @@ def ensure_dir_exists(path):
             raise
 
 
-def write_default_config(source, destination, overwrite=False):
+def write_default_config(source: str, destination: str, overwrite: bool = False) -> None:
     destination = expanduser(destination)
     if not overwrite and exists(destination):
         return
-
     ensure_dir_exists(destination)
-
     shutil.copyfile(source, destination)
 
 
-def upgrade_config(config, def_config):
+def upgrade_config(config: str, def_config: str) -> None:
     cfg = load_config(config, def_config)
     cfg.write()
 
 
-def get_config(liteclirc_file=None):
+def get_config(liteclirc_file: Optional[str] = None) -> ConfigObj:
     from litecli import __file__ as package_root
 
     package_root = os.path.dirname(package_root)
 
-    liteclirc_file = liteclirc_file or "%sconfig" % config_location()
+    liteclirc_file = liteclirc_file or f"{config_location()}config"
 
     default_config = os.path.join(package_root, "liteclirc")
     try:

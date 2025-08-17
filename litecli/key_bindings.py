@@ -1,26 +1,31 @@
+"""Key bindings with type hints."""
+
 # mypy: ignore-errors
 
-from __future__ import unicode_literals
+from __future__ import annotations
 import logging
+from typing import Any
+
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.filters import completion_is_selected
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 
 _logger = logging.getLogger(__name__)
 
 
-def cli_bindings(cli):
+def cli_bindings(cli: Any) -> KeyBindings:
     """Custom key bindings for cli."""
     kb = KeyBindings()
 
     @kb.add("f3")
-    def _(event):
+    def _(_event: KeyPressEvent) -> None:
         """Enable/Disable Multiline Mode."""
         _logger.debug("Detected F3 key.")
         cli.multi_line = not cli.multi_line
 
     @kb.add("f4")
-    def _(event):
+    def _(event: KeyPressEvent) -> None:
         """Toggle between Vi and Emacs mode."""
         _logger.debug("Detected F4 key.")
         if cli.key_bindings == "vi":
@@ -31,7 +36,7 @@ def cli_bindings(cli):
             cli.key_bindings = "vi"
 
     @kb.add("tab")
-    def _(event):
+    def _(event: KeyPressEvent) -> None:
         """Force autocompletion at cursor."""
         _logger.debug("Detected <Tab> key.")
         b = event.app.current_buffer
@@ -41,7 +46,7 @@ def cli_bindings(cli):
             b.start_completion(select_first=True)
 
     @kb.add("s-tab")
-    def _(event):
+    def _(event: KeyPressEvent) -> None:
         """Force autocompletion at cursor."""
         _logger.debug("Detected <Tab> key.")
         b = event.app.current_buffer
@@ -51,7 +56,7 @@ def cli_bindings(cli):
             b.start_completion(select_last=True)
 
     @kb.add("c-space")
-    def _(event):
+    def _(event: KeyPressEvent) -> None:
         """
         Initialize autocompletion at cursor.
 
@@ -69,7 +74,7 @@ def cli_bindings(cli):
             b.start_completion(select_first=False)
 
     @kb.add("enter", filter=completion_is_selected)
-    def _(event):
+    def _(event: KeyPressEvent) -> None:
         """Makes the enter key work as the tab key only when showing the menu.
 
         In other words, don't execute query when enter is pressed in
