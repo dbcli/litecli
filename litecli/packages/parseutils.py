@@ -1,12 +1,21 @@
+"""SQL parse utilities with type hints.
+
+The functions here lean on sqlparse types but keep annotations broad enough
+to work across versions. No behavioral changes from prior implementation.
+"""
+
 # mypy: ignore-errors
 
-from __future__ import print_function
+from __future__ import annotations
+
 import re
+from typing import Generator, Iterable, Optional, Tuple, List, Dict
+
 import sqlparse
-from sqlparse.sql import IdentifierList, Identifier, Function
+from sqlparse.sql import IdentifierList, Identifier, Function, Token, TokenList
 from sqlparse.tokens import Keyword, DML, Punctuation
 
-cleanup_regex = {
+cleanup_regex: Dict[str, re.Pattern[str]] = {
     # This matches only alphanumerics and underscores.
     "alphanum_underscore": re.compile(r"(\w+)$"),
     # This matches everything except spaces, parens, colon, and comma
@@ -18,7 +27,7 @@ cleanup_regex = {
 }
 
 
-def last_word(text, include="alphanum_underscore"):
+def last_word(text: str, include: str = "alphanum_underscore") -> str:
     R"""
     Find the last word in a sentence.
 
@@ -65,8 +74,7 @@ def last_word(text, include="alphanum_underscore"):
 
 
 # This code is borrowed from sqlparse example script.
-# <url>
-def is_subselect(parsed):
+def is_subselect(parsed: TokenList) -> bool:
     if not parsed.is_group:
         return False
     for item in parsed.tokens:
@@ -81,7 +89,7 @@ def is_subselect(parsed):
     return False
 
 
-def extract_from_part(parsed, stop_at_punctuation=True):
+def extract_from_part(parsed: TokenList, stop_at_punctuation: bool = True) -> Generator[Token, None, None]:
     tbl_prefix_seen = False
     for item in parsed.tokens:
         if tbl_prefix_seen:
@@ -120,8 +128,8 @@ def extract_from_part(parsed, stop_at_punctuation=True):
                     break
 
 
-def extract_table_identifiers(token_stream):
-    """yields tuples of (schema_name, table_name, table_alias)"""
+def extract_table_identifiers(token_stream: Iterable[Token]) -> Generator[Tuple[Optional[str], str, Optional[str]], None, None]:
+    """Yield tuples of (schema_name, table_name, table_alias)."""
 
     for item in token_stream:
         if isinstance(item, IdentifierList):
@@ -149,7 +157,7 @@ def extract_table_identifiers(token_stream):
 
 
 # extract_tables is inspired from examples in the sqlparse lib.
-def extract_tables(sql):
+def extract_tables(sql: str) -> List[Tuple[Optional[str], str, Optional[str]]]:
     """Extract the table names from an SQL statement.
 
     Returns a list of (schema, table, alias) tuples
@@ -168,7 +176,7 @@ def extract_tables(sql):
     return list(extract_table_identifiers(stream))
 
 
-def find_prev_keyword(sql):
+def find_prev_keyword(sql: str) -> Tuple[Optional[Token], str]:
     """Find the last sql keyword in an SQL statement
 
     Returns the value of the last keyword, and the text of the query with
@@ -202,14 +210,14 @@ def find_prev_keyword(sql):
     return None, ""
 
 
-def query_starts_with(query, prefixes):
+def query_starts_with(query: str, prefixes: Iterable[str]) -> bool:
     """Check if the query starts with any item from *prefixes*."""
     prefixes = [prefix.lower() for prefix in prefixes]
     formatted_sql = sqlparse.format(query.lower(), strip_comments=True)
     return bool(formatted_sql) and formatted_sql.split()[0] in prefixes
 
 
-def queries_start_with(queries, prefixes):
+def queries_start_with(queries: str, prefixes: Iterable[str]) -> bool:
     """Check if any queries start with any item from *prefixes*."""
     for query in sqlparse.split(queries):
         if query and query_starts_with(query, prefixes) is True:
@@ -217,7 +225,7 @@ def queries_start_with(queries, prefixes):
     return False
 
 
-def is_destructive(queries):
+def is_destructive(queries: str) -> bool:
     """Returns if any of the queries in *queries* is destructive."""
     keywords = ("drop", "shutdown", "delete", "truncate", "alter")
     return queries_start_with(queries, keywords)
