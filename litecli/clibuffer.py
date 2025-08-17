@@ -1,13 +1,15 @@
 # mypy: ignore-errors
 
-from __future__ import unicode_literals
+from __future__ import annotations
+
+from typing import Any
 
 from prompt_toolkit.enums import DEFAULT_BUFFER
-from prompt_toolkit.filters import Condition
+from prompt_toolkit.filters import Condition, Filter
 from prompt_toolkit.application import get_app
 
 
-def cli_is_multiline(cli):
+def cli_is_multiline(cli: Any) -> Filter:
     @Condition
     def cond():
         doc = get_app().layout.get_buffer_by_name(DEFAULT_BUFFER).document
@@ -20,7 +22,7 @@ def cli_is_multiline(cli):
     return cond
 
 
-def _multiline_exception(text):
+def _multiline_exception(text: str) -> bool:
     orig = text
     text = text.strip()
 

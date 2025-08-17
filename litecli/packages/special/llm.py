@@ -88,7 +88,7 @@ def run_external_cmd(
         sys.argv = original_args
 
 
-def build_command_tree(cmd: click.BaseCommand) -> Optional[Dict[str, Any]]:
+def build_command_tree(cmd: click.Command) -> Optional[Dict[str, Any]]:
     """Recursively build a command tree for a Click app.
 
     Args:
