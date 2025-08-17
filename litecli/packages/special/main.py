@@ -2,7 +2,7 @@ from __future__ import annotations
 import logging
 from collections import namedtuple
 from enum import Enum
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Tuple, cast
 
 from . import export
 
@@ -116,7 +116,7 @@ def register_special_command(
 
 
 @export
-def execute(cur: Any, sql: str) -> List[Tuple]:
+def execute(cur: Any, sql: str) -> List[Tuple[Any, ...]]:
     """Execute a special command and return the results. If the special command
     is not supported a KeyError will be raised.
     """
@@ -133,11 +133,14 @@ def execute(cur: Any, sql: str) -> List[Tuple]:
             raise CommandNotFound("Command not found: %s" % command)
 
     if special_cmd.arg_type == NO_QUERY:
-        return special_cmd.handler()
+        return cast(List[Tuple[Any, ...]], special_cmd.handler())
     elif special_cmd.arg_type == PARSED_QUERY:
-        return special_cmd.handler(cur=cur, arg=arg, verbose=(verbosity == Verbosity.VERBOSE))
+        return cast(
+            List[Tuple[Any, ...]],
+            special_cmd.handler(cur=cur, arg=arg, verbose=(verbosity == Verbosity.VERBOSE)),
+        )
     elif special_cmd.arg_type == RAW_QUERY:
-        return special_cmd.handler(cur=cur, query=sql)
+        return cast(List[Tuple[Any, ...]], special_cmd.handler(cur=cur, query=sql))
 
     raise CommandNotFound(f"Command type not found: {command}")
 
@@ -181,5 +184,5 @@ def quit(*_args: Any) -> None:
     case_sensitive=False,
     aliases=(".ai", ".llm"),
 )
-def stub():
+def stub() -> None:
     raise NotImplementedError

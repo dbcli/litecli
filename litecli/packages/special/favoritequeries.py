@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 
 
 class FavoriteQueries(object):
@@ -40,10 +40,12 @@ Examples:
         self.config = config
 
     def list(self) -> List[str]:
-        return self.config.get(self.section_name, [])
+        section = cast(dict[str, str], self.config.get(self.section_name, {}))
+        return list(section.keys())
 
     def get(self, name: str) -> Optional[str]:
-        return self.config.get(self.section_name, {}).get(name, None)
+        section = cast(dict[str, str], self.config.get(self.section_name, {}))
+        return section.get(name)
 
     def save(self, name: str, query: str) -> None:
         if self.section_name not in self.config:
