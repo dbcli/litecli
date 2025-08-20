@@ -1,3 +1,7 @@
+### Features
+
+* Add support for opening 'file:' URIs with parameters. [(#234)](https://github.com/dbcli/litecli/pull/234)
+
 ## 1.16.0 - 2025-08-16
 
 ### Features
