@@ -6,11 +6,12 @@ from datetime import datetime
 from unittest.mock import patch
 
 import click
+import pytest
 from click.testing import CliRunner
 
 from litecli.main import cli, LiteCli
 from litecli.packages.special.main import COMMANDS as SPECIAL_COMMANDS
-from utils import dbtest, run
+from utils import dbtest, run, create_db, db_connection
 
 test_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(test_dir)
@@ -330,3 +331,30 @@ def test_get_prompt(mock_datetime):
     # 12. Windows path
     lc.connect("C:\\Users\\litecli\\litecli_test.db")
     assert lc.get_prompt(r"\d") == "C:\\Users\\litecli\\litecli_test.db"
+
+
+@pytest.mark.parametrize(
+    "uri, expected_dbname",
+    [
+        ("file:{tmp_path}/test.db", "{tmp_path}/test.db"),
+        ("file:{tmp_path}/test.db?mode=ro", "{tmp_path}/test.db"),
+        ("file:{tmp_path}/test.db?mode=ro&cache=shared", "{tmp_path}/test.db"),
+    ],
+)
+def test_file_uri(tmp_path, uri, expected_dbname):
+    """
+    Test that `file:` URIs are correctly handled
+    ref:
+        https://docs.python.org/3/library/sqlite3.html#sqlite3-uri-tricks
+        https://www.sqlite.org/c3ref/open.html#urifilenameexamples
+    """
+    # - ensure db exists
+    db_path = tmp_path / "test.db"
+    create_db(db_path)
+    db_connection(db_path)
+    uri = uri.format(tmp_path=tmp_path)
+
+    lc = LiteCli()
+    lc.connect(uri)
+
+    assert lc.get_prompt(r"\d") == expected_dbname.format(tmp_path=tmp_path)
