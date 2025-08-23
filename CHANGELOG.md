@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* Upgrade Click to be 8.2+ to prevent pager mess up with pager env var has spaces.
+* Avoid Click 8.1.* to prevent messing up the pager when the PAGER env var has a string with spaces.
 
 ## 1.16.0 - 2025-08-16
 
