@@ -8,7 +8,7 @@ import shlex
 import subprocess
 from io import open
 from time import sleep
-from typing import Any, Generator, List, Optional, Tuple, TextIO
+from typing import Any, Generator, TextIO
 
 import click
 import sqlparse
@@ -22,10 +22,10 @@ from .utils import handle_cd_command
 
 use_expanded_output: bool = False
 PAGER_ENABLED: bool = True
-tee_file: Optional[TextIO] = None
-once_file: Optional[TextIO] = None
+tee_file: TextIO | None = None
+once_file: TextIO | None = None
 written_to_once_file: bool = False
-pipe_once_process: Optional[subprocess.Popen[str]] = None
+pipe_once_process: subprocess.Popen[str] | None = None
 written_to_pipe_once_process: bool = False
 favoritequeries: FavoriteQueries = FavoriteQueries(ConfigObj())
 
@@ -58,7 +58,7 @@ def is_pager_enabled() -> bool:
     aliases=("\\P",),
     case_sensitive=True,
 )
-def set_pager(arg: str, **_: Any) -> List[Tuple]:
+def set_pager(arg: str, **_: Any) -> list[tuple]:
     if arg:
         os.environ["PAGER"] = arg
         msg = "PAGER set to %s." % arg
@@ -83,7 +83,7 @@ def set_pager(arg: str, **_: Any) -> List[Tuple]:
     aliases=("\\n",),
     case_sensitive=True,
 )
-def disable_pager() -> List[Tuple]:
+def disable_pager() -> list[tuple]:
     set_pager_enabled(False)
     return [(None, None, None, "Pager disabled.")]
 
@@ -111,7 +111,7 @@ def editor_command(command: str) -> bool:
 
 
 @export
-def get_filename(sql: str) -> Optional[str]:
+def get_filename(sql: str) -> str | None:
     if sql.strip().startswith("\\e"):
         _cmd, _sep, filename = sql.partition(" ")
         return filename.strip() or None
@@ -134,9 +134,9 @@ def get_editor_query(sql: str) -> str:
 
 
 @export
-def open_external_editor(filename: Optional[str] = None, sql: Optional[str] = None) -> Tuple[str, Optional[str]]:
+def open_external_editor(filename: str | None = None, sql: str | None = None) -> tuple[str, str | None]:
     """Open external editor, wait for the user to type in their query, return the query."""
-    message: Optional[str] = None
+    message: str | None = None
     sql = sql or ""
     MARKER = "# Type your query above this line.\n"
 
@@ -166,7 +166,7 @@ def open_external_editor(filename: Optional[str] = None, sql: Optional[str] = No
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def execute_favorite_query(cur: Any, arg: str, verbose: bool = False, **_: Any) -> Generator[Tuple, None, None]:
+def execute_favorite_query(cur: Any, arg: str, verbose: bool = False, **_: Any) -> Generator[tuple, None, None]:
     """Returns (title, rows, headers, status)"""
     if arg == "":
         for result in list_favorite_queries():
@@ -206,7 +206,7 @@ def execute_favorite_query(cur: Any, arg: str, verbose: bool = False, **_: Any) 
                     yield (title, None, None, None)
 
 
-def list_favorite_queries() -> List[Tuple]:
+def list_favorite_queries() -> list[tuple]:
     """List of all favorite queries.
     Returns (title, rows, headers, status)"""
 
@@ -220,7 +220,7 @@ def list_favorite_queries() -> List[Tuple]:
     return [("", rows, headers, status)]
 
 
-def subst_favorite_query_args(query: str, args: List[str]) -> List[Optional[str]]:
+def subst_favorite_query_args(query: str, args: list[str]) -> list[str | None]:
     """Replace positional parameters ($1...$N or ?) in query."""
     for idx, val in enumerate(args):
         shell_subst_var = "$" + str(idx + 1)
@@ -246,7 +246,7 @@ def subst_favorite_query_args(query: str, args: List[str]) -> List[Optional[str]
 
 
 @special_command("\\fs", "\\fs name query", "Save a favorite query.")
-def save_favorite_query(arg: str, **_: Any) -> List[Tuple]:
+def save_favorite_query(arg: str, **_: Any) -> list[tuple]:
     """Save a new favorite query.
     Returns (title, rows, headers, status)"""
 
@@ -265,7 +265,7 @@ def save_favorite_query(arg: str, **_: Any) -> List[Tuple]:
 
 
 @special_command("\\fd", "\\fd [name]", "Delete a favorite query.")
-def delete_favorite_query(arg: str, **_: Any) -> List[Tuple]:
+def delete_favorite_query(arg: str, **_: Any) -> list[tuple]:
     """Delete an existing favorite query."""
     usage = "Syntax: \\fd name.\n\n" + favoritequeries.usage
     if not arg:
@@ -277,7 +277,7 @@ def delete_favorite_query(arg: str, **_: Any) -> List[Tuple]:
 
 
 @special_command("system", "system [command]", "Execute a system shell command.")
-def execute_system_command(arg: str, **_: Any) -> List[Tuple]:
+def execute_system_command(arg: str, **_: Any) -> list[tuple]:
     """Execute a system shell command."""
     usage = "Syntax: system [command].\n"
 
@@ -305,7 +305,7 @@ def execute_system_command(arg: str, **_: Any) -> List[Tuple]:
         return [(None, None, None, "OSError: %s" % e.strerror)]
 
 
-def parseargfile(arg: str) -> Tuple[str, str]:
+def parseargfile(arg: str) -> tuple[str, str]:
     if arg.startswith("-o "):
         mode = "w"
         filename = arg[3:]
@@ -325,7 +325,7 @@ def parseargfile(arg: str) -> Tuple[str, str]:
     "Append all results to an output file (overwrite using -o).",
     aliases=("tee",),
 )
-def set_tee(arg: str, **_: Any) -> List[Tuple]:
+def set_tee(arg: str, **_: Any) -> list[tuple]:
     global tee_file
 
     try:
@@ -348,7 +348,7 @@ def close_tee() -> None:
 
 
 @special_command("notee", "notee", "Stop writing results to an output file.")
-def no_tee(arg: str, **_: Any) -> List[Tuple]:
+def no_tee(arg: str, **_: Any) -> list[tuple]:
     close_tee()
     return [(None, None, None, "")]
 
@@ -368,7 +368,7 @@ def write_tee(output: str) -> None:
     "Append next result to an output file (overwrite using -o).",
     aliases=("\\o", "\\once"),
 )
-def set_once(arg: str, **_: Any) -> List[Tuple]:
+def set_once(arg: str, **_: Any) -> list[tuple]:
     global once_file, written_to_once_file
     try:
         file, mode = parseargfile(arg)
@@ -408,7 +408,7 @@ def unset_once_if_written() -> None:
     "Send next result to a subprocess.",
     aliases=("\\|",),
 )
-def set_pipe_once(arg: str, **_: Any) -> List[Tuple]:
+def set_pipe_once(arg: str, **_: Any) -> list[tuple]:
     global pipe_once_process, written_to_pipe_once_process
     pipe_once_cmd = shlex.split(arg)
     if len(pipe_once_cmd) == 0:
@@ -458,7 +458,7 @@ def unset_pipe_once_if_written() -> None:
     "watch [seconds] [-c] query",
     "Executes the query every [seconds] seconds (by default 5).",
 )
-def watch_query(arg: str, **kwargs: Any) -> Generator[Tuple, None, None]:
+def watch_query(arg: str, **kwargs: Any) -> Generator[tuple, None, None]:
     usage = """Syntax: watch [seconds] [-c] query.
     * seconds: The interval at the query will be repeated, in seconds.
                By default 5.

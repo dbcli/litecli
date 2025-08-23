@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from typing import Any, List, Optional, cast
+from typing import Any, cast
 
 
 class FavoriteQueries(object):
@@ -39,11 +39,11 @@ Examples:
     def __init__(self, config: Any) -> None:
         self.config = config
 
-    def list(self) -> List[str]:
+    def list(self) -> list[str]:
         section = cast(dict[str, str], self.config.get(self.section_name, {}))
         return list(section.keys())
 
-    def get(self, name: str) -> Optional[str]:
+    def get(self, name: str) -> str | None:
         section = cast(dict[str, str], self.config.get(self.section_name, {}))
         return section.get(name)
 

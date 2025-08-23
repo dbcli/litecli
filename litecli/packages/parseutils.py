@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import re
-from typing import Generator, Iterable, Optional, Tuple, List, Dict
+from typing import Generator, Iterable
 
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier, Function, Token, TokenList
 from sqlparse.tokens import Keyword, DML, Punctuation
 
-cleanup_regex: Dict[str, re.Pattern[str]] = {
+cleanup_regex: dict[str, re.Pattern[str]] = {
     # This matches only alphanumerics and underscores.
     "alphanum_underscore": re.compile(r"(\w+)$"),
     # This matches everything except spaces, parens, colon, and comma
@@ -120,7 +120,7 @@ def extract_from_part(parsed: TokenList, stop_at_punctuation: bool = True) -> Ge
                     break
 
 
-def extract_table_identifiers(token_stream: Iterable[Token]) -> Generator[Tuple[Optional[str], str, Optional[str]], None, None]:
+def extract_table_identifiers(token_stream: Iterable[Token]) -> Generator[tuple[str | None, str, str | None], None, None]:
     """Yield tuples of (schema_name, table_name, table_alias)."""
 
     for item in token_stream:
@@ -149,7 +149,7 @@ def extract_table_identifiers(token_stream: Iterable[Token]) -> Generator[Tuple[
 
 
 # extract_tables is inspired from examples in the sqlparse lib.
-def extract_tables(sql: str) -> List[Tuple[Optional[str], str, Optional[str]]]:
+def extract_tables(sql: str) -> list[tuple[str | None, str, str | None]]:
     """Extract the table names from an SQL statement.
 
     Returns a list of (schema, table, alias) tuples
@@ -168,7 +168,7 @@ def extract_tables(sql: str) -> List[Tuple[Optional[str], str, Optional[str]]]:
     return list(extract_table_identifiers(stream))
 
 
-def find_prev_keyword(sql: str) -> Tuple[Optional[Token], str]:
+def find_prev_keyword(sql: str) -> tuple[Token | None, str]:
     """Find the last sql keyword in an SQL statement
 
     Returns the value of the last keyword, and the text of the query with

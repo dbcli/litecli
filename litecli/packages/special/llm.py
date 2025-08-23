@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import io
 import logging
@@ -8,7 +10,7 @@ import shlex
 import sys
 from runpy import run_module
 from time import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import click
 import llm
@@ -21,9 +23,9 @@ from .types import DBCursor
 log = logging.getLogger(__name__)
 
 LLM_TEMPLATE_NAME = "litecli-llm-template"
-LLM_CLI_COMMANDS: List[str] = list(cli.commands.keys())
+LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys())
 # Mapping of model_id to None used for completion tree leaves.
-MODELS: Dict[str, None] = {x.model_id: None for x in llm.get_models()}
+MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()}
 
 
 def run_external_cmd(
@@ -32,7 +34,7 @@ def run_external_cmd(
     capture_output: bool = False,
     restart_cli: bool = False,
     raise_exception: bool = True,
-) -> Tuple[int, str]:
+) -> tuple[int, str]:
     original_exe = sys.executable
     original_args = sys.argv
 
@@ -81,7 +83,7 @@ def run_external_cmd(
         sys.argv = original_args
 
 
-def build_command_tree(cmd: click.Command) -> Optional[Dict[str, Any]]:
+def build_command_tree(cmd: click.Command) -> dict[str, Any] | None:
     """Recursively build a command tree for a Click app.
 
     Args:
@@ -91,7 +93,7 @@ def build_command_tree(cmd: click.Command) -> Optional[Dict[str, Any]]:
         dict | None: A nested dictionary representing the command structure,
         or None for leaf commands.
     """
-    tree: Dict[str, Any] = {}
+    tree: dict[str, Any] = {}
     if isinstance(cmd, click.Group):
         for name, subcmd in cmd.commands.items():
             if cmd.name == "models" and name == "default":
@@ -106,10 +108,10 @@ def build_command_tree(cmd: click.Command) -> Optional[Dict[str, Any]]:
 
 
 # Generate the tree
-COMMAND_TREE: Optional[Dict[str, Any]] = build_command_tree(cli)
+COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli)
 
 
-def get_completions(tokens: List[str], tree: Optional[Dict[str, Any]] = COMMAND_TREE) -> List[str]:
+def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TREE) -> list[str]:
     """Get autocompletions for the current command tokens.
 
     Args:
@@ -135,8 +137,8 @@ def get_completions(tokens: List[str], tree: Optional[Dict[str, Any]] = COMMAND_
 
 @export
 class FinishIteration(Exception):
-    def __init__(self, results: Optional[Any] = None) -> None:
-        self.results: Optional[Any] = results
+    def __init__(self, results: Any | None = None) -> None:
+        self.results: Any | None = results
 
 
 USAGE = """
@@ -212,7 +214,7 @@ def ensure_litecli_template(replace: bool = False) -> None:
 
 
 @export
-def handle_llm(text: str, cur: DBCursor) -> Tuple[str, Optional[str], float]:
+def handle_llm(text: str, cur: DBCursor) -> tuple[str, str | None, float]:
     """This function handles the special command `\\llm`.
 
     If it deals with a question that results in a SQL query then it will return
@@ -317,9 +319,9 @@ def is_llm_command(command: str) -> bool:
 @export
 def sql_using_llm(
     cur: DBCursor,
-    question: Optional[str] = None,
+    question: str | None = None,
     verbose: bool = False,
-) -> Tuple[str, Optional[str], Optional[str]]:
+) -> tuple[str, str | None, str | None]:
     if cur is None:
         raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """

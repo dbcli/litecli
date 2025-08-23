@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from re import compile, escape
 from collections import Counter
-from typing import Any, Collection, Generator, Iterable, List, Optional, Set, Tuple, Literal
+from typing import Any, Collection, Generator, Iterable, Literal
 
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.completion.base import Document
@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 
 class SQLCompleter(Completer):
-    keywords: List[str] = [
+    keywords: list[str] = [
         "ABORT",
         "ACTION",
         "ADD",
@@ -184,7 +184,7 @@ class SQLCompleter(Completer):
         "WITHOUT",
     ]
 
-    functions: List[str] = [
+    functions: list[str] = [
         "ABS",
         "AVG",
         "CHANGES",
@@ -257,13 +257,13 @@ class SQLCompleter(Completer):
 
     def __init__(self, supported_formats: Iterable[str] = (), keyword_casing: Literal["upper", "lower", "auto"] = "auto"):
         super(self.__class__, self).__init__()
-        self.reserved_words: Set[str] = set()
+        self.reserved_words: set[str] = set()
         for x in self.keywords:
             self.reserved_words.update(x.split())
         self.name_pattern = compile(r"^[_a-zA-Z][_a-zA-Z0-9\$]*$")
 
-        self.special_commands: List[str] = []
-        self.table_formats: List[str] = list(supported_formats)
+        self.special_commands: list[str] = []
+        self.table_formats: list[str] = list(supported_formats)
         if keyword_casing not in ("upper", "lower", "auto"):
             keyword_casing = "auto"
         self.keyword_casing: Literal["upper", "lower", "auto"] = keyword_casing
@@ -282,7 +282,7 @@ class SQLCompleter(Completer):
 
         return name
 
-    def escaped_names(self, names: Iterable[str]) -> List[str]:
+    def escaped_names(self, names: Iterable[str]) -> list[str]:
         return [self.escape_name(name) for name in names]
 
     def extend_special_commands(self, special_commands: Iterable[str]) -> None:
@@ -297,7 +297,7 @@ class SQLCompleter(Completer):
         self.keywords.extend(additional_keywords)
         self.all_completions.update(additional_keywords)
 
-    def extend_schemata(self, schema: Optional[str]) -> None:
+    def extend_schemata(self, schema: str | None) -> None:
         if schema is None:
             return
         metadata = self.dbmetadata["tables"]
@@ -385,10 +385,10 @@ class SQLCompleter(Completer):
         self.dbname = dbname
 
     def reset_completions(self) -> None:
-        self.databases: List[str] = []
+        self.databases: list[str] = []
         self.dbname = ""
         self.dbmetadata: dict[str, Any] = {"tables": {}, "views": {}, "functions": {}}
-        self.all_completions: Set[str] = set(self.keywords + self.functions)
+        self.all_completions: set[str] = set(self.keywords + self.functions)
 
     @staticmethod
     def find_matches(
@@ -396,7 +396,7 @@ class SQLCompleter(Completer):
         collection: Collection[str],
         start_only: bool = False,
         fuzzy: bool = True,
-        casing: Optional[str] = None,
+        casing: str | None = None,
         punctuations: str = "most_punctuations",
     ) -> Generator[Completion, None, None]:
         """Find completion matches for the given text.
@@ -444,10 +444,10 @@ class SQLCompleter(Completer):
     def get_completions(
         self,
         document: Document,
-        complete_event: Optional[CompleteEvent],
+        complete_event: CompleteEvent | None,
     ) -> Iterable[Completion]:
         word_before_cursor = document.get_word_before_cursor(WORD=True)
-        completions: List[Completion] = []
+        completions: list[Completion] = []
         suggestions = suggest_type(document.text, document.text_before_cursor)
 
         for suggestion in suggestions:
@@ -569,7 +569,7 @@ class SQLCompleter(Completer):
             if suggestion:
                 yield Completion(suggestion, position)
 
-    def populate_scoped_cols(self, scoped_tbls: List[Tuple[Optional[str], str, Optional[str]]]) -> List[str]:
+    def populate_scoped_cols(self, scoped_tbls: list[tuple[str | None, str, str | None]]) -> list[str]:
         """Find all columns in a set of scoped_tables
         :param scoped_tbls: list of (schema, table, alias) tuples
         :return: list of column names
@@ -607,7 +607,7 @@ class SQLCompleter(Completer):
 
         return columns
 
-    def populate_schema_objects(self, schema: Optional[str], obj_type: str) -> List[str]:
+    def populate_schema_objects(self, schema: str | None, obj_type: str) -> list[str]:
         """Returns list of tables or functions for a (optional) schema"""
         metadata = self.dbmetadata[obj_type]
         schema = schema or self.dbname

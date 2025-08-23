@@ -32,6 +32,8 @@
 - Indentation: 4 spaces. Line length: 140 (see `pyproject.toml`).
 - Naming: modules/functions/variables `snake_case`; classes `CamelCase`; tests `test_*.py`.
 - Keep imports sorted and unused code removed (ruff enforces).
+- Use lowercase type hints for dict, list, tuples etc.
+- Use | for Unions and | None for Optional.
 
 ## Testing Guidelines
 - Framework: Pytest with coverage (`coverage run -m pytest` via tox).

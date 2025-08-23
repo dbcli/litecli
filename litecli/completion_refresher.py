@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable
 
 from .packages.special.main import COMMANDS
 from collections import OrderedDict
@@ -11,18 +11,18 @@ from .sqlexecute import SQLExecute
 
 
 class CompletionRefresher(object):
-    refreshers: Dict[str, Callable] = OrderedDict()
+    refreshers: dict[str, Callable] = OrderedDict()
 
     def __init__(self) -> None:
-        self._completer_thread: Optional[threading.Thread] = None
+        self._completer_thread: threading.Thread | None = None
         self._restart_refresh = threading.Event()
 
     def refresh(
         self,
         executor: SQLExecute,
-        callbacks: Callable | List[Callable],
-        completer_options: Optional[dict] = None,
-    ) -> List[Tuple]:
+        callbacks: Callable | list[Callable],
+        completer_options: dict | None = None,
+    ) -> list[tuple]:
         """Creates a SQLCompleter object and populates it with the relevant
         completion suggestions in a background thread.
 
@@ -61,7 +61,7 @@ class CompletionRefresher(object):
     def _bg_refresh(
         self,
         sqlexecute: SQLExecute,
-        callbacks: Callable | List[Callable],
+        callbacks: Callable | list[Callable],
         completer_options: dict,
     ) -> None:
         completer = SQLCompleter(**completer_options)
@@ -97,7 +97,7 @@ class CompletionRefresher(object):
             callback(completer)
 
 
-def refresher(name: str, refreshers: Dict[str, Callable] = CompletionRefresher.refreshers):
+def refresher(name: str, refreshers: dict[str, Callable] = CompletionRefresher.refreshers):
     """Decorator to add the decorated function to the dictionary of
     refreshers. Any function decorated with a @refresher will be executed as
     part of the completion refresh routine."""

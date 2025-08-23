@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import List, Tuple, Optional
 
 import os
 import subprocess
 
 
-def handle_cd_command(arg: str) -> Tuple[bool, Optional[str]]:
+def handle_cd_command(arg: str) -> tuple[bool, str | None]:
     """Handles a `cd` shell command by calling python's os.chdir."""
     CD_CMD = "cd"
     tokens = arg.split(CD_CMD + " ")
@@ -36,7 +35,7 @@ def format_uptime(uptime_in_seconds: str) -> str:
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
 
-    uptime_values: List[str] = []
+    uptime_values: list[str] = []
 
     for value, unit in ((d, "days"), (h, "hours"), (m, "min"), (s, "sec")):
         if value == 0 and not uptime_values:

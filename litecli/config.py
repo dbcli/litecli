@@ -5,7 +5,7 @@ import shutil
 import os
 import platform
 from os.path import expanduser, exists, dirname
-from typing import Optional
+
 
 from configobj import ConfigObj
 
@@ -20,7 +20,7 @@ def config_location() -> str:
         return expanduser("~/.config/litecli/")
 
 
-def load_config(usr_cfg: str, def_cfg: Optional[str] = None) -> ConfigObj:
+def load_config(usr_cfg: str, def_cfg: str | None = None) -> ConfigObj:
     cfg = ConfigObj()
     if def_cfg:
         cfg.merge(ConfigObj(def_cfg, interpolation=False))
@@ -52,7 +52,7 @@ def upgrade_config(config: str, def_config: str) -> None:
     cfg.write()
 
 
-def get_config(liteclirc_file: Optional[str] = None) -> ConfigObj:
+def get_config(liteclirc_file: str | None = None) -> ConfigObj:
     from litecli import __file__ as package_root
 
     package_root = os.path.dirname(package_root)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where, Token
@@ -8,7 +8,7 @@ from .parseutils import last_word, extract_tables, find_prev_keyword
 from .special import parse_special_command
 
 
-def suggest_type(full_text: str, text_before_cursor: str) -> List[Dict[str, Any]]:
+def suggest_type(full_text: str, text_before_cursor: str) -> list[dict[str, Any]]:
     """Takes the full_text that is typed so far and also the text before the
     cursor to suggest completion type and scope.
 
@@ -18,7 +18,7 @@ def suggest_type(full_text: str, text_before_cursor: str) -> List[Dict[str, Any]
 
     word_before_cursor = last_word(text_before_cursor, include="many_punctuations")
 
-    identifier: Optional[Identifier] = None
+    identifier: Identifier | None = None
 
     # here should be removed once sqlparse has been fixed
     try:
@@ -87,7 +87,7 @@ def suggest_type(full_text: str, text_before_cursor: str) -> List[Dict[str, Any]
     return suggest_based_on_last_token(last_token, text_before_cursor, full_text, identifier)
 
 
-def suggest_special(text: str) -> List[Dict[str, Any]]:
+def suggest_special(text: str) -> list[dict[str, Any]]:
     text = text.lstrip()
     cmd, _, arg = parse_special_command(text)
 
@@ -144,11 +144,11 @@ def _expecting_arg_idx(arg: str, text: str) -> int:
 
 
 def suggest_based_on_last_token(
-    token: Optional[str | Token],
+    token: str | Token | None,
     text_before_cursor: str,
     full_text: str,
-    identifier: Optional[Identifier],
-) -> List[Dict[str, Any]]:
+    identifier: Identifier | None,
+) -> list[dict[str, Any]]:
     if isinstance(token, str):
         token_v = token.lower()
     elif isinstance(token, Comparison):
@@ -169,7 +169,7 @@ def suggest_based_on_last_token(
     else:
         token_v = token.value.lower()
 
-    def is_operand(x: Optional[str]) -> bool:
+    def is_operand(x: str | None) -> bool:
         return bool(x) and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
 
     if not token:
@@ -328,5 +328,5 @@ def suggest_based_on_last_token(
         return [{"type": "keyword"}]
 
 
-def identifies(id: Any, schema: Optional[str], table: str, alias: Optional[str]) -> bool:
+def identifies(id: Any, schema: str | None, table: str, alias: str | None) -> bool:
     return id == alias or id == table or (schema and (id == schema + "." + table))

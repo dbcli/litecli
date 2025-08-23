@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Tuple
+
 
 import pygments.styles
 from pygments.token import string_to_tokentype, Token
@@ -14,7 +14,7 @@ from prompt_toolkit.styles.style import _MergedStyle
 logger = logging.getLogger(__name__)
 
 # map Pygments tokens (ptk 1.0) to class names (ptk 2.0).
-TOKEN_TO_PROMPT_STYLE: Dict[Token, str] = {
+TOKEN_TO_PROMPT_STYLE: dict[Token, str] = {
     Token.Menu.Completions.Completion.Current: "completion-menu.completion.current",
     Token.Menu.Completions.Completion: "completion-menu.completion",
     Token.Menu.Completions.Meta.Current: "completion-menu.meta.completion.current",
@@ -43,10 +43,10 @@ TOKEN_TO_PROMPT_STYLE: Dict[Token, str] = {
 }
 
 # reverse dict for cli_helpers, because they still expect Pygments tokens.
-PROMPT_STYLE_TO_TOKEN: Dict[str, Token] = {v: k for k, v in TOKEN_TO_PROMPT_STYLE.items()}
+PROMPT_STYLE_TO_TOKEN: dict[str, Token] = {v: k for k, v in TOKEN_TO_PROMPT_STYLE.items()}
 
 
-def parse_pygments_style(token_name: str, style_object, style_dict: Dict[str, str]) -> Tuple[Token, str]:
+def parse_pygments_style(token_name: str, style_object, style_dict: dict[str, str]) -> tuple[Token, str]:
     """Parse token type and style string.
 
     :param token_name: str name of Pygments token. Example: "Token.String"
@@ -62,13 +62,13 @@ def parse_pygments_style(token_name: str, style_object, style_dict: Dict[str, st
         return token_type, style_dict[token_name]
 
 
-def style_factory(name: str, cli_style: Dict[str, str]) -> _MergedStyle:
+def style_factory(name: str, cli_style: dict[str, str]) -> _MergedStyle:
     try:
         style = pygments.styles.get_style_by_name(name)
     except ClassNotFound:
         style = pygments.styles.get_style_by_name("native")
 
-    prompt_styles: List[Tuple[str, str]] = []
+    prompt_styles: list[tuple[str, str]] = []
     # prompt-toolkit used pygments tokens for styling before, switched to style
     # names in 2.0. Convert old token types to new style names, for backwards compatibility.
     for token in cli_style:
@@ -90,7 +90,7 @@ def style_factory(name: str, cli_style: Dict[str, str]) -> _MergedStyle:
     return merge_styles([style_from_pygments_cls(style), override_style, Style(prompt_styles)])
 
 
-def style_factory_output(name: str, cli_style: Dict[str, str]):
+def style_factory_output(name: str, cli_style: dict[str, str]):
     try:
         style = pygments.styles.get_style_by_name(name).styles
     except ClassNotFound:

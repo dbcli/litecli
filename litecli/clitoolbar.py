@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import Callable, List, Tuple
+from typing import Callable
 
 from prompt_toolkit.key_binding.vi_state import InputMode
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.application import get_app
 
 
-def create_toolbar_tokens_func(cli, show_fish_help: Callable[[], bool]) -> Callable[[], List[Tuple[str, str]]]:
+def create_toolbar_tokens_func(cli, show_fish_help: Callable[[], bool]) -> Callable[[], list[tuple[str, str]]]:
     """Return a function that generates the toolbar tokens."""
 
-    def get_toolbar_tokens() -> List[Tuple[str, str]]:
-        result: List[Tuple[str, str]] = []
+    def get_toolbar_tokens() -> list[tuple[str, str]]:
+        result: list[tuple[str, str]] = []
         result.append(("class:bottom-toolbar", " "))
 
         if cli.multi_line:

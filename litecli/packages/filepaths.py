@@ -1,19 +1,18 @@
 # -*- coding: utf-8
 from __future__ import annotations
 
-from typing import List, Tuple
 
 import os
 
 
-def list_path(root_dir: str) -> List[str]:
+def list_path(root_dir: str) -> list[str]:
     """List directory if exists.
 
     :param dir: str
     :return: list
 
     """
-    res: List[str] = []
+    res: list[str] = []
     if os.path.isdir(root_dir):
         for name in os.listdir(root_dir):
             res.append(name)
@@ -38,7 +37,7 @@ def complete_path(curr_dir: str, last_dir: str) -> str | None:
     return None
 
 
-def parse_path(root_dir: str) -> Tuple[str, str, int]:
+def parse_path(root_dir: str) -> tuple[str, str, int]:
     """Split path into head and last component for the completer.
 
     Also return position where last component starts.
@@ -54,7 +53,7 @@ def parse_path(root_dir: str) -> Tuple[str, str, int]:
     return base_dir, last_dir, position
 
 
-def suggest_path(root_dir: str) -> List[str]:
+def suggest_path(root_dir: str) -> list[str]:
     """List all files and subdirectories in a directory.
 
     If the directory is not specified, suggest root directory,

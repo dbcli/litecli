@@ -17,7 +17,7 @@ try:
 except ImportError:
     from sqlite3 import OperationalError, sqlite_version
 from time import time
-from typing import Any, Iterable, Optional, Dict
+from typing import Any, Iterable
 
 import click
 import sqlparse
@@ -66,12 +66,12 @@ class LiteCli(object):
 
     def __init__(
         self,
-        sqlexecute: Optional[SQLExecute] = None,
-        prompt: Optional[str] = None,
-        logfile: Optional[Any] = None,
+        sqlexecute: SQLExecute | None = None,
+        prompt: str | None = None,
+        logfile: Any | None = None,
         auto_vertical_output: bool = False,
-        warn: Optional[bool] = None,
-        liteclirc: Optional[str] = None,
+        warn: bool | None = None,
+        liteclirc: str | None = None,
     ) -> None:
         self.sqlexecute = sqlexecute
         self.logfile = logfile
@@ -190,7 +190,7 @@ class LiteCli(object):
                 msg += "\n\t{}".format(table_type)
             yield (None, None, None, msg)
 
-    def change_db(self, arg: Optional[str], **_: Any):
+    def change_db(self, arg: str | None, **_: Any):
         if arg is None:
             self.sqlexecute.connect()
         else:
@@ -204,7 +204,7 @@ class LiteCli(object):
             'You are now connected to database "%s"' % (self.sqlexecute.dbname),
         )
 
-    def execute_from_file(self, arg: Optional[str], **_: Any):
+    def execute_from_file(self, arg: str | None, **_: Any):
         if not arg:
             message = "Missing required argument, filename."
             return [(None, None, None, message)]
@@ -220,7 +220,7 @@ class LiteCli(object):
 
         return self.sqlexecute.run(query)
 
-    def change_prompt_format(self, arg: Optional[str], **_: Any):
+    def change_prompt_format(self, arg: str | None, **_: Any):
         """
         Change the prompt format.
         """
@@ -279,7 +279,7 @@ class LiteCli(object):
         root_logger.debug("Initializing litecli logging.")
         root_logger.debug("Log file %r.", log_file)
 
-    def read_my_cnf_files(self, keys: Iterable[str]) -> Dict[str, Optional[str]]:
+    def read_my_cnf_files(self, keys: Iterable[str]) -> dict[str, str | None]:
         """
         Reads a list of config files and merges them. The last one will win.
         :param files: list of files to read
@@ -661,7 +661,7 @@ class LiteCli(object):
         self.log_output(s)
         click.secho(s, **kwargs)
 
-    def get_output_margin(self, status: Optional[str] = None) -> int:
+    def get_output_margin(self, status: str | None = None) -> int:
         """Get the output margin (number of rows for the prompt, footer and
         timing message."""
         margin = self.get_reserved_space() + self.get_prompt(self.prompt_format).count("\n") + 2
@@ -670,7 +670,7 @@ class LiteCli(object):
 
         return margin
 
-    def output(self, output: Iterable[str], status: Optional[str] = None) -> None:
+    def output(self, output: Iterable[str], status: str | None = None) -> None:
         """Output text to stdout or a pager command.
 
         The status text is not outputted to pager or files.
