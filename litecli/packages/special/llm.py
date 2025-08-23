@@ -1,11 +1,3 @@
-"""LLM integration and helpers with lightweight typing.
-
-Types are intentionally broad to avoid over-constraining Click and DB-API
-objects while still providing helpful hints to callers and tooling.
-"""
-
-# mypy: ignore-errors
-
 import contextlib
 import io
 import logging

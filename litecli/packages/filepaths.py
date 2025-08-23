@@ -1,6 +1,4 @@
 # -*- coding: utf-8
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 from typing import List, Tuple

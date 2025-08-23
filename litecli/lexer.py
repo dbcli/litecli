@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 from pygments.lexer import inherit

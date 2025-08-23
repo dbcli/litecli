@@ -1,11 +1,3 @@
-"""SQL parse utilities with type hints.
-
-The functions here lean on sqlparse types but keep annotations broad enough
-to work across versions. No behavioral changes from prior implementation.
-"""
-
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 import re

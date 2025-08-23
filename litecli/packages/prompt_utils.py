@@ -1,6 +1,3 @@
-"""Prompt helpers with explicit typing."""
-
-# mypy: ignore-errors
 from __future__ import annotations
 
 import sys

@@ -1,7 +1,3 @@
-"""LiteCLI configuration helpers with typing."""
-
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 import errno

@@ -1,7 +1,3 @@
-"""SQL completer with typed interfaces for LiteCLI."""
-
-# mypy: ignore-errors
-
 from __future__ import annotations
 
 import logging
