@@ -1,3 +1,9 @@
+## Upcoming (TBC)
+
+### Bug Fixes
+
+* Upgrade Click to be 8.2+ to prevent pager mess up with pager env var has spaces.
+
 ## 1.16.0 - 2025-08-16
 
 ### Features
