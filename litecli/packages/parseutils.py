@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Generator, Iterable
+from typing import Generator, Iterable, Literal
 
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier, Function, Token, TokenList
@@ -19,7 +19,9 @@ cleanup_regex: dict[str, re.Pattern[str]] = {
 }
 
 
-def last_word(text: str, include: str = "alphanum_underscore") -> str:
+def last_word(
+    text: str, include: Literal["alphanum_underscore", "many_punctuations", "most_punctuations", "all_punctuations"] = "alphanum_underscore"
+) -> str:
     R"""
     Find the last word in a sentence.
 
