@@ -44,9 +44,10 @@ def run_external_cmd(
 
         if capture_output:
             buffer = io.StringIO()
-            redirect = contextlib.ExitStack()
-            redirect.enter_context(contextlib.redirect_stdout(buffer))
-            redirect.enter_context(contextlib.redirect_stderr(buffer))
+            stack = contextlib.ExitStack()
+            stack.enter_context(contextlib.redirect_stdout(buffer))
+            stack.enter_context(contextlib.redirect_stderr(buffer))
+            redirect: contextlib.AbstractContextManager[Any] = stack
         else:
             redirect = contextlib.nullcontext()
 
@@ -346,6 +347,8 @@ def sql_using_llm(
     for (table,) in cur.fetchall():
         sample_row = sample_row_query.format(table=table)
         cur.execute(sample_row)
+        if cur.description is None:
+            continue
         cols = [x[0] for x in cur.description]
         row = cur.fetchone()
         if row is None:  # Skip empty tables
@@ -367,7 +370,9 @@ def sql_using_llm(
         " ",  # Dummy argument to prevent llm from waiting on stdin
     ]
     click.echo("Invoking llm command with schema information")
-    _, result = run_external_cmd("llm", *args, capture_output=True)
+    # Ensure all args are strings for sys.argv safety inside run_module
+    str_args = [str(a) for a in args]
+    _, result = run_external_cmd("llm", *str_args, capture_output=True)
     click.echo("Received response from the llm command")
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
     sql = match.group(1).strip() if match else ""

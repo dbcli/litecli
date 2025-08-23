@@ -9,8 +9,10 @@ from prompt_toolkit.application import get_app
 
 def cli_is_multiline(cli: Any) -> Filter:
     @Condition
-    def cond():
-        doc = get_app().layout.get_buffer_by_name(DEFAULT_BUFFER).document
+    def cond() -> bool:
+        buf = get_app().layout.get_buffer_by_name(DEFAULT_BUFFER)
+        assert buf is not None
+        doc = buf.document
 
         if not cli.multi_line:
             return False

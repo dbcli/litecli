@@ -46,7 +46,7 @@ TOKEN_TO_PROMPT_STYLE: dict[Token, str] = {
 PROMPT_STYLE_TO_TOKEN: dict[str, Token] = {v: k for k, v in TOKEN_TO_PROMPT_STYLE.items()}
 
 
-def parse_pygments_style(token_name: str, style_object, style_dict: dict[str, str]) -> tuple[Token, str]:
+def parse_pygments_style(token_name: str, style_object: PygmentsStyle | dict, style_dict: dict[str, str]) -> tuple[Token, str]:
     """Parse token type and style string.
 
     :param token_name: str name of Pygments token. Example: "Token.String"
@@ -55,10 +55,10 @@ def parse_pygments_style(token_name: str, style_object, style_dict: dict[str, st
 
     """
     token_type = string_to_tokentype(token_name)
-    try:
+    if isinstance(style_object, PygmentsStyle):
         other_token_type = string_to_tokentype(style_dict[token_name])
         return token_type, style_object.styles[other_token_type]
-    except AttributeError:
+    else:
         return token_type, style_dict[token_name]
 
 
@@ -90,7 +90,7 @@ def style_factory(name: str, cli_style: dict[str, str]) -> _MergedStyle:
     return merge_styles([style_from_pygments_cls(style), override_style, Style(prompt_styles)])
 
 
-def style_factory_output(name: str, cli_style: dict[str, str]):
+def style_factory_output(name: str, cli_style: dict[str, str]) -> PygmentsStyle:
     try:
         style = pygments.styles.get_style_by_name(name).styles
     except ClassNotFound:

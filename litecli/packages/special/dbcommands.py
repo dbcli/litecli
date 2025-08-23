@@ -6,7 +6,7 @@ import os
 import sys
 import platform
 import shlex
-from typing import Any
+from typing import Any, cast
 
 
 from litecli import __version__
@@ -32,7 +32,7 @@ def list_tables(
     verbose: bool = False,
 ) -> list[tuple]:
     if arg:
-        args = ("{0}%".format(arg),)
+        args: tuple[str, ...] = ("{0}%".format(arg),)
         query = """
             SELECT name FROM sqlite_master
             WHERE type IN ('table','view') AND name LIKE ? AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_%'
@@ -79,7 +79,7 @@ def list_views(
     verbose: bool = False,
 ) -> list[tuple]:
     if arg:
-        args = ("{0}%".format(arg),)
+        args: tuple[str, ...] = ("{0}%".format(arg),)
         query = """
             SELECT name FROM sqlite_master
             WHERE type = 'view' AND name LIKE ? AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'sqlean_%'
@@ -112,7 +112,7 @@ def list_views(
 )
 def show_schema(cur: DBCursor, arg: str | None = None, **_: Any) -> list[tuple]:
     if arg:
-        args = (arg,)
+        args: tuple[str, ...] = (arg,)
         query = """
             SELECT sql FROM sqlite_master
             WHERE tbl_name==? AND sql IS NOT NULL
@@ -172,7 +172,7 @@ def list_indexes(
     verbose: bool = False,
 ) -> list[tuple]:
     if arg:
-        args = ("{0}%".format(arg),)
+        args: tuple[str, ...] = ("{0}%".format(arg),)
         query = """
             SELECT name, sql FROM sqlite_master
             WHERE type = 'index' AND tbl_name LIKE ? AND name NOT LIKE 'sqlite_%'
@@ -222,9 +222,8 @@ def status(cur: DBCursor, **_: Any) -> list[tuple]:
     query = "SELECT file from pragma_database_list() where name = 'main';"
     log.debug(query)
     cur.execute(query)
-    db = cur.fetchone()[0]
-    if db is None:
-        db = ""
+    row = cur.fetchone()
+    db = row[0] if row else ""
 
     footer.append("Current database: " + db)
     if iocommands.is_pager_enabled():
@@ -247,7 +246,7 @@ def status(cur: DBCursor, **_: Any) -> list[tuple]:
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
-def load_extension(cur, arg, **_):
+def load_extension(cur: DBCursor, arg: str, **_: Any) -> None:
     args = shlex.split(arg)
     if len(args) != 1:
         raise TypeError(".load accepts exactly one path")
@@ -255,7 +254,6 @@ def load_extension(cur, arg, **_):
     conn = cur.connection
     conn.enable_load_extension(True)
     conn.load_extension(path)
-    return [(None, None, None, "")]
 
 
 @special_command(
@@ -272,7 +270,7 @@ def describe(cur: DBCursor, arg: str | None, **_: Any) -> list[tuple]:
             PRAGMA table_info({})
         """.format(arg)
     else:
-        return list_tables(cur)
+        return cast(list[tuple[Any, ...]], list_tables(cur))
 
     log.debug(query)
     cur.execute(query)
@@ -294,7 +292,7 @@ def describe(cur: DBCursor, arg: str | None, **_: Any) -> list[tuple]:
     case_sensitive=True,
 )
 def import_file(cur: DBCursor, arg: str | None = None, **_: Any) -> list[tuple]:
-    def split(s):
+    def split(s: str) -> list[str]:
         # this is a modification of shlex.split function, just to make it support '`',
         # because table name might contain '`' character.
         lex = shlex.shlex(s, posix=True)
@@ -303,6 +301,8 @@ def import_file(cur: DBCursor, arg: str | None = None, **_: Any) -> list[tuple]:
         lex.quotes += "`"
         return list(lex)
 
+    if arg is None:
+        raise TypeError("Usage: .import filename table")
     args = split(arg)
     log.debug("[arg = %r], [args = %r]", arg, args)
     if len(args) != 2:

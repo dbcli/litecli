@@ -59,9 +59,10 @@ class SQLExecute(object):
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
 
     def __init__(self, database: str | None):
-        self.dbname = database
-        self._server_type = None
-        self.conn = None
+        self.dbname: str | None = database
+        self._server_type: tuple[str, str] | None = None
+        # Connection can be sqlite3.Connection or sqlean.sqlite3 connection.
+        self.conn: Any | None = None
         if not database:
             _logger.debug("Database is not specified. Skip connection.")
             return
@@ -70,6 +71,9 @@ class SQLExecute(object):
     def connect(self, database: str | None = None) -> None:
         db = database or self.dbname
         _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
+        if db is None:
+            # Nothing to connect to.
+            return
 
         db_name = os.path.expanduser(db)
         db_dir_name = os.path.dirname(os.path.abspath(db_name))
@@ -138,6 +142,7 @@ class SQLExecute(object):
                     yield ("dot command not implemented", None, None, None)
                 else:
                     _logger.debug("Regular sql statement. sql: %r", sql)
+                    assert cur is not None
                     cur.execute(sql)
                     yield self.get_result(cur)
 
@@ -167,7 +172,7 @@ class SQLExecute(object):
 
     def tables(self) -> Generator[tuple[str], None, None]:
         """Yields table names"""
-
+        assert self.conn is not None
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Tables Query. sql: %r", self.tables_query)
             cur.execute(self.tables_query)
@@ -176,13 +181,14 @@ class SQLExecute(object):
 
     def table_columns(self) -> Generator[tuple[str, str], None, None]:
         """Yields column names"""
+        assert self.conn is not None
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Columns Query. sql: %r", self.table_columns_query)
             cur.execute(self.table_columns_query)
             for row in cur:
                 yield row
 
-    def databases(self) -> Iterable[str]:
+    def databases(self) -> Generator[str, None, None]:
         if not self.conn:
             return
 
@@ -193,24 +199,12 @@ class SQLExecute(object):
 
     def functions(self) -> Iterable[tuple]:
         """Yields tuples of (schema_name, function_name)"""
-
+        assert self.conn is not None
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Functions Query. sql: %r", self.functions_query)
             cur.execute(self.functions_query % self.dbname)
             for row in cur:
                 yield row
-
-    def show_candidates(self) -> Iterable[Any]:
-        with closing(self.conn.cursor()) as cur:
-            _logger.debug("Show Query. sql: %r", self.show_candidates_query)
-            try:
-                cur.execute(self.show_candidates_query)
-            except sqlite3.DatabaseError as e:
-                _logger.error("No show completions due to %r", e)
-                yield ""
-            else:
-                for row in cur:
-                    yield (row[0].split(None, 1)[-1],)
 
     def server_type(self) -> tuple[str, str]:
         self._server_type = ("sqlite3", "3")

@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from re import compile, escape
 from collections import Counter
-from typing import Any, Collection, Generator, Iterable, Literal
+from typing import Any, Collection, Generator, Iterable, Literal, Sequence
 
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.completion.base import Document
@@ -308,7 +308,7 @@ class SQLCompleter(Completer):
             metadata[schema] = {}
         self.all_completions.update(schema)
 
-    def extend_relations(self, data: Iterable[Iterable[str]], kind: str) -> None:
+    def extend_relations(self, data: Iterable[Sequence[str]], kind: str) -> None:
         """Extend metadata for tables or views
 
         :param data: list of (rel_name, ) tuples
@@ -340,7 +340,7 @@ class SQLCompleter(Completer):
                 )
             self.all_completions.add(relname[0])
 
-    def extend_columns(self, column_data: Iterable[Iterable[str]], kind: str) -> None:
+    def extend_columns(self, column_data: Iterable[Sequence[str]], kind: str) -> None:
         """Extend column metadata
 
         :param column_data: list of (rel_name, column_name) tuples
@@ -362,7 +362,7 @@ class SQLCompleter(Completer):
             metadata[self.dbname][relname].append(column)
             self.all_completions.add(column)
 
-    def extend_functions(self, func_data: Iterable[Iterable[str]]) -> None:
+    def extend_functions(self, func_data: Iterable[Sequence[str]]) -> None:
         # 'func_data' is a generator object. It can throw an exception while
         # being consumed. This could happen if the user has launched the app
         # without specifying a database name. This exception must be handled to
@@ -487,19 +487,19 @@ class SQLCompleter(Completer):
                     completions.extend(predefined_funcs)
 
             elif suggestion["type"] == "table":
-                tables = self.populate_schema_objects(suggestion["schema"], "tables")
-                tables = self.find_matches(word_before_cursor, tables)
-                completions.extend(tables)
+                table_names = self.populate_schema_objects(suggestion["schema"], "tables")
+                table_matches = self.find_matches(word_before_cursor, table_names)
+                completions.extend(table_matches)
 
             elif suggestion["type"] == "view":
-                views = self.populate_schema_objects(suggestion["schema"], "views")
-                views = self.find_matches(word_before_cursor, views)
-                completions.extend(views)
+                view_names = self.populate_schema_objects(suggestion["schema"], "views")
+                view_matches = self.find_matches(word_before_cursor, view_names)
+                completions.extend(view_matches)
 
             elif suggestion["type"] == "alias":
                 aliases = suggestion["aliases"]
-                aliases = self.find_matches(word_before_cursor, aliases)
-                completions.extend(aliases)
+                alias_matches = self.find_matches(word_before_cursor, aliases)
+                completions.extend(alias_matches)
 
             elif suggestion["type"] == "database":
                 dbs = self.find_matches(word_before_cursor, self.databases)
@@ -613,9 +613,9 @@ class SQLCompleter(Completer):
         schema = schema or self.dbname
 
         try:
-            objects = metadata[schema].keys()
+            keys = list(metadata[schema].keys())
         except KeyError:
             # schema doesn't exist
-            objects = []
+            keys = []
 
-        return objects
+        return keys

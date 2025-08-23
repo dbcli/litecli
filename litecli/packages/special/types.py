@@ -8,6 +8,9 @@ class DBCursor(Protocol):
 
     description: Sequence[Sequence[Any]] | None
 
+    # Optional attribute on many DB-API cursors
+    connection: Any
+
     def execute(self, sql: str, params: Any = ...) -> Any: ...
 
     def fetchall(self) -> list[tuple[Any, ...]]: ...

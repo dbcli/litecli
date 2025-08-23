@@ -45,6 +45,7 @@ class CompletionRefresher(object):
                 # if DB is memory, needed to use same connection
                 # So can't use same connection with different thread
                 self._bg_refresh(executor, callbacks, completer_options)
+                return [(None, None, None, "Auto-completion refresh started in the background.")]
             else:
                 self._completer_thread = threading.Thread(
                     target=self._bg_refresh,
@@ -97,7 +98,7 @@ class CompletionRefresher(object):
             callback(completer)
 
 
-def refresher(name: str, refreshers: dict[str, Callable] = CompletionRefresher.refreshers):
+def refresher(name: str, refreshers: dict[str, Callable] = CompletionRefresher.refreshers) -> Callable:
     """Decorator to add the decorated function to the dictionary of
     refreshers. Any function decorated with a @refresher will be executed as
     part of the completion refresh routine."""

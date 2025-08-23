@@ -5,7 +5,7 @@ from typing import Any
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where, Token
 from .parseutils import last_word, extract_tables, find_prev_keyword
-from .special import parse_special_command
+from .special.main import parse_special_command
 
 
 def suggest_type(full_text: str, text_before_cursor: str) -> list[dict[str, Any]]:
@@ -167,10 +167,13 @@ def suggest_based_on_last_token(
         prev_keyword, text_before_cursor = find_prev_keyword(text_before_cursor)
         return suggest_based_on_last_token(prev_keyword, text_before_cursor, full_text, identifier)
     else:
+        assert token is not None
         token_v = token.value.lower()
 
     def is_operand(x: str | None) -> bool:
-        return bool(x) and any([x.endswith(op) for op in ["+", "-", "*", "/"]])
+        if not x:
+            return False
+        return any([x.endswith(op) for op in ["+", "-", "*", "/"]])
 
     if not token:
         return [{"type": "keyword"}, {"type": "special"}]
@@ -329,4 +332,4 @@ def suggest_based_on_last_token(
 
 
 def identifies(id: Any, schema: str | None, table: str, alias: str | None) -> bool:
-    return id == alias or id == table or (schema and (id == schema + "." + table))
+    return (id == alias) or (id == table) or (schema is not None and (id == schema + "." + table))

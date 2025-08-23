@@ -5,6 +5,7 @@ import sys
 import click
 
 from .parseutils import is_destructive
+from typing import Any
 
 
 class ConfirmBoolParamType(click.ParamType):
@@ -37,11 +38,11 @@ def confirm_destructive_query(queries: str) -> bool | None:
     """
     prompt_text = "You're about to run a destructive command.\nDo you want to proceed? (y/n)"
     if is_destructive(queries) and sys.stdin.isatty():
-        return prompt(prompt_text, type=BOOLEAN_TYPE)
+        return bool(prompt(prompt_text, type=BOOLEAN_TYPE))
     return None
 
 
-def confirm(*args, **kwargs) -> bool:
+def confirm(*args: Any, **kwargs: Any) -> bool:
     """Prompt for confirmation (yes/no) and handle aborts."""
     try:
         return click.confirm(*args, **kwargs)
@@ -49,8 +50,8 @@ def confirm(*args, **kwargs) -> bool:
         return False
 
 
-def prompt(*args, **kwargs) -> bool:
-    """Prompt the user for input and handle aborts."""
+def prompt(*args: Any, **kwargs: Any) -> Any:
+    """Prompt the user for input and handle aborts. Returns the value from click.prompt."""
     try:
         return click.prompt(*args, **kwargs)
     except click.Abort:
