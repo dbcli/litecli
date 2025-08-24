@@ -9,7 +9,7 @@ authors = [{ name = "dbcli", email = "litecli-users@googlegroups.com" }]
 urls = { "homepage" = "https://github.com/dbcli/litecli" }
 dependencies = [
     "cli-helpers[styles]>=2.2.1",
-    "click>=4.1",
+    "click>=4.1,!=8.1.*",
     "configobj>=5.0.5",
     "mypy>=1.17.1",
     "prompt-toolkit>=3.0.3,<4.0.0",
