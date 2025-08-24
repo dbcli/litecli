@@ -52,10 +52,10 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: {{ matrix.python-version }}
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: uv sync --all-extras -p {{ matrix.python-version }}
+      run: uv sync --all-extras -p ${{ matrix.python-version }}
 
     - name: Build
       run: uv build

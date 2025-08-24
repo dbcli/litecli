@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# mypy: ignore-errors
 """Test the litecli.clistyle module."""
 
 import pytest

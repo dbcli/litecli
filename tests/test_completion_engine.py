@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 from litecli.packages.completion_engine import suggest_type
 import pytest
 

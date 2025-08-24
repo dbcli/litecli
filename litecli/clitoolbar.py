@@ -1,17 +1,17 @@
-from __future__ import unicode_literals
+from __future__ import annotations
+
+from typing import Callable, Any
 
 from prompt_toolkit.key_binding.vi_state import InputMode
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.application import get_app
 
 
-def create_toolbar_tokens_func(cli, show_fish_help):
-    """
-    Return a function that generates the toolbar tokens.
-    """
+def create_toolbar_tokens_func(cli: Any, show_fish_help: Callable[[], bool]) -> Callable[[], list[tuple[str, str]]]:
+    """Return a function that generates the toolbar tokens."""
 
-    def get_toolbar_tokens():
-        result = []
+    def get_toolbar_tokens() -> list[tuple[str, str]]:
+        result: list[tuple[str, str]] = []
         result.append(("class:bottom-toolbar", " "))
 
         if cli.multi_line:
@@ -35,7 +35,7 @@ def create_toolbar_tokens_func(cli, show_fish_help):
     return get_toolbar_tokens
 
 
-def _get_vi_mode():
+def _get_vi_mode() -> str:
     """Get the current vi mode for display."""
     return {
         InputMode.INSERT: "I",

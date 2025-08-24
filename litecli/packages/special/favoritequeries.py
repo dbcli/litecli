@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from __future__ import annotations
+
+from typing import Any, cast
 
 
 class FavoriteQueries(object):
-    section_name = "favorite_queries"
+    section_name: str = "favorite_queries"
 
     usage = """
 Favorite Queries are a way to save frequently used queries
@@ -34,22 +36,24 @@ Examples:
     simple: Deleted
 """
 
-    def __init__(self, config):
+    def __init__(self, config: Any) -> None:
         self.config = config
 
-    def list(self):
-        return self.config.get(self.section_name, [])
+    def list(self) -> list[str]:
+        section = cast(dict[str, str], self.config.get(self.section_name, {}))
+        return list(section.keys())
 
-    def get(self, name):
-        return self.config.get(self.section_name, {}).get(name, None)
+    def get(self, name: str) -> str | None:
+        section = cast(dict[str, str], self.config.get(self.section_name, {}))
+        return section.get(name)
 
-    def save(self, name, query):
+    def save(self, name: str, query: str) -> None:
         if self.section_name not in self.config:
             self.config[self.section_name] = {}
         self.config[self.section_name][name] = query
         self.config.write()
 
-    def delete(self, name):
+    def delete(self, name: str) -> str:
         try:
             del self.config[self.section_name][name]
         except KeyError:

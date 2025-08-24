@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import contextlib
 import io
 import logging
@@ -8,7 +10,7 @@ import shlex
 import sys
 from runpy import run_module
 from time import time
-from typing import Optional, Tuple
+from typing import Any
 
 import click
 import llm
@@ -16,27 +18,36 @@ from llm.cli import cli
 
 from . import export
 from .main import Verbosity, parse_special_command
+from .types import DBCursor
 
 log = logging.getLogger(__name__)
 
 LLM_TEMPLATE_NAME = "litecli-llm-template"
-LLM_CLI_COMMANDS = list(cli.commands.keys())
-MODELS = {x.model_id: None for x in llm.get_models()}
+LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys())
+# Mapping of model_id to None used for completion tree leaves.
+MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()}
 
 
-def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_exception=True) -> Tuple[int, str]:
+def run_external_cmd(
+    cmd: str,
+    *args: str,
+    capture_output: bool = False,
+    restart_cli: bool = False,
+    raise_exception: bool = True,
+) -> tuple[int, str]:
     original_exe = sys.executable
     original_args = sys.argv
 
     try:
         sys.argv = [cmd] + list(args)
-        code = 0
+        code: int = 0
 
         if capture_output:
             buffer = io.StringIO()
-            redirect = contextlib.ExitStack()
-            redirect.enter_context(contextlib.redirect_stdout(buffer))
-            redirect.enter_context(contextlib.redirect_stderr(buffer))
+            stack = contextlib.ExitStack()
+            stack.enter_context(contextlib.redirect_stdout(buffer))
+            stack.enter_context(contextlib.redirect_stderr(buffer))
+            redirect: contextlib.AbstractContextManager[Any] = stack
         else:
             redirect = contextlib.nullcontext()
 
@@ -44,7 +55,11 @@ def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_
             try:
                 run_module(cmd, run_name="__main__")
             except SystemExit as e:
-                code = e.code
+                exit_code = e.code
+                if isinstance(exit_code, int):
+                    code = exit_code
+                else:
+                    code = 1
                 if code != 0 and raise_exception:
                     if capture_output:
                         raise RuntimeError(buffer.getvalue())
@@ -69,16 +84,17 @@ def run_external_cmd(cmd, *args, capture_output=False, restart_cli=False, raise_
         sys.argv = original_args
 
 
-def build_command_tree(cmd):
+def build_command_tree(cmd: click.Command) -> dict[str, Any] | None:
     """Recursively build a command tree for a Click app.
 
     Args:
         cmd (click.Command or click.Group): The Click command/group to inspect.
 
     Returns:
-        dict: A nested dictionary representing the command structure.
+        dict | None: A nested dictionary representing the command structure,
+        or None for leaf commands.
     """
-    tree = {}
+    tree: dict[str, Any] = {}
     if isinstance(cmd, click.Group):
         for name, subcmd in cmd.commands.items():
             if cmd.name == "models" and name == "default":
@@ -88,23 +104,23 @@ def build_command_tree(cmd):
                 tree[name] = build_command_tree(subcmd)
     else:
         # Leaf command with no subcommands
-        tree = None
+        return None
     return tree
 
 
 # Generate the tree
-COMMAND_TREE = build_command_tree(cli)
+COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli)
 
 
-def get_completions(tokens, tree=COMMAND_TREE):
+def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TREE) -> list[str]:
     """Get autocompletions for the current command tokens.
 
     Args:
-        tree (dict): The command tree.
-        tokens (list): List of tokens (command arguments).
+        tree (dict | None): The command tree.
+        tokens (list[str]): List of tokens (command arguments).
 
     Returns:
-        list: List of possible completions.
+        list[str]: List of possible completions.
     """
     for token in tokens:
         if token.startswith("-"):
@@ -122,8 +138,8 @@ def get_completions(tokens, tree=COMMAND_TREE):
 
 @export
 class FinishIteration(Exception):
-    def __init__(self, results=None):
-        self.results = results
+    def __init__(self, results: Any | None = None) -> None:
+        self.results: Any | None = results
 
 
 USAGE = """
@@ -184,7 +200,7 @@ Keep your explanation concise and focused on the question asked.
 """
 
 
-def ensure_litecli_template(replace=False):
+def ensure_litecli_template(replace: bool = False) -> None:
     """
     Create a template called litecli with the default prompt.
     """
@@ -199,7 +215,7 @@ def ensure_litecli_template(replace=False):
 
 
 @export
-def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
+def handle_llm(text: str, cur: DBCursor) -> tuple[str, str | None, float]:
     """This function handles the special command `\\llm`.
 
     If it deals with a question that results in a SQL query then it will return
@@ -293,7 +309,7 @@ def handle_llm(text, cur) -> Tuple[str, Optional[str], float]:
 
 
 @export
-def is_llm_command(command) -> bool:
+def is_llm_command(command: str) -> bool:
     """
     Is this an llm/ai command?
     """
@@ -302,7 +318,11 @@ def is_llm_command(command) -> bool:
 
 
 @export
-def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str], Optional[str]]:
+def sql_using_llm(
+    cur: DBCursor,
+    question: str | None = None,
+    verbose: bool = False,
+) -> tuple[str, str | None, str | None]:
     if cur is None:
         raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """
@@ -327,6 +347,8 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
     for (table,) in cur.fetchall():
         sample_row = sample_row_query.format(table=table)
         cur.execute(sample_row)
+        if cur.description is None:
+            continue
         cols = [x[0] for x in cur.description]
         row = cur.fetchone()
         if row is None:  # Skip empty tables
@@ -348,7 +370,9 @@ def sql_using_llm(cur, question=None, verbose=False) -> Tuple[str, Optional[str]
         " ",  # Dummy argument to prevent llm from waiting on stdin
     ]
     click.echo("Invoking llm command with schema information")
-    _, result = run_external_cmd("llm", *args, capture_output=True)
+    # Ensure all args are strings for sys.argv safety inside run_module
+    str_args = [str(a) for a in args]
+    _, result = run_external_cmd("llm", *str_args, capture_output=True)
     click.echo("Received response from the llm command")
     match = re.search(_SQL_CODE_FENCE, result, re.DOTALL)
     sql = match.group(1).strip() if match else ""

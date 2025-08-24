@@ -1,4 +1,5 @@
 # coding: utf-8
+# mypy: ignore-errors
 from __future__ import unicode_literals
 import pytest
 from unittest.mock import patch

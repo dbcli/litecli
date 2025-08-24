@@ -1,8 +1,11 @@
+from __future__ import annotations
+
+
 import os
 import subprocess
 
 
-def handle_cd_command(arg):
+def handle_cd_command(arg: str) -> tuple[bool, str | None]:
     """Handles a `cd` shell command by calling python's os.chdir."""
     CD_CMD = "cd"
     tokens = arg.split(CD_CMD + " ")
@@ -17,7 +20,7 @@ def handle_cd_command(arg):
         return False, e.strerror
 
 
-def format_uptime(uptime_in_seconds):
+def format_uptime(uptime_in_seconds: str) -> str:
     """Format number of seconds into human-readable string.
 
     :param uptime_in_seconds: The server uptime in seconds.
@@ -32,7 +35,7 @@ def format_uptime(uptime_in_seconds):
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
 
-    uptime_values = []
+    uptime_values: list[str] = []
 
     for value, unit in ((d, "days"), (h, "hours"), (m, "min"), (s, "sec")):
         if value == 0 and not uptime_values:
@@ -48,7 +51,7 @@ def format_uptime(uptime_in_seconds):
     return uptime
 
 
-def check_if_sqlitedotcommand(command):
+def check_if_sqlitedotcommand(command: object) -> bool:
     """Does a check if the command supplied is in the list of SQLite dot commands.
 
     :param command: A command (str) supplied from the user
@@ -125,7 +128,6 @@ def check_if_sqlitedotcommand(command):
     ]
 
     if isinstance(command, str):
-        command = command.split(" ", 1)[0].lower()
-        return command in sqlite3dotcommands
-    else:
-        return False
+        head = command.split(" ", 1)[0].lower()
+        return head in sqlite3dotcommands
+    return False

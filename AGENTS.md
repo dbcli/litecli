@@ -10,16 +10,30 @@
 - Create env: `python -m venv .venv && source .venv/bin/activate`.
 - Install dev deps: `pip install -e .[dev]`.
 - Run all tests + coverage: `tox`.
-- Style/lint (ruff): `tox -e style` (runs `ruff check --fix` and `ruff format`).
 - Extra tests with SQLean: `tox -e sqlean` (installs `[sqlean]` extras).
-- Run tests directly: `pytest -v` or focused: `pytest -k keyword`.
+- Run tests directly: `pytest -q` or focused: `pytest -k keyword`.
 - Launch CLI locally: `litecli path/to.db`.
+
+### Ruff (lint/format)
+- Full style pass: `tox -e style` (runs `ruff check --fix` and `ruff format`).
+- Direct commands:
+  - Lint: `ruff check` (add `--fix` to auto-fix)
+  - Format: `ruff format`
+
+### Mypy (type checking)
+- Repo-wide (recommended): `mypy --explicit-package-bases .`
+- Per-package: `mypy --explicit-package-bases litecli`
+- Notes:
+  - Config is in `pyproject.toml` (target Python 3.9, stricter settings).
+  - Use `--explicit-package-bases` to avoid module discovery issues when running outside tox.
 
 ## Coding Style & Naming Conventions
 - Formatter/linter: Ruff (configured via `.pre-commit-config.yaml` and `tox`).
 - Indentation: 4 spaces. Line length: 140 (see `pyproject.toml`).
 - Naming: modules/functions/variables `snake_case`; classes `CamelCase`; tests `test_*.py`.
 - Keep imports sorted and unused code removed (ruff enforces).
+- Use lowercase type hints for dict, list, tuples etc.
+- Use | for Unions and | None for Optional.
 
 ## Testing Guidelines
 - Framework: Pytest with coverage (`coverage run -m pytest` via tox).
@@ -32,6 +46,11 @@
 - Update `CHANGELOG.md` for user-visible changes.
 - PRs: include clear description, steps to reproduce/verify, and screenshots or snippets for CLI output when helpful. Use the PR template.
 - Ensure CI passes (tests + ruff). Re-run `tox -e style` before requesting review.
+
+## Changelog Discipline
+- Always add an "Unreleased" section at the top of `CHANGELOG.md` when making changes.
+- Keep entries succinct; avoid overly detailed technical notes.
+- Group under "Features", "Bug Fixes", and "Internal" when applicable.
 
 ## Security & Configuration Tips
 - Do not commit local databases or secrets. Use files under `tests/data/` for fixtures.
