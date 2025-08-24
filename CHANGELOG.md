@@ -1,3 +1,9 @@
+## Upcoming (TBC)
+
+### Bug Fixes
+
+* Avoid Click 8.1.* to prevent messing up the pager when the PAGER env var has a string with spaces.
+
 ## 1.16.0 - 2025-08-16
 
 ### Features
