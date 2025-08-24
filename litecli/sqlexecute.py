@@ -68,12 +68,18 @@ class SQLExecute(object):
         db = database or self.dbname
         _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
 
-        db_name = os.path.expanduser(db)
-        db_dir_name = os.path.dirname(os.path.abspath(db_name))
-        if not os.path.exists(db_dir_name):
-            raise Exception("Path does not exist: {}".format(db_dir_name))
+        if db.startswith("file:"):
+            uri = True
+            db_name = db
+            db_filename, *_ = db_name[5:].split("?", 1)
+        else:
+            uri = False
+            db_filename = db_name = os.path.expanduser(db)
+            db_dir_name = os.path.dirname(os.path.abspath(db_filename))
+            if not os.path.exists(db_dir_name):
+                raise Exception("Path does not exist: {}".format(db_dir_name))
 
-        conn = sqlite3.connect(database=db_name, isolation_level=None)
+        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)
         conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
         if self.conn:
             self.conn.close()
@@ -81,7 +87,7 @@ class SQLExecute(object):
         self.conn = conn
         # Update them after the connection is made to ensure that it was a
         # successful connection.
-        self.dbname = db
+        self.dbname = db_filename
 
     def run(self, statement):
         """Execute the sql in the database and return the results. The results
