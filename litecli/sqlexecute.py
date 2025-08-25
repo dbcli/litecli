@@ -14,6 +14,7 @@ from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
 import os.path
+from urllib.parse import urlparse
 
 from .packages import special
 
@@ -68,10 +69,11 @@ class SQLExecute(object):
         db = database or self.dbname
         _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
 
-        if db.startswith("file:"):
+        location = urlparse(db)
+        if location.scheme and location.scheme == "file":
             uri = True
             db_name = db
-            db_filename, *_ = db_name[5:].split("?", 1)
+            db_filename = location.path
         else:
             uri = False
             db_filename = db_name = os.path.expanduser(db)
