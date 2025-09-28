@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import pytest
 from unittest.mock import patch
 from litecli.packages.special.llm import handle_llm, FinishIteration, USAGE

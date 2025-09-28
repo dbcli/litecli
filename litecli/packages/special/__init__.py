@@ -1,9 +1,13 @@
 # ruff: noqa
 
-__all__ = []
+from __future__ import annotations
+
+from typing import Callable, Any
+
+__all__: list[str] = []
 
 
-def export(defn):
+def export(defn: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to explicitly mark functions that are exposed in a lib."""
     globals()[defn.__name__] = defn
     __all__.append(defn.__name__)

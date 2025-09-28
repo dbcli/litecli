@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import os
 from collections import namedtuple
 from textwrap import dedent

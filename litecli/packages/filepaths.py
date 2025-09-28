@@ -1,25 +1,25 @@
 # -*- coding: utf-8
+from __future__ import annotations
 
-from __future__ import unicode_literals
 
 import os
 
 
-def list_path(root_dir):
+def list_path(root_dir: str) -> list[str]:
     """List directory if exists.
 
     :param dir: str
     :return: list
 
     """
-    res = []
+    res: list[str] = []
     if os.path.isdir(root_dir):
         for name in os.listdir(root_dir):
             res.append(name)
     return res
 
 
-def complete_path(curr_dir, last_dir):
+def complete_path(curr_dir: str, last_dir: str) -> str | None:
     """Return the path to complete that matches the last entered component.
 
     If the last entered component is ~, expanded path would not
@@ -34,9 +34,10 @@ def complete_path(curr_dir, last_dir):
         return curr_dir
     elif last_dir == "~":
         return os.path.join(last_dir, curr_dir)
+    return None
 
 
-def parse_path(root_dir):
+def parse_path(root_dir: str) -> tuple[str, str, int]:
     """Split path into head and last component for the completer.
 
     Also return position where last component starts.
@@ -52,7 +53,7 @@ def parse_path(root_dir):
     return base_dir, last_dir, position
 
 
-def suggest_path(root_dir):
+def suggest_path(root_dir: str) -> list[str]:
     """List all files and subdirectories in a directory.
 
     If the directory is not specified, suggest root directory,
@@ -63,7 +64,7 @@ def suggest_path(root_dir):
 
     """
     if not root_dir:
-        return map(str, [os.path.abspath(os.sep), "~", os.curdir, os.pardir])
+        return [str(x) for x in [os.path.abspath(os.sep), "~", os.curdir, os.pardir]]
 
     if "~" in root_dir:
         root_dir = str(os.path.expanduser(root_dir))
@@ -74,7 +75,7 @@ def suggest_path(root_dir):
     return list_path(root_dir)
 
 
-def dir_path_exists(path):
+def dir_path_exists(path: str) -> bool:
     """Check if the directory path exists for a given file.
 
     For example, for a file /home/user/.cache/litecli/log, check if

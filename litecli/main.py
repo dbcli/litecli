@@ -1,4 +1,4 @@
-from __future__ import print_function, unicode_literals
+from __future__ import annotations
 
 import itertools
 import logging
@@ -17,6 +17,7 @@ try:
 except ImportError:
     from sqlite3 import OperationalError, sqlite_version
 from time import time
+from typing import Any, Iterable
 
 import click
 import sqlparse
@@ -34,6 +35,8 @@ from prompt_toolkit.layout.processors import (
 )
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
+from typing import cast
+from prompt_toolkit.completion import Completion
 
 from .__init__ import __version__
 from .clibuffer import cli_is_multiline
@@ -64,13 +67,13 @@ class LiteCli(object):
 
     def __init__(
         self,
-        sqlexecute=None,
-        prompt=None,
-        logfile=None,
-        auto_vertical_output=False,
-        warn=None,
-        liteclirc=None,
-    ):
+        sqlexecute: SQLExecute | None = None,
+        prompt: str | None = None,
+        logfile: Any | None = None,
+        auto_vertical_output: bool = False,
+        warn: bool | None = None,
+        liteclirc: str | None = None,
+    ) -> None:
         self.sqlexecute = sqlexecute
         self.logfile = logfile
 
@@ -123,7 +126,7 @@ class LiteCli(object):
         self.prompt_continuation_format = c["main"]["prompt_continuation"]
         keyword_casing = c["main"].get("keyword_casing", "auto")
 
-        self.query_history = []
+        self.query_history: list[Query] = []
 
         # Initialize completer.
         self.completer = SQLCompleter(
@@ -135,9 +138,9 @@ class LiteCli(object):
         # Register custom special commands.
         self.register_special_commands()
 
-        self.prompt_app = None
+        self.prompt_app: PromptSession | None = None
 
-    def register_special_commands(self):
+    def register_special_commands(self) -> None:
         special.register_special_command(
             self.change_db,
             ".open",
@@ -178,7 +181,7 @@ class LiteCli(object):
             case_sensitive=True,
         )
 
-    def change_table_format(self, arg, **_):
+    def change_table_format(self, arg: str, **_: Any) -> Iterable[tuple]:
         try:
             self.formatter.format_name = arg
             yield (None, None, None, "Changed table format to {}".format(arg))
@@ -188,10 +191,12 @@ class LiteCli(object):
                 msg += "\n\t{}".format(table_type)
             yield (None, None, None, msg)
 
-    def change_db(self, arg, **_):
+    def change_db(self, arg: str | None, **_: Any) -> Iterable[tuple]:
         if arg is None:
+            assert self.sqlexecute is not None
             self.sqlexecute.connect()
         else:
+            assert self.sqlexecute is not None
             self.sqlexecute.connect(database=arg)
 
         self.refresh_completions()
@@ -202,7 +207,7 @@ class LiteCli(object):
             'You are now connected to database "%s"' % (self.sqlexecute.dbname),
         )
 
-    def execute_from_file(self, arg, **_):
+    def execute_from_file(self, arg: str | None, **_: Any) -> Iterable[tuple[Any, ...]]:
         if not arg:
             message = "Missing required argument, filename."
             return [(None, None, None, message)]
@@ -216,9 +221,10 @@ class LiteCli(object):
             message = "Wise choice. Command execution stopped."
             return [(None, None, None, message)]
 
-        return self.sqlexecute.run(query)
+        assert self.sqlexecute is not None
+        return cast(Iterable[tuple[Any, ...]], self.sqlexecute.run(query))
 
-    def change_prompt_format(self, arg, **_):
+    def change_prompt_format(self, arg: str | None, **_: Any) -> Iterable[tuple]:
         """
         Change the prompt format.
         """
@@ -229,7 +235,7 @@ class LiteCli(object):
         self.prompt_format = self.get_prompt(arg)
         return [(None, None, None, "Changed prompt format to %s" % arg)]
 
-    def initialize_logging(self):
+    def initialize_logging(self) -> None:
         log_file = self.config["main"]["log_file"]
         if log_file == "default":
             log_file = config_location() + "log"
@@ -252,7 +258,7 @@ class LiteCli(object):
         # Disable logging if value is NONE by switching to a no-op handler
         # Set log level to a high value so it doesn't even waste cycles getting called.
         if log_level.upper() == "NONE":
-            handler = logging.NullHandler()
+            handler: logging.Handler = logging.NullHandler()
             log_level = "CRITICAL"
         elif dir_path_exists(log_file):
             handler = logging.FileHandler(log_file)
@@ -277,7 +283,7 @@ class LiteCli(object):
         root_logger.debug("Initializing litecli logging.")
         root_logger.debug("Log file %r.", log_file)
 
-    def read_my_cnf_files(self, keys):
+    def read_my_cnf_files(self, keys: Iterable[str]) -> dict[str, str | None]:
         """
         Reads a list of config files and merges them. The last one will win.
         :param files: list of files to read
@@ -288,7 +294,7 @@ class LiteCli(object):
 
         sections = ["main"]
 
-        def get(key):
+        def get(key: str) -> str | None:
             result = None
             for sect in cnf:
                 if sect in sections and key in cnf[sect]:
@@ -297,19 +303,19 @@ class LiteCli(object):
 
         return {x: get(x) for x in keys}
 
-    def connect(self, database=""):
-        cnf = {"database": None}
+    def connect(self, database: str = "") -> None:
+        cnf: dict[str, str | None] = {"database": None}
 
         cnf = self.read_my_cnf_files(cnf.keys())
 
         # Fall back to config values only if user did not specify a value.
 
-        database = database or cnf["database"]
+        db_value: str | None = database or cnf["database"]
 
         # Connect to the database.
 
-        def _connect():
-            self.sqlexecute = SQLExecute(database)
+        def _connect() -> None:
+            self.sqlexecute = SQLExecute(db_value)
 
         try:
             _connect()
@@ -319,7 +325,7 @@ class LiteCli(object):
             self.echo(str(e), err=True, fg="red")
             exit(1)
 
-    def handle_editor_command(self, text):
+    def handle_editor_command(self, text: str) -> str:
         R"""Editor command is any query that is prefixed or suffixed by a '\e'.
         The reason for a while loop is because a user might edit a query
         multiple times. For eg:
@@ -341,6 +347,7 @@ class LiteCli(object):
                 raise RuntimeError(message)
             while True:
                 try:
+                    assert self.prompt_app is not None
                     text = self.prompt_app.prompt(default=sql)
                     break
                 except KeyboardInterrupt:
@@ -349,9 +356,10 @@ class LiteCli(object):
             continue
         return text
 
-    def run_cli(self):
+    def run_cli(self) -> None:
         iterations = 0
         sqlexecute = self.sqlexecute
+        assert sqlexecute is not None
         logger = self.logger
         self.configure_pager()
         self.refresh_completions()
@@ -376,21 +384,21 @@ class LiteCli(object):
             print(f"LiteCli: {__version__} (SQLite: {sqlite_version})")
             print("GitHub: https://github.com/dbcli/litecli")
 
-        def get_message():
+        def get_message() -> ANSI:
             prompt = self.get_prompt(self.prompt_format)
             if self.prompt_format == self.default_prompt and len(prompt) > self.max_len_prompt:
                 prompt = self.get_prompt("\\d> ")
             prompt = prompt.replace("\\x1b", "\x1b")
             return ANSI(prompt)
 
-        def get_continuation(width, line_number, is_soft_wrap):
+        def get_continuation(width: int, line_number: int, is_soft_wrap: int) -> list[tuple[str, str]]:
             continuation = " " * (width - 1) + " "
             return [("class:continuation", continuation)]
 
-        def show_suggestion_tip():
+        def show_suggestion_tip() -> bool:
             return iterations < 2
 
-        def output_res(res, start):
+        def output_res(res: Iterable[tuple[Any, Any, Any, str | None]], start: float) -> bool:
             result_count = 0
             mutating = False
             for title, cur, headers, status in res:
@@ -408,6 +416,7 @@ class LiteCli(object):
                         break
 
                 if self.auto_vertical_output:
+                    assert self.prompt_app is not None
                     max_width = self.prompt_app.output.get_size().columns
                 else:
                     max_width = None
@@ -431,9 +440,10 @@ class LiteCli(object):
                 mutating = mutating or is_mutating(status)
             return mutating
 
-        def one_iteration(text=None):
+        def one_iteration(text: str | None = None) -> None:
             if text is None:
                 try:
+                    assert self.prompt_app is not None
                     text = self.prompt_app.prompt()
                 except KeyboardInterrupt:
                     return
@@ -451,6 +461,7 @@ class LiteCli(object):
                 while special.is_llm_command(text):
                     try:
                         start = time()
+                        assert self.sqlexecute is not None
                         cur = self.sqlexecute.conn and self.sqlexecute.conn.cursor()
                         context, sql, duration = special.handle_llm(text, cur)
                         if context:
@@ -458,11 +469,14 @@ class LiteCli(object):
                             click.echo(context)
                             click.echo("---")
                         click.echo(f"Time: {duration:.2f} seconds")
+                        assert self.prompt_app is not None
                         text = self.prompt_app.prompt(default=sql)
                     except KeyboardInterrupt:
                         return
                     except special.FinishIteration as e:
-                        return output_res(e.results, start) if e.results else None
+                        if e.results:
+                            output_res(e.results, start)
+                        return
                     except RuntimeError as e:
                         logger.error("sql: %r, error: %r", text, e)
                         logger.error("traceback: %r", traceback.format_exc())
@@ -530,9 +544,9 @@ class LiteCli(object):
                         logger.debug("Reconnected successfully.")
                         one_iteration(text)
                         return  # OK to just return, cuz the recursion call runs to the end.
-                    except OperationalError as e:
-                        logger.debug("Reconnect failed. e: %r", e)
-                        self.echo(str(e), err=True, fg="red")
+                    except OperationalError as ex:
+                        logger.debug("Reconnect failed. e: %r", ex)
+                        self.echo(str(ex), err=True, fg="red")
                         # If reconnection failed, don't proceed further.
                         return
                 else:
@@ -573,7 +587,7 @@ class LiteCli(object):
                 lexer=PygmentsLexer(LiteCliLexer),
                 reserve_space_for_menu=self.get_reserved_space(),
                 message=get_message,
-                prompt_continuation=get_continuation,
+                prompt_continuation=cast(Any, get_continuation),
                 bottom_toolbar=get_toolbar_tokens if self.show_bottom_toolbar else None,
                 complete_style=complete_style,
                 input_processors=[
@@ -598,7 +612,7 @@ class LiteCli(object):
                 search_ignore_case=True,
             )
 
-        def startup_commands():
+        def startup_commands() -> None:
             if self.startup_commands:
                 if "commands" in self.startup_commands:
                     if isinstance(self.startup_commands["commands"], str):
@@ -643,12 +657,12 @@ class LiteCli(object):
             if not self.less_chatty:
                 self.echo("Goodbye!")
 
-    def log_output(self, output):
+    def log_output(self, output: str) -> None:
         """Log the output in the audit log, if it's enabled."""
         if self.logfile:
             click.echo(output, file=self.logfile)
 
-    def echo(self, s, **kwargs):
+    def echo(self, s: str, **kwargs: Any) -> None:
         """Print a message to stdout.
 
         The message will be logged in the audit log, if enabled.
@@ -659,7 +673,7 @@ class LiteCli(object):
         self.log_output(s)
         click.secho(s, **kwargs)
 
-    def get_output_margin(self, status=None):
+    def get_output_margin(self, status: str | None = None) -> int:
         """Get the output margin (number of rows for the prompt, footer and
         timing message."""
         margin = self.get_reserved_space() + self.get_prompt(self.prompt_format).count("\n") + 2
@@ -668,7 +682,7 @@ class LiteCli(object):
 
         return margin
 
-    def output(self, output, status=None):
+    def output(self, output: Iterable[str], status: str | None = None) -> None:
         """Output text to stdout or a pager command.
 
         The status text is not outputted to pager or files.
@@ -679,6 +693,7 @@ class LiteCli(object):
 
         """
         if output:
+            assert self.prompt_app is not None
             size = self.prompt_app.output.get_size()
 
             margin = self.get_output_margin(status)
@@ -721,7 +736,7 @@ class LiteCli(object):
             self.log_output(status)
             click.secho(status)
 
-    def configure_pager(self):
+    def configure_pager(self) -> None:
         # Provide sane defaults for less if they are empty.
         if not os.environ.get("LESS"):
             os.environ["LESS"] = "-RXF"
@@ -736,7 +751,7 @@ class LiteCli(object):
         if cnf["skip-pager"] or not self.config["main"].as_bool("enable_pager"):
             special.disable_pager()
 
-    def refresh_completions(self, reset=False):
+    def refresh_completions(self, reset: bool = False) -> list[tuple]:
         if reset:
             with self._completer_lock:
                 self.completer.reset_completions()
@@ -751,7 +766,7 @@ class LiteCli(object):
 
         return [(None, None, None, "Auto-completion refresh started in the background.")]
 
-    def _on_completions_refreshed(self, new_completer):
+    def _on_completions_refreshed(self, new_completer: SQLCompleter) -> None:
         """Swap the completer object in cli with the newly created completer."""
         with self._completer_lock:
             self.completer = new_completer
@@ -761,13 +776,14 @@ class LiteCli(object):
             # "Refreshing completions..." indicator
             self.prompt_app.app.invalidate()
 
-    def get_completions(self, text, cursor_positition):
+    def get_completions(self, text: str, cursor_positition: int) -> Iterable[Completion]:
         with self._completer_lock:
-            return self.completer.get_completions(Document(text=text, cursor_position=cursor_positition), None)
+            return cast(Iterable[Completion], self.completer.get_completions(Document(text=text, cursor_position=cursor_positition), None))
 
-    def get_prompt(self, string):
+    def get_prompt(self, string: str) -> str:
         self.logger.debug("Getting prompt %r", string)
         sqlexecute = self.sqlexecute
+        assert sqlexecute is not None
         now = datetime.now()
 
         # Prepare the replacements dictionary
@@ -787,14 +803,15 @@ class LiteCli(object):
         pattern = re.compile("|".join(re.escape(key) for key in replacements.keys()))
 
         # Define the replacement function
-        def replacer(match):
+        def replacer(match: re.Match[str]) -> str:
             return replacements[match.group(0)]
 
         # Perform the substitution
         return pattern.sub(replacer, string)
 
-    def run_query(self, query, new_line=True):
+    def run_query(self, query: str, new_line: bool = True) -> None:
         """Runs *query*."""
+        assert self.sqlexecute is not None
         results = self.sqlexecute.run(query)
         for result in results:
             title, cur, headers, status = result
@@ -803,9 +820,9 @@ class LiteCli(object):
             for line in output:
                 click.echo(line, nl=new_line)
 
-    def format_output(self, title, cur, headers, expanded=False, max_width=None):
+    def format_output(self, title: Any, cur: Any, headers: Any, expanded: bool = False, max_width: int | None = None) -> Iterable[str]:
         expanded = expanded or self.formatter.format_name == "vertical"
-        output = []
+        output_iter: Iterable[str] = []
 
         output_kwargs = {
             "dialect": "unix",
@@ -816,7 +833,7 @@ class LiteCli(object):
         }
 
         if title:  # Only print the title if it's not None.
-            output = itertools.chain(output, [title])
+            output_iter = itertools.chain(output_iter, [title])
 
         if cur:
             column_types = None
@@ -852,18 +869,18 @@ class LiteCli(object):
                 if isinstance(formatted, str):
                     formatted = iter(formatted.splitlines())
 
-            output = itertools.chain(output, formatted)
+            output_iter = itertools.chain(output_iter, formatted)
 
-        return output
+        return output_iter
 
-    def get_reserved_space(self):
+    def get_reserved_space(self) -> int:
         """Get the number of lines to reserve for the completion menu."""
         reserved_space_ratio = 0.45
         max_reserved_space = 8
         _, height = shutil.get_terminal_size()
         return min(int(round(height * reserved_space_ratio)), max_reserved_space)
 
-    def get_last_query(self):
+    def get_last_query(self) -> str | None:
         """Get the last query executed or None."""
         return self.query_history[-1][0] if self.query_history else None
 
@@ -900,17 +917,17 @@ class LiteCli(object):
 @click.option("-e", "--execute", type=str, help="Execute command and quit.")
 @click.argument("database", default="", nargs=1)
 def cli(
-    database,
-    dbname,
-    prompt,
-    logfile,
-    auto_vertical_output,
-    table,
-    csv,
-    warn,
-    execute,
-    liteclirc,
-):
+    database: str,
+    dbname: str,
+    prompt: str | None,
+    logfile: Any | None,
+    auto_vertical_output: bool,
+    table: bool,
+    csv: bool,
+    warn: bool | None,
+    execute: str | None,
+    liteclirc: str,
+) -> None:
     """A SQLite terminal client with auto-completion and syntax highlighting.
 
     \b
@@ -975,7 +992,7 @@ def cli(
             exit(1)
 
 
-def need_completion_refresh(queries):
+def need_completion_refresh(queries: str) -> bool:
     """Determines if the completion needs a refresh by checking if the sql
     statement is an alter, create, drop or change db."""
     for query in sqlparse.split(queries):
@@ -993,9 +1010,10 @@ def need_completion_refresh(queries):
                 return True
         except Exception:
             return False
+    return False
 
 
-def need_completion_reset(queries):
+def need_completion_reset(queries: str) -> bool:
     """Determines if the statement is a database switch such as 'use' or '\\u'.
     When a database is changed the existing completions must be reset before we
     start the completion refresh for the new database.
@@ -1007,9 +1025,10 @@ def need_completion_reset(queries):
                 return True
         except Exception:
             return False
+    return False
 
 
-def is_mutating(status):
+def is_mutating(status: str | None) -> bool:
     """Determines if the statement is mutating based on the status."""
     if not status:
         return False
@@ -1030,7 +1049,7 @@ def is_mutating(status):
     return status.split(None, 1)[0].lower() in mutating
 
 
-def is_select(status):
+def is_select(status: str | None) -> bool:
     """Returns true if the first word in status is 'select'."""
     if not status:
         return False

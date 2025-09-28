@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import threading
+from typing import Callable
+
 from .packages.special.main import COMMANDS
 from collections import OrderedDict
 
@@ -7,13 +11,18 @@ from .sqlexecute import SQLExecute
 
 
 class CompletionRefresher(object):
-    refreshers = OrderedDict()
+    refreshers: dict[str, Callable] = OrderedDict()
 
-    def __init__(self):
-        self._completer_thread = None
+    def __init__(self) -> None:
+        self._completer_thread: threading.Thread | None = None
         self._restart_refresh = threading.Event()
 
-    def refresh(self, executor, callbacks, completer_options=None):
+    def refresh(
+        self,
+        executor: SQLExecute,
+        callbacks: Callable | list[Callable],
+        completer_options: dict | None = None,
+    ) -> list[tuple]:
         """Creates a SQLCompleter object and populates it with the relevant
         completion suggestions in a background thread.
 
@@ -36,6 +45,7 @@ class CompletionRefresher(object):
                 # if DB is memory, needed to use same connection
                 # So can't use same connection with different thread
                 self._bg_refresh(executor, callbacks, completer_options)
+                return [(None, None, None, "Auto-completion refresh started in the background.")]
             else:
                 self._completer_thread = threading.Thread(
                     target=self._bg_refresh,
@@ -44,19 +54,17 @@ class CompletionRefresher(object):
                 )
                 self._completer_thread.daemon = True
                 self._completer_thread.start()
-                return [
-                    (
-                        None,
-                        None,
-                        None,
-                        "Auto-completion refresh started in the background.",
-                    )
-                ]
+                return [(None, None, None, "Auto-completion refresh started in the background.")]
 
-    def is_refreshing(self):
-        return self._completer_thread and self._completer_thread.is_alive()
+    def is_refreshing(self) -> bool:
+        return bool(self._completer_thread and self._completer_thread.is_alive())
 
-    def _bg_refresh(self, sqlexecute, callbacks, completer_options):
+    def _bg_refresh(
+        self,
+        sqlexecute: SQLExecute,
+        callbacks: Callable | list[Callable],
+        completer_options: dict,
+    ) -> None:
         completer = SQLCompleter(**completer_options)
 
         e = sqlexecute
@@ -90,12 +98,12 @@ class CompletionRefresher(object):
             callback(completer)
 
 
-def refresher(name, refreshers=CompletionRefresher.refreshers):
+def refresher(name: str, refreshers: dict[str, Callable] = CompletionRefresher.refreshers) -> Callable:
     """Decorator to add the decorated function to the dictionary of
     refreshers. Any function decorated with a @refresher will be executed as
     part of the completion refresh routine."""
 
-    def wrapper(wrapped):
+    def wrapper(wrapped: Callable) -> Callable:
         refreshers[name] = wrapped
         return wrapped
 
@@ -103,28 +111,29 @@ def refresher(name, refreshers=CompletionRefresher.refreshers):
 
 
 @refresher("databases")
-def refresh_databases(completer, executor):
+def refresh_databases(completer: SQLCompleter, executor: SQLExecute) -> None:
     completer.extend_database_names(executor.databases())
 
 
 @refresher("schemata")
-def refresh_schemata(completer, executor):
+def refresh_schemata(completer: SQLCompleter, executor: SQLExecute) -> None:
     # name of the current database.
     completer.extend_schemata(executor.dbname)
     completer.set_dbname(executor.dbname)
 
 
 @refresher("tables")
-def refresh_tables(completer, executor):
-    completer.extend_relations(executor.tables(), kind="tables")
-    completer.extend_columns(executor.table_columns(), kind="tables")
+def refresh_tables(completer: SQLCompleter, executor: SQLExecute) -> None:
+    table_cols = list(executor.table_columns())
+    completer.extend_relations(table_cols, kind="tables")
+    completer.extend_columns(table_cols, kind="tables")
 
 
 @refresher("functions")
-def refresh_functions(completer, executor):
+def refresh_functions(completer: SQLCompleter, executor: SQLExecute) -> None:
     completer.extend_functions(executor.functions())
 
 
 @refresher("special_commands")
-def refresh_special(completer, executor):
-    completer.extend_special_commands(COMMANDS.keys())
+def refresh_special(completer: SQLCompleter, executor: SQLExecute) -> None:
+    completer.extend_special_commands(list(COMMANDS.keys()))
