@@ -13,7 +13,7 @@ class ConfirmBoolParamType(click.ParamType):
 
     def convert(self, value: bool | str, param: click.Parameter | None, ctx: click.Context | None) -> bool:
         if isinstance(value, bool):
-            return bool(value)
+            return value
         value = value.lower()
         if value in ("yes", "y"):
             return True

@@ -41,7 +41,7 @@ class CompletionRefresher(object):
             self._restart_refresh.set()
             return [(None, None, None, "Auto-completion refresh restarted.")]
         else:
-            if executor.dbname == ":memory":
+            if executor.dbname == ":memory:":
                 # if DB is memory, needed to use same connection
                 # So can't use same connection with different thread
                 self._bg_refresh(executor, callbacks, completer_options)
