@@ -1,4 +1,4 @@
-## Upcoming (TBD)
+## 1.17.0 - 2025-09-28
 
 ### Features
 
