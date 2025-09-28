@@ -1,5 +1,9 @@
 ## Upcoming (TBD)
 
+### Features
+
+* Add support for opening 'file:' URIs with parameters. [(#234)](https://github.com/dbcli/litecli/pull/234)
+
 ### Bug Fixes
 
 * Avoid Click 8.1.* to prevent messing up the pager when the PAGER env var has a string with spaces.

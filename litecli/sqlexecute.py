@@ -17,6 +17,7 @@ from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 import sqlparse
 import os.path
+from urllib.parse import urlparse
 
 from .packages import special
 
@@ -75,12 +76,19 @@ class SQLExecute(object):
             # Nothing to connect to.
             return
 
-        db_name = os.path.expanduser(db)
-        db_dir_name = os.path.dirname(os.path.abspath(db_name))
-        if not os.path.exists(db_dir_name):
-            raise Exception("Path does not exist: {}".format(db_dir_name))
+        location = urlparse(db)
+        if location.scheme and location.scheme == "file":
+            uri = True
+            db_name = db
+            db_filename = location.path
+        else:
+            uri = False
+            db_filename = db_name = os.path.expanduser(db)
+            db_dir_name = os.path.dirname(os.path.abspath(db_filename))
+            if not os.path.exists(db_dir_name):
+                raise Exception("Path does not exist: {}".format(db_dir_name))
 
-        conn = sqlite3.connect(database=db_name, isolation_level=None)
+        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)
         conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
         if self.conn:
             self.conn.close()
@@ -88,7 +96,7 @@ class SQLExecute(object):
         self.conn = conn
         # Update them after the connection is made to ensure that it was a
         # successful connection.
-        self.dbname = db
+        self.dbname = db_filename
 
     def run(self, statement: str) -> Iterable[tuple]:
         """Execute the sql in the database and return the results. The results
