@@ -1,3 +1,7 @@
+## Unreleased
+
+* Remove mypy as a runtime dependency
+
 ## 1.17.0 - 2025-09-28
 
 ### Features

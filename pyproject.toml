@@ -11,7 +11,6 @@ dependencies = [
     "cli-helpers[styles]>=2.2.1",
     "click>=4.1,!=8.1.*",
     "configobj>=5.0.5",
-    "mypy>=1.17.1",
     "prompt-toolkit>=3.0.3,<4.0.0",
     "pygments>=1.6",
     "sqlparse>=0.4.4",
@@ -27,6 +26,11 @@ requires = [
     "setuptools-scm<8;python_version<'3.8'",
 ]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+]
 
 [tool.setuptools_scm]
 
