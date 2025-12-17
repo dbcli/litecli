@@ -1,25 +1,27 @@
 # mypy: ignore-errors
 
 import os
-from collections import namedtuple
-from textwrap import dedent
 import shutil
+from collections import namedtuple
 from datetime import datetime
+from textwrap import dedent
 from unittest.mock import patch
 
 import click
 import pytest
 from click.testing import CliRunner
+from utils import create_db, db_connection, dbtest, run
 
-from litecli.main import cli, LiteCli
+from litecli.main import LiteCli, cli
 from litecli.packages.special.main import COMMANDS as SPECIAL_COMMANDS
-from utils import dbtest, run, create_db, db_connection
 
 test_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(test_dir)
 default_config_file = os.path.join(project_dir, "tests", "liteclirc")
 
 CLI_ARGS = ["--liteclirc", default_config_file, "_test_db"]
+
+clickoutput: str
 
 
 @dbtest
@@ -237,7 +239,7 @@ def test_reserved_space_is_integer():
 
     old_func = shutil.get_terminal_size
 
-    shutil.get_terminal_size = stub_terminal_size
+    shutil.get_terminal_size = stub_terminal_size  # ty: ignore[invalid-assignment]
     lc = LiteCli()
     assert isinstance(lc.get_reserved_space(), int)
     shutil.get_terminal_size = old_func

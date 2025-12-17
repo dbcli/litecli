@@ -15,9 +15,10 @@ dependencies = [
     "prompt-toolkit>=3.0.3,<4.0.0",
     "pygments>=1.6",
     "sqlparse>=0.4.4",
-    "setuptools",                   # Required by llm commands to install models
+    "setuptools", # Required by llm commands to install models
     "pip",
     "llm>=0.25.0",
+    "ty>=0.0.2",
 ]
 
 [build-system]
@@ -86,4 +87,24 @@ exclude = [
     '^\.mypy_cache/',
     '^\.pytest_cache/',
     '^\.ruff_cache/',
+]
+
+
+[tool.ty.environment]
+python-version = "3.9"
+root = ["litecli"]
+
+[tool.ty.rules]
+unresolved-import = "ignore"
+
+[tool.ty.src]
+exclude = [
+    '**/build/',
+    '**/dist/',
+    '**/.tox/',
+    '**/.venv/',
+    '**/.mypy_cache/',
+    '**/.pytest_cache/',
+    '**/.ruff_cache/',
+    'tests/**'
 ]

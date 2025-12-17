@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # mypy: ignore-errors
 
-import os
-import time
-import signal
-import platform
 import multiprocessing
+import os
+import signal
+import sys
+import time
 from contextlib import closing
+
 import pytest
 
 try:
@@ -75,8 +76,8 @@ def send_ctrl_c_to_pid(pid, wait_seconds):
     """Sends a Ctrl-C like signal to the given `pid` after `wait_seconds`
     seconds."""
     time.sleep(wait_seconds)
-    system_name = platform.system()
-    if system_name == "Windows":
+    # ty, is aware of sys.platform and not platform.system. See: https://github.com/astral-sh/ty/issues/2033
+    if sys.platform == "win32":
         os.kill(pid, signal.CTRL_C_EVENT)
     else:
         os.kill(pid, signal.SIGINT)

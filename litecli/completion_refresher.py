@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import threading
+from collections import OrderedDict
 from typing import Callable
 
 from .packages.special.main import COMMANDS
-from collections import OrderedDict
-
 from .sqlcompleter import SQLCompleter
 from .sqlexecute import SQLExecute
 
@@ -94,7 +93,7 @@ class CompletionRefresher(object):
             # break statement.
             continue
 
-        for callback in callbacks:
+        for callback in callbacks:  # ty: ignore[not-iterable]
             callback(completer)
 
 

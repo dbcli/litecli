@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Generator, Iterable
-
 from contextlib import closing
+from typing import Any, Generator, Iterable
 
 try:
     import sqlean as sqlite3
@@ -13,11 +12,12 @@ try:
 except ImportError:
     import sqlite3
     from sqlite3 import OperationalError
-from litecli.packages.special.utils import check_if_sqlitedotcommand
-
-import sqlparse
 import os.path
 from urllib.parse import urlparse
+
+import sqlparse
+
+from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 from .packages import special
 
@@ -88,7 +88,8 @@ class SQLExecute(object):
             if not os.path.exists(db_dir_name):
                 raise Exception("Path does not exist: {}".format(db_dir_name))
 
-        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)
+        # sqlean exposes the connect method during run-time
+        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)  # ty: ignore[possibly-missing-attribute]
         conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
         if self.conn:
             self.conn.close()
