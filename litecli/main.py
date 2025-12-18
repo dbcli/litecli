@@ -12,8 +12,6 @@ from collections import namedtuple
 from datetime import datetime
 from io import open
 
-from litecli import sqlexecute
-
 try:
     from sqlean import OperationalError, sqlite_version
 except ImportError:
