@@ -18,7 +18,7 @@ dependencies = [
     "setuptools", # Required by llm commands to install models
     "pip",
     "llm>=0.25.0",
-    "ty>=0.0.2",
+    "ty>=0.0.4",
 ]
 
 [build-system]
@@ -92,10 +92,8 @@ exclude = [
 
 [tool.ty.environment]
 python-version = "3.9"
-root = ["litecli"]
+root = [".", "litecli", "litecli/packages", "litecli/packages/special"]
 
-[tool.ty.rules]
-unresolved-import = "ignore"
 
 [tool.ty.src]
 exclude = [

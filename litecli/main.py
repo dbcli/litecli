@@ -13,7 +13,7 @@ from datetime import datetime
 from io import open
 
 try:
-    from sqlean import OperationalError, sqlite_version
+    from sqlean import OperationalError, sqlite_version  # ty: ignore[unresolved-import]
 except ImportError:
     from sqlite3 import OperationalError, sqlite_version
 from time import time
@@ -521,7 +521,8 @@ class LiteCli(object):
                 raise e
             except KeyboardInterrupt:
                 try:
-                    sqlexecute.conn.interrupt()
+                    # since connection can sqlite3 or sqlean, it's hard to annotate the type for interrupt. so ignore the type hint warning.
+                    sqlexecute.conn.interrupt()  # ty: ignore[possibly-missing-attribute]
                 except Exception as e:
                     self.echo(
                         "Encountered error while cancelling query: {}".format(e),
@@ -754,6 +755,7 @@ class LiteCli(object):
         if reset:
             with self._completer_lock:
                 self.completer.reset_completions()
+        assert self.sqlexecute is not None
         self.completion_refresher.refresh(
             self.sqlexecute,
             self._on_completions_refreshed,

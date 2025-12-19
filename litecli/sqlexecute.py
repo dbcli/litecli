@@ -6,7 +6,7 @@ from typing import Any, Generator, Iterable
 
 try:
     import sqlean as sqlite3
-    from sqlean import OperationalError
+    from sqlean import OperationalError  # ty: ignore[unresolved-import]
 
     sqlite3.extensions.enable_all()
 except ImportError:
@@ -17,9 +17,8 @@ from urllib.parse import urlparse
 
 import sqlparse
 
+from litecli.packages import special
 from litecli.packages.special.utils import check_if_sqlitedotcommand
-
-from .packages import special
 
 _logger = logging.getLogger(__name__)
 

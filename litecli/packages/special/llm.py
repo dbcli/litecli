@@ -25,7 +25,8 @@ log = logging.getLogger(__name__)
 LLM_TEMPLATE_NAME = "litecli-llm-template"
 LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys())
 # Mapping of model_id to None used for completion tree leaves.
-MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()}
+# the file name is llm.py and module name is llm, hence ty is complaining that get_models is missing.
+MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()}  # ty: ignore[unresolved-attribute]
 
 
 def run_external_cmd(
