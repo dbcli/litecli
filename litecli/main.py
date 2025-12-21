@@ -17,7 +17,7 @@ try:
 except ImportError:
     from sqlite3 import OperationalError, sqlite_version
 from time import time
-from typing import Any, Iterable, cast
+from typing import Any, Generator, Iterable, cast
 
 import click
 import sqlparse
@@ -178,7 +178,7 @@ class LiteCli(object):
             case_sensitive=True,
         )
 
-    def change_table_format(self, arg: str, **_: Any) -> Iterable[tuple]:
+    def change_table_format(self, arg: str, **_: Any) -> Generator[tuple[None, None, None, str], None, None]:
         try:
             self.formatter.format_name = arg
             yield (None, None, None, "Changed table format to {}".format(arg))
