@@ -111,5 +111,5 @@ def style_factory_output(name: str, cli_style: dict[str, str]) -> PygmentsStyle:
         default_style = ""
         styles = style
 
-    # mypy does not complain only ty complains: error[invalid-return-type]: Return type does not match returned value. Hence added cast.
+    # mypy does not complain but ty complains: error[invalid-return-type]: Return type does not match returned value. Hence added cast.
     return cast(OutputStyle, PygmentsStyle)

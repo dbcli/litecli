@@ -1,3 +1,9 @@
+## 1.18.0 
+
+### Internal
+
+- Switch mypy to ty for type checking. [(#242)](https://github.com/dbcli/litecli/pull/242/files)
+
 ## 1.17.0 - 2025-09-28
 
 ### Features
