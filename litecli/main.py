@@ -509,7 +509,8 @@ class LiteCli(object):
                 successful = False
                 start = time()
                 res = sqlexecute.run(text)
-                self.formatter.query = text
+                # Ty complains about dynamic assignment. Since the code from the library, ignore the assignment error
+                self.formatter.query = text  # ty: ignore[invalid-assignment]
                 successful = True
                 special.unset_once_if_written()
                 # Keep track of whether or not the query is mutating. In case
@@ -816,7 +817,7 @@ class LiteCli(object):
         results = self.sqlexecute.run(query)
         for result in results:
             title, cur, headers, status = result
-            self.formatter.query = query
+            self.formatter.query = query  # ty: ignore[invalid-assignment]
             output = self.format_output(title, cur, headers)
             for line in output:
                 click.echo(line, nl=new_line)
