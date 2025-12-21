@@ -21,7 +21,6 @@
   - Format: `ruff format`
 
 ## ty (type checking)
-
 - Repo-wide `ty check -v`
 - Per-package: `ty check litecli -v`
 - Notes:

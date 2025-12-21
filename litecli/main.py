@@ -523,7 +523,7 @@ class LiteCli(object):
                 raise e
             except KeyboardInterrupt:
                 try:
-                    # since connection can sqlite3 or sqlean, it's hard to annotate the type for interrupt. so ignore the type hint warning.
+                    # since connection can be sqlite3 or sqlean, it's hard to annotate the type for interrupt. so ignore the type hint warning.
                     sqlexecute.conn.interrupt()  # type: ignore[attr-defined]
                 except Exception as e:
                     self.echo(

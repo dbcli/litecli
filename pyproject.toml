@@ -16,7 +16,7 @@ dependencies = [
     "sqlparse>=0.4.4",
     "setuptools", # Required by llm commands to install models
     "pip",
-    "llm>=0.25.0",
+    "llm>=0.25.0"
 ]
 
 [build-system]
