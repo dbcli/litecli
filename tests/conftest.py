@@ -1,13 +1,12 @@
-# mypy: ignore-errors
-
 from __future__ import print_function
 
 import os
 
 import pytest
-from utils import create_db, db_connection, drop_tables
 
 import litecli.sqlexecute
+
+from .utils import create_db, db_connection, drop_tables
 
 
 @pytest.fixture(scope="function")

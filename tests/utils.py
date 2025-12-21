@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# mypy: ignore-errors
+
 
 import multiprocessing
 import os
@@ -21,7 +21,7 @@ DATABASE = "test.sqlite3"
 
 
 def db_connection(dbname=":memory:"):
-    conn = sqlite3.connect(database=dbname, isolation_level=None)
+    conn = sqlite3.connect(database=dbname, isolation_level=None)  # ty: ignore[possibly-missing-attribute]
     return conn
 
 

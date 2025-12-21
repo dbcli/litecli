@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-
 import os
 import shutil
 from collections import namedtuple
@@ -10,10 +8,12 @@ from unittest.mock import patch
 import click
 import pytest
 from click.testing import CliRunner
-from utils import create_db, db_connection, dbtest, run
+from prompt_toolkit import PromptSession
 
 from litecli.main import LiteCli, cli
 from litecli.packages.special.main import COMMANDS as SPECIAL_COMMANDS
+
+from .utils import create_db, db_connection, dbtest, run
 
 test_dir = os.path.abspath(os.path.dirname(__file__))
 project_dir = os.path.dirname(test_dir)
@@ -137,6 +137,7 @@ def test_help_strings_end_with_periods():
     for param in cli.params:
         if isinstance(param, click.core.Option):
             assert hasattr(param, "help")
+            assert isinstance(param.help, str)
             assert param.help.endswith(".")
 
 
@@ -160,7 +161,7 @@ def output(monkeypatch, terminal_size, testdata, explicit_pager, expect_pager):
         def server_type(self):
             return ["test"]
 
-    class PromptBuffer:
+    class PromptBuffer(PromptSession):
         output = TestOutput()
 
     m.prompt_app = PromptBuffer()
@@ -268,6 +269,7 @@ def test_import_command(executor):
 
 def test_startup_commands(executor):
     m = LiteCli(liteclirc=default_config_file)
+    assert m.startup_commands
     assert m.startup_commands["commands"] == [
         "create table startupcommands(a text)",
         "insert into startupcommands values('abc')",
@@ -328,7 +330,8 @@ def test_get_prompt(mock_datetime):
     assert lc.get_prompt(r"\s") == "42"
 
     # 11. Test when dbname is None => (none)
-    lc.connect(None)  # Simulate no DB connection
+    lc.connect(None)  # ty: ignore[invalid-argument-type]
+    # Simulate no DB connection and incorrect argument type
     assert lc.get_prompt(r"\d") == "(none)"
     assert lc.get_prompt(r"\f") == "(none)"
 

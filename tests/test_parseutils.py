@@ -1,11 +1,10 @@
-# mypy: ignore-errors
-
 import pytest
+
 from litecli.packages.parseutils import (
     extract_tables,
-    query_starts_with,
-    queries_start_with,
     is_destructive,
+    queries_start_with,
+    query_starts_with,
 )
 
 
