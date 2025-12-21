@@ -240,10 +240,10 @@ def test_reserved_space_is_integer():
 
     old_func = shutil.get_terminal_size
 
-    shutil.get_terminal_size = stub_terminal_size  # ty: ignore[invalid-assignment]
+    shutil.get_terminal_size = stub_terminal_size  # type: ignore[assignment]
     lc = LiteCli()
     assert isinstance(lc.get_reserved_space(), int)
-    shutil.get_terminal_size = old_func
+    shutil.get_terminal_size = old_func  # type: ignore[assignment]
 
 
 @dbtest
@@ -330,7 +330,7 @@ def test_get_prompt(mock_datetime):
     assert lc.get_prompt(r"\s") == "42"
 
     # 11. Test when dbname is None => (none)
-    lc.connect(None)  # ty: ignore[invalid-argument-type]
+    lc.connect(None)
     # Simulate no DB connection and incorrect argument type
     assert lc.get_prompt(r"\d") == "(none)"
     assert lc.get_prompt(r"\f") == "(none)"

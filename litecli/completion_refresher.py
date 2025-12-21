@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import threading
 from collections import OrderedDict
-from typing import Callable
+from typing import Callable, cast
 
 from .packages.special.main import COMMANDS
 from .sqlcompleter import SQLCompleter
@@ -76,7 +76,9 @@ class CompletionRefresher(object):
 
         # If callbacks is a single function then push it into a list.
         if callable(callbacks):
-            callbacks = [callbacks]
+            callbacks_list: list[Callable] = [callbacks]
+        else:
+            callbacks_list = list(cast(list[Callable], callbacks))
 
         while 1:
             for refresher in self.refreshers.values():
@@ -93,7 +95,7 @@ class CompletionRefresher(object):
             # break statement.
             continue
 
-        for callback in callbacks:  # ty: ignore[not-iterable]
+        for callback in callbacks_list:
             callback(completer)
 
 

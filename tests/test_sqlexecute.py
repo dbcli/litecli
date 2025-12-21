@@ -7,7 +7,7 @@ import pytest
 from .utils import assert_result_equal, dbtest, is_expanded_output, run, set_expanded_output
 
 try:
-    from sqlean import OperationalError, ProgrammingError  # ty: ignore[unresolved-import]
+    from sqlean import OperationalError, ProgrammingError  # type: ignore[import-untyped]
 except ImportError:
     from sqlite3 import OperationalError, ProgrammingError
 

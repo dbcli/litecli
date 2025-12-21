@@ -13,7 +13,7 @@ from datetime import datetime
 from io import open
 
 try:
-    from sqlean import OperationalError, sqlite_version  # ty: ignore[unresolved-import]
+    from sqlean import OperationalError, sqlite_version  # type: ignore[import-untyped]
 except ImportError:
     from sqlite3 import OperationalError, sqlite_version
 from time import time
@@ -80,7 +80,8 @@ class LiteCli(object):
         self.key_bindings = c["main"]["key_bindings"]
         special.set_favorite_queries(self.config)
         self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
-        self.formatter.litecli = self  # ty: ignore[unresolved-attribute]
+        # self.formatter.litecli = self, ty raises unresolved-attribute, hence use dynamic assignment
+        setattr(self.formatter, "litecli", self)
         self.syntax_style = c["main"]["syntax_style"]
         self.less_chatty = c["main"].as_bool("less_chatty")
         self.show_bottom_toolbar = c["main"].as_bool("show_bottom_toolbar")
@@ -302,7 +303,7 @@ class LiteCli(object):
 
         return {x: get(x) for x in keys}
 
-    def connect(self, database: str = "") -> None:
+    def connect(self, database: str | None = "") -> None:
         cnf: dict[str, str | None] = {"database": None}
 
         cnf = self.read_my_cnf_files(cnf.keys())
@@ -509,8 +510,8 @@ class LiteCli(object):
                 successful = False
                 start = time()
                 res = sqlexecute.run(text)
-                # Ty complains about dynamic assignment. Since the code from the library, ignore the assignment error
-                self.formatter.query = text  # ty: ignore[invalid-assignment]
+                # Set query attribute dynamically on formatter
+                setattr(self.formatter, "query", text)
                 successful = True
                 special.unset_once_if_written()
                 # Keep track of whether or not the query is mutating. In case
@@ -523,7 +524,7 @@ class LiteCli(object):
             except KeyboardInterrupt:
                 try:
                     # since connection can sqlite3 or sqlean, it's hard to annotate the type for interrupt. so ignore the type hint warning.
-                    sqlexecute.conn.interrupt()  # ty: ignore[possibly-missing-attribute]
+                    sqlexecute.conn.interrupt()  # type: ignore[attr-defined]
                 except Exception as e:
                     self.echo(
                         "Encountered error while cancelling query: {}".format(e),
@@ -817,7 +818,7 @@ class LiteCli(object):
         results = self.sqlexecute.run(query)
         for result in results:
             title, cur, headers, status = result
-            self.formatter.query = query  # ty: ignore[invalid-assignment]
+            setattr(self.formatter, "query", query)
             output = self.format_output(title, cur, headers)
             for line in output:
                 click.echo(line, nl=new_line)
