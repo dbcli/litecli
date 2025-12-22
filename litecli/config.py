@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import errno
-import shutil
 import os
 import platform
-from os.path import expanduser, exists, dirname
-
+import shutil
+from os.path import dirname, exists, expanduser
 
 from configobj import ConfigObj
 
@@ -55,7 +54,7 @@ def upgrade_config(config: str, def_config: str) -> None:
 def get_config(liteclirc_file: str | None = None) -> ConfigObj:
     from litecli import __file__ as package_root
 
-    package_root = os.path.dirname(package_root)
+    package_root = os.path.dirname(str(package_root))
 
     liteclirc_file = liteclirc_file or f"{config_location()}config"
 

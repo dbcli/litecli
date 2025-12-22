@@ -20,12 +20,11 @@
   - Lint: `ruff check` (add `--fix` to auto-fix)
   - Format: `ruff format`
 
-### Mypy (type checking)
-- Repo-wide (recommended): `mypy --explicit-package-bases .`
-- Per-package: `mypy --explicit-package-bases litecli`
+## ty (type checking)
+- Repo-wide `ty check -v`
+- Per-package: `ty check litecli -v`
 - Notes:
   - Config is in `pyproject.toml` (target Python 3.9, stricter settings).
-  - Use `--explicit-package-bases` to avoid module discovery issues when running outside tox.
 
 ## Coding Style & Naming Conventions
 - Formatter/linter: Ruff (configured via `.pre-commit-config.yaml` and `tox`).

@@ -1,21 +1,19 @@
-# mypy: ignore-errors
-
-from test_completion_engine import sorted_dicts
-from utils import assert_result_equal, dbtest, run
-
 from litecli.packages.completion_engine import suggest_type
 from litecli.packages.special.utils import check_if_sqlitedotcommand, format_uptime
 
+from .test_completion_engine import sorted_dicts
+from .utils import assert_result_equal, dbtest, run
+
 
 def test_import_first_argument():
-    test_cases = [
+    test_cases: list[tuple[str, int]] = [
         # text, expecting_arg_idx
-        [".import ", 1],
-        [".import ./da", 1],
-        [".import ./data.csv ", 2],
-        [".import ./data.csv t", 2],
-        [".import ./data.csv `t", 2],
-        ['.import ./data.csv "t', 2],
+        (".import ", 1),
+        (".import ./da", 1),
+        (".import ./data.csv ", 2),
+        (".import ./data.csv t", 2),
+        (".import ./data.csv `t", 2),
+        ('.import ./data.csv "t', 2),
     ]
     for text, expecting_arg_idx in test_cases:
         suggestions = suggest_type(text, text)
@@ -53,20 +51,14 @@ def test_list_or_show_create_tables():
 
 
 def test_format_uptime():
-    seconds = 59
-    assert "59 sec" == format_uptime(seconds)
-
-    seconds = 120
-    assert "2 min 0 sec" == format_uptime(seconds)
-
-    seconds = 54890
-    assert "15 hours 14 min 50 sec" == format_uptime(seconds)
-
-    seconds = 598244
-    assert "6 days 22 hours 10 min 44 sec" == format_uptime(seconds)
-
-    seconds = 522600
-    assert "6 days 1 hour 10 min 0 sec" == format_uptime(seconds)
+    for seconds, human_readable_text in [
+        ("59", "59 sec"),
+        ("120", "2 min 0 sec"),
+        ("54890", "15 hours 14 min 50 sec"),
+        ("598244", "6 days 22 hours 10 min 44 sec"),
+        ("522600", "6 days 1 hour 10 min 0 sec"),
+    ]:
+        assert human_readable_text == format_uptime(seconds)
 
 
 def test_indexes():

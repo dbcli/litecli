@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import logging
-from re import compile, escape
 from collections import Counter
+from re import compile, escape
 from typing import Any, Collection, Generator, Iterable, Literal, Sequence
 
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
 from prompt_toolkit.completion.base import Document
 
 from .packages.completion_engine import suggest_type
-from .packages.parseutils import last_word
-from .packages.special.iocommands import favoritequeries
+from .packages.filepaths import complete_path, parse_path, suggest_path
+from .packages.parseutils import LAST_WORD_INCLUDE_TYPE, last_word
 from .packages.special import llm
-from .packages.filepaths import parse_path, complete_path, suggest_path
+from .packages.special.iocommands import favoritequeries
 
 _logger = logging.getLogger(__name__)
 
@@ -381,7 +381,7 @@ class SQLCompleter(Completer):
             metadata[self.dbname][func[0]] = None
             self.all_completions.add(func[0])
 
-    def set_dbname(self, dbname: str) -> None:
+    def set_dbname(self, dbname: str | None) -> None:
         self.dbname = dbname
 
     def reset_completions(self) -> None:
@@ -397,7 +397,7 @@ class SQLCompleter(Completer):
         start_only: bool = False,
         fuzzy: bool = True,
         casing: str | None = None,
-        punctuations: str = "most_punctuations",
+        punctuations: LAST_WORD_INCLUDE_TYPE = "most_punctuations",
     ) -> Generator[Completion, None, None]:
         """Find completion matches for the given text.
 

@@ -4,8 +4,8 @@ import re
 from typing import Generator, Iterable, Literal
 
 import sqlparse
-from sqlparse.sql import IdentifierList, Identifier, Function, Token, TokenList
-from sqlparse.tokens import Keyword, DML, Punctuation
+from sqlparse.sql import Function, Identifier, IdentifierList, Token, TokenList
+from sqlparse.tokens import DML, Keyword, Punctuation
 
 cleanup_regex: dict[str, re.Pattern[str]] = {
     # This matches only alphanumerics and underscores.
@@ -18,10 +18,10 @@ cleanup_regex: dict[str, re.Pattern[str]] = {
     "all_punctuations": re.compile(r"([^\s]+)$"),
 }
 
+LAST_WORD_INCLUDE_TYPE = Literal["alphanum_underscore", "many_punctuations", "most_punctuations", "all_punctuations"]
 
-def last_word(
-    text: str, include: Literal["alphanum_underscore", "many_punctuations", "most_punctuations", "all_punctuations"] = "alphanum_underscore"
-) -> str:
+
+def last_word(text: str, include: LAST_WORD_INCLUDE_TYPE = "alphanum_underscore") -> str:
     R"""
     Find the last word in a sentence.
 

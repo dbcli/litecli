@@ -1,25 +1,24 @@
 from __future__ import annotations
 
 import logging
+from contextlib import closing
 from typing import Any, Generator, Iterable
 
-from contextlib import closing
-
 try:
-    import sqlean as sqlite3
-    from sqlean import OperationalError
+    import sqlean as sqlite3  # type: ignore[import-untyped]
+    from sqlean import OperationalError  # type: ignore[import-untyped]
 
     sqlite3.extensions.enable_all()
 except ImportError:
     import sqlite3
     from sqlite3 import OperationalError
-from litecli.packages.special.utils import check_if_sqlitedotcommand
-
-import sqlparse
 import os.path
 from urllib.parse import urlparse
 
-from .packages import special
+import sqlparse
+
+from litecli.packages import special
+from litecli.packages.special.utils import check_if_sqlitedotcommand
 
 _logger = logging.getLogger(__name__)
 
@@ -88,7 +87,8 @@ class SQLExecute(object):
             if not os.path.exists(db_dir_name):
                 raise Exception("Path does not exist: {}".format(db_dir_name))
 
-        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)
+        # sqlean exposes the connect method during run-time
+        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)  # type: ignore[attr-defined]
         conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
         if self.conn:
             self.conn.close()

@@ -1,14 +1,13 @@
 # coding=UTF-8
-# mypy: ignore-errors
 
 import os
 
 import pytest
 
-from utils import run, dbtest, set_expanded_output, is_expanded_output, assert_result_equal
+from .utils import assert_result_equal, dbtest, is_expanded_output, run, set_expanded_output
 
 try:
-    from sqlean import OperationalError, ProgrammingError
+    from sqlean import OperationalError, ProgrammingError  # type: ignore[import-untyped]
 except ImportError:
     from sqlite3 import OperationalError, ProgrammingError
 

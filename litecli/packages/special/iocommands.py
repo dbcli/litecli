@@ -195,6 +195,7 @@ def execute_favorite_query(cur: Any, arg: str, verbose: bool = False, **_: Any) 
         if arg_error:
             yield (None, None, None, arg_error)
         else:
+            assert query, "query should be non-empty"
             for sql in sqlparse.split(query):
                 sql = sql.rstrip(";")
                 title = "> %s" % (sql) if verbose else None

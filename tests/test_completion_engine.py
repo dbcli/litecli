@@ -1,7 +1,6 @@
-# mypy: ignore-errors
+import pytest
 
 from litecli.packages.completion_engine import suggest_type
-import pytest
 
 
 def sorted_dicts(dicts):

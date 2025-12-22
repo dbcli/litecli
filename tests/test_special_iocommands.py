@@ -1,12 +1,10 @@
-# mypy: ignore-errors
-
 import os
 import tempfile
 
 import pytest
 
 import litecli.packages.special
-from litecli.packages.special.main import parse_special_command, Verbosity
+from litecli.packages.special.main import Verbosity, parse_special_command
 
 
 def test_once_command():
