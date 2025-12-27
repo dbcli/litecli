@@ -5,8 +5,8 @@ from contextlib import closing
 from typing import Any, Generator, Iterable
 
 try:
-    import sqlean as sqlite3  # type: ignore[import-untyped]
-    from sqlean import OperationalError  # type: ignore[import-untyped]
+    import sqlean as sqlite3
+    from sqlean import OperationalError
 
     sqlite3.extensions.enable_all()
 except ImportError:
@@ -87,8 +87,7 @@ class SQLExecute(object):
             if not os.path.exists(db_dir_name):
                 raise Exception("Path does not exist: {}".format(db_dir_name))
 
-        # sqlean exposes the connect method during run-time
-        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)  # type: ignore[attr-defined]
+        conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)
         conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
         if self.conn:
             self.conn.close()

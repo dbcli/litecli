@@ -34,7 +34,8 @@ litecli = "litecli.main:cli"
 
 [project.optional-dependencies]
 ai = ["llm"]
-sqlean = ["sqlean-py>=3.47.0"]
+sqlean = ["sqlean-py>=3.47.0", 
+    "sqlean-stubs>=0.0.3"]
 
 dev = [
     "behave>=1.2.6",
@@ -45,7 +46,7 @@ dev = [
     "tox>=4.8.0",
     "pdbpp>=0.10.3",
     "llm>=0.19.0",
-    "ty>=0.0.4",
+    "ty>=0.0.4"
 ]
 
 [tool.setuptools.packages.find]

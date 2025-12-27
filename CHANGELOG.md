@@ -3,6 +3,7 @@
 ### Internal
 
 - Switch mypy to ty for type checking. [(#242)](https://github.com/dbcli/litecli/pull/242/files)
+- Add sqlean-stubs for type checking. [(#243)(https://github.com/dbcli/litecli/pull/243/files)]
 
 ## 1.17.0 - 2025-09-28
 
