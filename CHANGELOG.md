@@ -4,6 +4,10 @@
 
 - Make LLM support optional and installable via `litecli[ai]`.
 
+### Bug Fixes
+
+- Avoid completion refresh crashes when no database is connected.
+
 ## 1.18.0 
 
 ### Internal

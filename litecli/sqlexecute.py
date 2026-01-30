@@ -179,7 +179,8 @@ class SQLExecute(object):
 
     def tables(self) -> Generator[tuple[str], None, None]:
         """Yields table names"""
-        assert self.conn is not None
+        if not self.conn:
+            return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Tables Query. sql: %r", self.tables_query)
             cur.execute(self.tables_query)
@@ -188,7 +189,8 @@ class SQLExecute(object):
 
     def table_columns(self) -> Generator[tuple[str, str], None, None]:
         """Yields column names"""
-        assert self.conn is not None
+        if not self.conn:
+            return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Columns Query. sql: %r", self.table_columns_query)
             cur.execute(self.table_columns_query)
@@ -206,7 +208,8 @@ class SQLExecute(object):
 
     def functions(self) -> Iterable[tuple]:
         """Yields tuples of (schema_name, function_name)"""
-        assert self.conn is not None
+        if not self.conn:
+            return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Functions Query. sql: %r", self.functions_query)
             cur.execute(self.functions_query % self.dbname)
