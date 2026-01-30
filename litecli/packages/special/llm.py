@@ -13,8 +13,22 @@ from time import time
 from typing import Any
 
 import click
-import llm
-from llm.cli import cli
+
+try:
+    import llm
+
+    LLM_IMPORTED = True
+except ImportError:
+    llm = None
+    LLM_IMPORTED = False
+
+try:
+    from llm.cli import cli
+
+    LLM_CLI_IMPORTED = True
+except ImportError:
+    cli = None
+    LLM_CLI_IMPORTED = False
 
 from . import export
 from .main import Verbosity, parse_special_command
@@ -23,10 +37,10 @@ from .types import DBCursor
 log = logging.getLogger(__name__)
 
 LLM_TEMPLATE_NAME = "litecli-llm-template"
-LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys())
+LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys()) if LLM_CLI_IMPORTED else []
 # Mapping of model_id to None used for completion tree leaves.
 # the file name is llm.py and module name is llm, hence ty is complaining that get_models is missing.
-MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()}  # type: ignore[attr-defined]
+MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()} if LLM_IMPORTED else {}  # type: ignore[attr-defined]
 
 
 def run_external_cmd(
@@ -110,7 +124,7 @@ def build_command_tree(cmd: click.Command) -> dict[str, Any] | None:
 
 
 # Generate the tree
-COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli)
+COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli) if LLM_CLI_IMPORTED else {}
 
 
 def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TREE) -> list[str]:
@@ -123,6 +137,8 @@ def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TRE
     Returns:
         list[str]: List of possible completions.
     """
+    if not LLM_CLI_IMPORTED:
+        return []
     for token in tokens:
         if token.startswith("-"):
             # Skip options (flags)
@@ -169,6 +185,18 @@ llm-ollama installed.
 
 # Plugins directory
 # https://llm.datasette.io/en/stable/plugins/directory.html
+"""
+
+NEED_DEPENDENCIES = """
+To enable LLM features you need to install litecli with AI support:
+
+    pip install 'litecli[ai]'
+
+or install LLM libraries separately
+
+   pip install llm
+
+This is required to use the \\llm command.
 """
 
 _SQL_CODE_FENCE = r"```sql\n(.*?)\n```"
@@ -229,6 +257,10 @@ def handle_llm(text: str, cur: DBCursor) -> tuple[str, str | None, float]:
     _, mode, arg = parse_special_command(text)
     is_verbose = mode is Verbosity.VERBOSE
     is_succinct = mode is Verbosity.SUCCINCT
+
+    if not LLM_IMPORTED:
+        output = [(None, None, None, NEED_DEPENDENCIES)]
+        raise FinishIteration(output)
 
     if not arg.strip():  # No question provided. Print usage and bail.
         output = [(None, None, None, USAGE)]

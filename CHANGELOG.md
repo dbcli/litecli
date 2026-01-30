@@ -1,3 +1,9 @@
+## Unreleased
+
+### Features
+
+- Make LLM support optional and installable via `litecli[ai]`.
+
 ## 1.18.0 
 
 ### Internal

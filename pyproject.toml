@@ -13,10 +13,7 @@ dependencies = [
     "configobj>=5.0.5",
     "prompt-toolkit>=3.0.3,<4.0.0",
     "pygments>=1.6",
-    "sqlparse>=0.4.4",
-    "setuptools", # Required by llm commands to install models
-    "pip",
-    "llm>=0.25.0"
+    "sqlparse>=0.4.4"
 ]
 
 [build-system]
@@ -33,7 +30,11 @@ build-backend = "setuptools.build_meta"
 litecli = "litecli.main:cli"
 
 [project.optional-dependencies]
-ai = ["llm"]
+ai = [
+    "llm>=0.25.0",
+    "setuptools", # Required by llm commands to install models
+    "pip",
+]
 sqlean = ["sqlean-py>=3.47.0", 
     "sqlean-stubs>=0.0.3"]
 
@@ -45,7 +46,9 @@ dev = [
     "pytest-cov>=4.1.0",
     "tox>=4.8.0",
     "pdbpp>=0.10.3",
-    "llm>=0.19.0",
+    "llm>=0.25.0",
+    "setuptools",
+    "pip",
     "ty>=0.0.4"
 ]
 
