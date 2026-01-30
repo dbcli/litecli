@@ -1,24 +1,25 @@
 from __future__ import annotations
 
 import logging
-from contextlib import closing
-from typing import Any, Generator, Iterable
-
-try:
-    import sqlean as sqlite3
-    from sqlean import OperationalError
-
-    sqlite3.extensions.enable_all()
-except ImportError:
-    import sqlite3
-    from sqlite3 import OperationalError
 import os.path
+from contextlib import closing
+from typing import Any, Generator, Iterable, cast
 from urllib.parse import urlparse
 
 import sqlparse
 
+try:
+    import sqlean as _sqlite3
+
+    _sqlite3.extensions.enable_all()
+except ImportError:
+    import sqlite3 as _sqlite3
+
 from litecli.packages import special
 from litecli.packages.special.utils import check_if_sqlitedotcommand
+
+sqlite3 = cast(Any, _sqlite3)
+OperationalError = sqlite3.OperationalError
 
 _logger = logging.getLogger(__name__)
 

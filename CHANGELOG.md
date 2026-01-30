@@ -8,6 +8,10 @@
 
 - Avoid completion refresh crashes when no database is connected.
 
+### Internal
+
+- Clean up ty type-checking for optional sqlean/llm imports.
+
 ## 1.18.0 
 
 ### Internal

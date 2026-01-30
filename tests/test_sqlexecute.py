@@ -1,15 +1,20 @@
 # coding=UTF-8
 
 import os
+from typing import Any, cast
 
 import pytest
 
 from .utils import assert_result_equal, dbtest, is_expanded_output, run, set_expanded_output
 
 try:
-    from sqlean import OperationalError, ProgrammingError
+    import sqlean as _sqlite3
 except ImportError:
-    from sqlite3 import OperationalError, ProgrammingError
+    import sqlite3 as _sqlite3
+
+_sqlite3 = cast(Any, _sqlite3)
+OperationalError = _sqlite3.OperationalError
+ProgrammingError = _sqlite3.ProgrammingError
 
 
 @dbtest

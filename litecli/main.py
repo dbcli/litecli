@@ -11,11 +11,6 @@ import traceback
 from collections import namedtuple
 from datetime import datetime
 from io import open
-
-try:
-    from sqlean import OperationalError, sqlite_version
-except ImportError:
-    from sqlite3 import OperationalError, sqlite_version
 from time import time
 from typing import Any, Generator, Iterable, cast
 
@@ -50,6 +45,15 @@ from .packages.prompt_utils import confirm, confirm_destructive_query
 from .packages.special.main import NO_QUERY
 from .sqlcompleter import SQLCompleter
 from .sqlexecute import SQLExecute
+
+try:
+    import sqlean as _sqlite3
+except ImportError:
+    import sqlite3 as _sqlite3
+
+_sqlite3 = cast(Any, _sqlite3)
+OperationalError = _sqlite3.OperationalError
+sqlite_version = _sqlite3.sqlite_version
 
 # Query tuples are used for maintaining history
 Query = namedtuple("Query", ["query", "successful", "mutating"])

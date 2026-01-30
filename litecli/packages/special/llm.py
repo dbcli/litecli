@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import importlib
 import io
 import logging
 import os
@@ -15,32 +16,40 @@ from typing import Any
 import click
 
 try:
-    import llm
-
-    LLM_IMPORTED = True
+    import llm as llm_module
 except ImportError:
-    llm = None
-    LLM_IMPORTED = False
+    llm_module = None
 
 try:
-    from llm.cli import cli
-
-    LLM_CLI_IMPORTED = True
+    llm_cli_module = importlib.import_module("llm.cli")
 except ImportError:
-    cli = None
-    LLM_CLI_IMPORTED = False
+    llm_cli_module = None
 
 from . import export
 from .main import Verbosity, parse_special_command
 from .types import DBCursor
 
+LLM_IMPORTED = llm_module is not None
+
+cli: click.Command | None
+if llm_cli_module is not None:
+    llm_cli = getattr(llm_cli_module, "cli", None)
+    cli = llm_cli if isinstance(llm_cli, click.Command) else None
+else:
+    cli = None
+
+LLM_CLI_IMPORTED = cli is not None
+
 log = logging.getLogger(__name__)
 
 LLM_TEMPLATE_NAME = "litecli-llm-template"
-LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys()) if LLM_CLI_IMPORTED else []
+LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys()) if isinstance(cli, click.Group) else []
 # Mapping of model_id to None used for completion tree leaves.
-# the file name is llm.py and module name is llm, hence ty is complaining that get_models is missing.
-MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()} if LLM_IMPORTED else {}  # type: ignore[attr-defined]
+if llm_module is not None:
+    get_models = getattr(llm_module, "get_models", None)
+    MODELS: dict[str, None] = {x.model_id: None for x in get_models()} if callable(get_models) else {}
+else:
+    MODELS = {}
 
 
 def run_external_cmd(
@@ -124,7 +133,7 @@ def build_command_tree(cmd: click.Command) -> dict[str, Any] | None:
 
 
 # Generate the tree
-COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli) if LLM_CLI_IMPORTED else {}
+COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli) if cli is not None else {}
 
 
 def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TREE) -> list[str]:
