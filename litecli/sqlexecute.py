@@ -1,24 +1,25 @@
 from __future__ import annotations
 
 import logging
-from contextlib import closing
-from typing import Any, Generator, Iterable
-
-try:
-    import sqlean as sqlite3
-    from sqlean import OperationalError
-
-    sqlite3.extensions.enable_all()
-except ImportError:
-    import sqlite3
-    from sqlite3 import OperationalError
 import os.path
+from contextlib import closing
+from typing import Any, Generator, Iterable, cast
 from urllib.parse import urlparse
 
 import sqlparse
 
+try:
+    import sqlean as _sqlite3
+
+    _sqlite3.extensions.enable_all()
+except ImportError:
+    import sqlite3 as _sqlite3
+
 from litecli.packages import special
 from litecli.packages.special.utils import check_if_sqlitedotcommand
+
+sqlite3 = cast(Any, _sqlite3)
+OperationalError = sqlite3.OperationalError
 
 _logger = logging.getLogger(__name__)
 
@@ -179,7 +180,8 @@ class SQLExecute(object):
 
     def tables(self) -> Generator[tuple[str], None, None]:
         """Yields table names"""
-        assert self.conn is not None
+        if not self.conn:
+            return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Tables Query. sql: %r", self.tables_query)
             cur.execute(self.tables_query)
@@ -188,7 +190,8 @@ class SQLExecute(object):
 
     def table_columns(self) -> Generator[tuple[str, str], None, None]:
         """Yields column names"""
-        assert self.conn is not None
+        if not self.conn:
+            return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Columns Query. sql: %r", self.table_columns_query)
             cur.execute(self.table_columns_query)
@@ -206,7 +209,8 @@ class SQLExecute(object):
 
     def functions(self) -> Iterable[tuple]:
         """Yields tuples of (schema_name, function_name)"""
-        assert self.conn is not None
+        if not self.conn:
+            return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Functions Query. sql: %r", self.functions_query)
             cur.execute(self.functions_query % self.dbname)

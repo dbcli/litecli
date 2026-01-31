@@ -1,3 +1,19 @@
+## Unreleased
+
+### Features
+
+- Make LLM support optional and installable via `litecli[ai]`.
+
+### Bug Fixes
+
+- Avoid completion refresh crashes when no database is connected.
+
+### Internal
+
+- Clean up ty type-checking for optional sqlean/llm imports.
+- Add an llm module alias for test patching.
+- Avoid ty conflicts for optional sqlite/llm imports.
+
 ## 1.18.0 
 
 ### Internal

@@ -243,7 +243,7 @@ def test_reserved_space_is_integer():
     shutil.get_terminal_size = stub_terminal_size  # type: ignore[assignment]
     lc = LiteCli()
     assert isinstance(lc.get_reserved_space(), int)
-    shutil.get_terminal_size = old_func  # type: ignore[assignment]
+    shutil.get_terminal_size = old_func
 
 
 @dbtest

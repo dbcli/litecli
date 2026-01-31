@@ -2,7 +2,14 @@ from unittest.mock import patch
 
 import pytest
 
+import litecli.packages.special.llm as llm_module
 from litecli.packages.special.llm import USAGE, FinishIteration, handle_llm
+
+
+@pytest.fixture(autouse=True)
+def enable_llm(monkeypatch):
+    monkeypatch.setattr(llm_module, "LLM_IMPORTED", True)
+    monkeypatch.setattr(llm_module, "LLM_CLI_COMMANDS", ["models"])
 
 
 @patch("litecli.packages.special.llm.llm")
