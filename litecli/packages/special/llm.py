@@ -29,6 +29,9 @@ from . import export
 from .main import Verbosity, parse_special_command
 from .types import DBCursor
 
+# Alias for tests and patching.
+llm = llm_module
+
 LLM_IMPORTED = llm_module is not None
 
 cli: click.Command | None

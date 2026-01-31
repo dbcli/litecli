@@ -11,6 +11,7 @@
 ### Internal
 
 - Clean up ty type-checking for optional sqlean/llm imports.
+- Add an llm module alias for test patching.
 
 ## 1.18.0 
 
