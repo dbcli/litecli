@@ -1,18 +1,24 @@
 # coding=UTF-8
 
 import os
-from typing import Any, cast
+from typing import Any
 
 import pytest
 
 from .utils import assert_result_equal, dbtest, is_expanded_output, run, set_expanded_output
 
-try:
-    import sqlean as _sqlite3
-except ImportError:
-    import sqlite3 as _sqlite3
 
-_sqlite3 = cast(Any, _sqlite3)
+def _load_sqlite3() -> Any:
+    try:
+        import sqlean
+    except ImportError:
+        import sqlite3
+
+        return sqlite3
+    return sqlean
+
+
+_sqlite3 = _load_sqlite3()
 OperationalError = _sqlite3.OperationalError
 ProgrammingError = _sqlite3.ProgrammingError
 

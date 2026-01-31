@@ -46,12 +46,18 @@ from .packages.special.main import NO_QUERY
 from .sqlcompleter import SQLCompleter
 from .sqlexecute import SQLExecute
 
-try:
-    import sqlean as _sqlite3
-except ImportError:
-    import sqlite3 as _sqlite3
 
-_sqlite3 = cast(Any, _sqlite3)
+def _load_sqlite3() -> Any:
+    try:
+        import sqlean
+    except ImportError:
+        import sqlite3
+
+        return sqlite3
+    return sqlean
+
+
+_sqlite3 = _load_sqlite3()
 OperationalError = _sqlite3.OperationalError
 sqlite_version = _sqlite3.sqlite_version
 

@@ -12,6 +12,7 @@
 
 - Clean up ty type-checking for optional sqlean/llm imports.
 - Add an llm module alias for test patching.
+- Avoid ty conflicts for optional sqlite/llm imports.
 
 ## 1.18.0 
 

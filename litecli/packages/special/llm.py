@@ -15,19 +15,27 @@ from typing import Any
 
 import click
 
-try:
-    import llm as llm_module
-except ImportError:
-    llm_module = None
-
-try:
-    llm_cli_module = importlib.import_module("llm.cli")
-except ImportError:
-    llm_cli_module = None
-
 from . import export
 from .main import Verbosity, parse_special_command
 from .types import DBCursor
+
+
+def _load_llm_module() -> Any | None:
+    try:
+        return importlib.import_module("llm")
+    except ImportError:
+        return None
+
+
+def _load_llm_cli_module() -> Any | None:
+    try:
+        return importlib.import_module("llm.cli")
+    except ImportError:
+        return None
+
+
+llm_module = _load_llm_module()
+llm_cli_module = _load_llm_cli_module()
 
 # Alias for tests and patching.
 llm = llm_module
