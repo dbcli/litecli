@@ -254,6 +254,7 @@ def load_extension(cur: DBCursor, arg: str, **_: Any) -> None:
     conn = cur.connection
     conn.enable_load_extension(True)
     conn.load_extension(path)
+    return [(None, None, None, "")]
 
 
 @special_command(
