@@ -8,6 +8,13 @@ from . import export
 
 log = logging.getLogger(__name__)
 
+try:
+    import llm  # noqa: F401
+
+    LLM_IMPORTED = True
+except ImportError:
+    LLM_IMPORTED = False
+
 NO_QUERY = 0
 PARSED_QUERY = 1
 RAW_QUERY = 2
@@ -176,13 +183,19 @@ def quit(*_args: Any) -> None:
     arg_type=NO_QUERY,
     case_sensitive=True,
 )
-@special_command(
-    "\\llm",
-    "\\ai",
-    "Use LLM to construct a SQL query.",
-    arg_type=NO_QUERY,
-    case_sensitive=False,
-    aliases=(".ai", ".llm"),
-)
 def stub() -> None:
     raise NotImplementedError
+
+
+if LLM_IMPORTED:
+
+    @special_command(
+        "\\llm",
+        "\\ai",
+        "Use LLM to construct a SQL query.",
+        arg_type=NO_QUERY,
+        case_sensitive=False,
+        aliases=(".ai", ".llm"),
+    )
+    def llm_stub() -> None:
+        raise NotImplementedError

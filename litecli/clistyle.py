@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import logging
-
+from typing import cast
 
 import pygments.styles
-from pygments.token import string_to_tokentype, Token
-from pygments.style import Style as PygmentsStyle
-from pygments.util import ClassNotFound
+from prompt_toolkit.styles import Style, merge_styles
 from prompt_toolkit.styles.pygments import style_from_pygments_cls
-from prompt_toolkit.styles import merge_styles, Style
 from prompt_toolkit.styles.style import _MergedStyle
+from pygments.style import Style as PygmentsStyle
+from pygments.token import Token, _TokenType, string_to_tokentype
+from pygments.util import ClassNotFound
 
 logger = logging.getLogger(__name__)
 
 # map Pygments tokens (ptk 1.0) to class names (ptk 2.0).
-TOKEN_TO_PROMPT_STYLE: dict[Token, str] = {
+TOKEN_TO_PROMPT_STYLE: dict[_TokenType, str] = {
     Token.Menu.Completions.Completion.Current: "completion-menu.completion.current",
     Token.Menu.Completions.Completion: "completion-menu.completion",
     Token.Menu.Completions.Meta.Current: "completion-menu.meta.completion.current",
@@ -43,10 +43,10 @@ TOKEN_TO_PROMPT_STYLE: dict[Token, str] = {
 }
 
 # reverse dict for cli_helpers, because they still expect Pygments tokens.
-PROMPT_STYLE_TO_TOKEN: dict[str, Token] = {v: k for k, v in TOKEN_TO_PROMPT_STYLE.items()}
+PROMPT_STYLE_TO_TOKEN: dict[str, _TokenType] = {v: k for k, v in TOKEN_TO_PROMPT_STYLE.items()}
 
 
-def parse_pygments_style(token_name: str, style_object: PygmentsStyle | dict, style_dict: dict[str, str]) -> tuple[Token, str]:
+def parse_pygments_style(token_name: str, style_object: PygmentsStyle | dict, style_dict: dict[str, str]) -> tuple[_TokenType, str]:
     """Parse token type and style string.
 
     :param token_name: str name of Pygments token. Example: "Token.String"
@@ -111,4 +111,5 @@ def style_factory_output(name: str, cli_style: dict[str, str]) -> PygmentsStyle:
         default_style = ""
         styles = style
 
-    return OutputStyle
+    # mypy does not complain but ty complains: error[invalid-return-type]: Return type does not match returned value. Hence added cast.
+    return cast(OutputStyle, PygmentsStyle)

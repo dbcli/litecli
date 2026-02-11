@@ -11,19 +11,14 @@ import traceback
 from collections import namedtuple
 from datetime import datetime
 from io import open
-
-try:
-    from sqlean import OperationalError, sqlite_version
-except ImportError:
-    from sqlite3 import OperationalError, sqlite_version
 from time import time
-from typing import Any, Iterable
+from typing import Any, Generator, Iterable, cast
 
 import click
 import sqlparse
 from cli_helpers.tabular_output import TabularOutputFormatter, preprocessors
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from prompt_toolkit.completion import DynamicCompleter
+from prompt_toolkit.completion import Completion, DynamicCompleter
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import DEFAULT_BUFFER, EditingMode
 from prompt_toolkit.filters import HasFocus, IsDone
@@ -35,8 +30,6 @@ from prompt_toolkit.layout.processors import (
 )
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
-from typing import cast
-from prompt_toolkit.completion import Completion
 
 from .__init__ import __version__
 from .clibuffer import cli_is_multiline
@@ -53,7 +46,20 @@ from .packages.special.main import NO_QUERY
 from .sqlcompleter import SQLCompleter
 from .sqlexecute import SQLExecute
 
-click.disable_unicode_literals_warning = True
+
+def _load_sqlite3() -> Any:
+    try:
+        import sqlean
+    except ImportError:
+        import sqlite3
+
+        return sqlite3
+    return sqlean
+
+
+_sqlite3 = _load_sqlite3()
+OperationalError = _sqlite3.OperationalError
+sqlite_version = _sqlite3.sqlite_version
 
 # Query tuples are used for maintaining history
 Query = namedtuple("Query", ["query", "successful", "mutating"])
@@ -84,7 +90,8 @@ class LiteCli(object):
         self.key_bindings = c["main"]["key_bindings"]
         special.set_favorite_queries(self.config)
         self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
-        self.formatter.litecli = self
+        # self.formatter.litecli = self, ty raises unresolved-attribute, hence use dynamic assignment
+        setattr(self.formatter, "litecli", self)
         self.syntax_style = c["main"]["syntax_style"]
         self.less_chatty = c["main"].as_bool("less_chatty")
         self.show_bottom_toolbar = c["main"].as_bool("show_bottom_toolbar")
@@ -181,7 +188,7 @@ class LiteCli(object):
             case_sensitive=True,
         )
 
-    def change_table_format(self, arg: str, **_: Any) -> Iterable[tuple]:
+    def change_table_format(self, arg: str, **_: Any) -> Generator[tuple[None, None, None, str], None, None]:
         try:
             self.formatter.format_name = arg
             yield (None, None, None, "Changed table format to {}".format(arg))
@@ -200,11 +207,14 @@ class LiteCli(object):
             self.sqlexecute.connect(database=arg)
 
         self.refresh_completions()
+        # guard so that ty doesn't complain
+        dbname = self.sqlexecute.dbname if self.sqlexecute is not None else ""
+
         yield (
             None,
             None,
             None,
-            'You are now connected to database "%s"' % (self.sqlexecute.dbname),
+            'You are now connected to database "%s"' % (dbname),
         )
 
     def execute_from_file(self, arg: str | None, **_: Any) -> Iterable[tuple[Any, ...]]:
@@ -303,7 +313,7 @@ class LiteCli(object):
 
         return {x: get(x) for x in keys}
 
-    def connect(self, database: str = "") -> None:
+    def connect(self, database: str | None = "") -> None:
         cnf: dict[str, str | None] = {"database": None}
 
         cnf = self.read_my_cnf_files(cnf.keys())
@@ -510,7 +520,8 @@ class LiteCli(object):
                 successful = False
                 start = time()
                 res = sqlexecute.run(text)
-                self.formatter.query = text
+                # Set query attribute dynamically on formatter
+                setattr(self.formatter, "query", text)
                 successful = True
                 special.unset_once_if_written()
                 # Keep track of whether or not the query is mutating. In case
@@ -522,7 +533,8 @@ class LiteCli(object):
                 raise e
             except KeyboardInterrupt:
                 try:
-                    sqlexecute.conn.interrupt()
+                    # since connection can be sqlite3 or sqlean, it's hard to annotate the type for interrupt. so ignore the type hint warning.
+                    sqlexecute.conn.interrupt()  # type: ignore[attr-defined]
                 except Exception as e:
                     self.echo(
                         "Encountered error while cancelling query: {}".format(e),
@@ -755,6 +767,7 @@ class LiteCli(object):
         if reset:
             with self._completer_lock:
                 self.completer.reset_completions()
+        assert self.sqlexecute is not None
         self.completion_refresher.refresh(
             self.sqlexecute,
             self._on_completions_refreshed,
@@ -815,7 +828,7 @@ class LiteCli(object):
         results = self.sqlexecute.run(query)
         for result in results:
             title, cur, headers, status = result
-            self.formatter.query = query
+            setattr(self.formatter, "query", query)
             output = self.format_output(title, cur, headers)
             for line in output:
                 click.echo(line, nl=new_line)

@@ -13,10 +13,7 @@ dependencies = [
     "configobj>=5.0.5",
     "prompt-toolkit>=3.0.3,<4.0.0",
     "pygments>=1.6",
-    "sqlparse>=0.4.4",
-    "setuptools",                   # Required by llm commands to install models
-    "pip",
-    "llm>=0.25.0",
+    "sqlparse>=0.4.4"
 ]
 
 [build-system]
@@ -38,8 +35,13 @@ dev = [
 litecli = "litecli.main:cli"
 
 [project.optional-dependencies]
-ai = ["llm"]
-sqlean = ["sqlean-py>=3.47.0"]
+ai = [
+    "llm>=0.25.0",
+    "setuptools", # Required by llm commands to install models
+    "pip",
+]
+sqlean = ["sqlean-py>=3.47.0", 
+    "sqlean-stubs>=0.0.3"]
 
 dev = [
     "behave>=1.2.6",
@@ -49,7 +51,10 @@ dev = [
     "pytest-cov>=4.1.0",
     "tox>=4.8.0",
     "pdbpp>=0.10.3",
-    "llm>=0.19.0",
+    "llm>=0.25.0",
+    "setuptools",
+    "pip",
+    "ty>=0.0.4"
 ]
 
 [tool.setuptools.packages.find]
@@ -61,33 +66,18 @@ litecli = ["liteclirc", "AUTHORS"]
 [tool.ruff]
 line-length = 140
 
-[tool.mypy]
-pretty = true
-strict_equality = true
-ignore_missing_imports = true
-warn_unreachable = true
-warn_redundant_casts = true
-warn_no_return = true
-warn_unused_configs = true
-show_column_numbers = true
-show_error_codes = true
-warn_unused_ignores = true
-python_version = "3.9"
-# Resolve module discovery reliably
-explicit_package_bases = true
-packages = ["litecli"]
-# Gradually tighten typing
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
-no_implicit_optional = true
-warn_return_any = true
+[tool.ty.environment]
+python-version = "3.9"
+root = [".", "litecli", "litecli/packages", "litecli/packages/special"]
+
+
+[tool.ty.src]
 exclude = [
-    '^build/',
-    '^dist/',
-    '^\.tox/',
-    '^\.venv/',
-    '^venv/',
-    '^\.mypy_cache/',
-    '^\.pytest_cache/',
-    '^\.ruff_cache/',
+    '**/build/',
+    '**/dist/',
+    '**/.tox/',
+    '**/.venv/',
+    '**/.mypy_cache/',
+    '**/.pytest_cache/',
+    '**/.ruff_cache/'
 ]

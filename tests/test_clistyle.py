@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# mypy: ignore-errors
+
 """Test the litecli.clistyle module."""
 
 import pytest
-
 from pygments.style import Style
 from pygments.token import Token
 
@@ -17,7 +16,7 @@ def test_style_factory():
     cli_style = {"Token.Output.Header": header}
     style = style_factory("default", cli_style)
 
-    assert isinstance(style(), Style)
+    assert isinstance(style, Style)
     assert Token.Output.Header in style.styles
     assert header == style.styles[Token.Output.Header]
 
@@ -27,4 +26,4 @@ def test_style_factory_unknown_name():
     """Test that an unrecognized name will not throw an error."""
     style = style_factory("foobar", {})
 
-    assert isinstance(style(), Style)
+    assert isinstance(style, Style)

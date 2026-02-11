@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import importlib
 import io
 import logging
 import os
@@ -13,19 +14,53 @@ from time import time
 from typing import Any
 
 import click
-import llm
-from llm.cli import cli
 
 from . import export
 from .main import Verbosity, parse_special_command
 from .types import DBCursor
 
+
+def _load_llm_module() -> Any | None:
+    try:
+        return importlib.import_module("llm")
+    except ImportError:
+        return None
+
+
+def _load_llm_cli_module() -> Any | None:
+    try:
+        return importlib.import_module("llm.cli")
+    except ImportError:
+        return None
+
+
+llm_module = _load_llm_module()
+llm_cli_module = _load_llm_cli_module()
+
+# Alias for tests and patching.
+llm = llm_module
+
+LLM_IMPORTED = llm_module is not None
+
+cli: click.Command | None
+if llm_cli_module is not None:
+    llm_cli = getattr(llm_cli_module, "cli", None)
+    cli = llm_cli if isinstance(llm_cli, click.Command) else None
+else:
+    cli = None
+
+LLM_CLI_IMPORTED = cli is not None
+
 log = logging.getLogger(__name__)
 
 LLM_TEMPLATE_NAME = "litecli-llm-template"
-LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys())
+LLM_CLI_COMMANDS: list[str] = list(cli.commands.keys()) if isinstance(cli, click.Group) else []
 # Mapping of model_id to None used for completion tree leaves.
-MODELS: dict[str, None] = {x.model_id: None for x in llm.get_models()}
+if llm_module is not None:
+    get_models = getattr(llm_module, "get_models", None)
+    MODELS: dict[str, None] = {x.model_id: None for x in get_models()} if callable(get_models) else {}
+else:
+    MODELS = {}
 
 
 def run_external_cmd(
@@ -109,7 +144,7 @@ def build_command_tree(cmd: click.Command) -> dict[str, Any] | None:
 
 
 # Generate the tree
-COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli)
+COMMAND_TREE: dict[str, Any] | None = build_command_tree(cli) if cli is not None else {}
 
 
 def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TREE) -> list[str]:
@@ -122,6 +157,8 @@ def get_completions(tokens: list[str], tree: dict[str, Any] | None = COMMAND_TRE
     Returns:
         list[str]: List of possible completions.
     """
+    if not LLM_CLI_IMPORTED:
+        return []
     for token in tokens:
         if token.startswith("-"):
             # Skip options (flags)
@@ -168,6 +205,18 @@ llm-ollama installed.
 
 # Plugins directory
 # https://llm.datasette.io/en/stable/plugins/directory.html
+"""
+
+NEED_DEPENDENCIES = """
+To enable LLM features you need to install litecli with AI support:
+
+    pip install 'litecli[ai]'
+
+or install LLM libraries separately
+
+   pip install llm
+
+This is required to use the \\llm command.
 """
 
 _SQL_CODE_FENCE = r"```sql\n(.*?)\n```"
@@ -228,6 +277,10 @@ def handle_llm(text: str, cur: DBCursor) -> tuple[str, str | None, float]:
     _, mode, arg = parse_special_command(text)
     is_verbose = mode is Verbosity.VERBOSE
     is_succinct = mode is Verbosity.SUCCINCT
+
+    if not LLM_IMPORTED:
+        output = [(None, None, None, NEED_DEPENDENCIES)]
+        raise FinishIteration(output)
 
     if not arg.strip():  # No question provided. Print usage and bail.
         output = [(None, None, None, USAGE)]

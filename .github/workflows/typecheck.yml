@@ -31,8 +31,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras
 
-      - name: Run mypy
+      - name: Run ty
         run: |
           cd litecli
-          uv run --no-sync --frozen -- python -m ensurepip
-          uv run --no-sync --frozen -- python -m mypy --no-pretty --install-types --non-interactive .
+          uv run ty check -v

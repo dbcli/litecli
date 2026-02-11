@@ -2,6 +2,27 @@
 
 * Remove mypy as a runtime dependency
 
+## 1.19.0 - 2026-01-30
+
+### Features
+
+- Make LLM support optional and installable via `litecli[ai]`.
+
+### Bug Fixes
+
+- Avoid completion refresh crashes when no database is connected.
+
+### Internal
+
+- Clean up ty type-checking for optional sqlean/llm imports.
+
+## 1.18.0
+
+### Internal
+
+- Switch mypy to ty for type checking. [(#242)](https://github.com/dbcli/litecli/pull/242/files)
+- Add sqlean-stubs for type checking. [(#243)(https://github.com/dbcli/litecli/pull/243/files)]
+
 ## 1.17.0 - 2025-09-28
 
 ### Features

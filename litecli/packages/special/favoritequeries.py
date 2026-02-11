@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import builtins
 from typing import Any, cast
 
 
@@ -39,7 +40,7 @@ Examples:
     def __init__(self, config: Any) -> None:
         self.config = config
 
-    def list(self) -> list[str]:
+    def list(self) -> builtins.list[str]:
         section = cast(dict[str, str], self.config.get(self.section_name, {}))
         return list(section.keys())
 
