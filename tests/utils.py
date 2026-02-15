@@ -21,7 +21,7 @@ DATABASE = "test.sqlite3"
 
 
 def db_connection(dbname=":memory:"):
-    conn = sqlite3.connect(database=dbname, isolation_level=None)  # type: ignore[attr-defined]
+    conn = sqlite3.connect(database=dbname, isolation_level=None)
     return conn
 
 
