@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Bug Fixes
+
+- Expand `~` in configured log file paths.
+
 ### Internal
 
 - Add a GitHub Actions workflow to run Codex review on pull requests.

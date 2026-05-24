@@ -278,6 +278,23 @@ def test_startup_commands(executor):
     # implement tests on executions of the startupcommands
 
 
+def test_log_file_expands_user_path(tmp_path, monkeypatch, capsys):
+    home = tmp_path / "home"
+    config_file = tmp_path / "liteclirc"
+    with open(default_config_file, encoding="utf-8") as f:
+        config = f.read()
+    config_file.write_text(config.replace("log_file = default", "log_file = ~/.cache/litecli/log"), encoding="utf-8")
+
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
+
+    LiteCli(liteclirc=str(config_file))
+
+    captured = capsys.readouterr()
+    assert "Unable to open the log file" not in captured.err
+    assert (home / ".cache" / "litecli" / "log").exists()
+
+
 @patch("litecli.main.datetime")  # Adjust if your module path is different
 def test_get_prompt(mock_datetime):
     # We'll freeze time at 2025-01-20 13:37:42 for comedic effect.
