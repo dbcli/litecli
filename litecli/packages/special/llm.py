@@ -264,7 +264,7 @@ def ensure_litecli_template(replace: bool = False) -> None:
 
 
 @export
-def handle_llm(text: str, cur: DBCursor) -> tuple[str, str | None, float]:
+def handle_llm(text: str, cur: DBCursor) -> tuple[str, str, float]:
     """This function handles the special command `\\llm`.
 
     If it deals with a question that results in a SQL query then it will return
@@ -375,7 +375,7 @@ def sql_using_llm(
     cur: DBCursor,
     question: str | None = None,
     verbose: bool = False,
-) -> tuple[str, str | None, str | None]:
+) -> tuple[str, str, str | None]:
     if cur is None:
         raise RuntimeError("Connect to a datbase and try again.")
     schema_query = """

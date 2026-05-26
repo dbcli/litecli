@@ -3,14 +3,16 @@
 from __future__ import annotations
 from types import FunctionType
 
-from typing import Callable, Any
+from typing import TypeVar
 
 __all__: list[str] = []
 
+_Exported = TypeVar("_Exported")
 
-def export(defn: Callable[..., Any]) -> Callable[..., Any]:
+
+def export(defn: _Exported) -> _Exported:
     """Decorator to explicitly mark functions that are exposed in a lib."""
-    # ty, requires explict check for callable of tyep | function type to access __name__
+    # ty requires an explicit callable/type check to access __name__.
     if isinstance(defn, (type, FunctionType)):
         globals()[defn.__name__] = defn
         __all__.append(defn.__name__)

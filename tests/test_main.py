@@ -4,6 +4,7 @@ import shutil
 from collections import namedtuple
 from datetime import datetime
 from textwrap import dedent
+from typing import Any, cast
 from unittest.mock import patch
 
 import click
@@ -149,9 +150,8 @@ def output(monkeypatch, terminal_size, testdata, explicit_pager, expect_pager):
 
     class TestOutput:
         def get_size(self):
-            size = namedtuple("Size", "rows columns")
-            size.columns, size.rows = terminal_size
-            return size
+            Size = namedtuple("Size", "rows columns")
+            return Size(rows=terminal_size[1], columns=terminal_size[0])
 
     class TestExecute:
         host = "test"
@@ -166,7 +166,7 @@ def output(monkeypatch, terminal_size, testdata, explicit_pager, expect_pager):
         output = TestOutput()
 
     m.prompt_app = PromptBuffer()
-    m.sqlexecute = TestExecute()
+    m.sqlexecute = cast(Any, TestExecute())
     m.explicit_pager = explicit_pager
 
     def echo_via_pager(s):
@@ -233,18 +233,15 @@ def test_conditional_pager(monkeypatch):
     SPECIAL_COMMANDS["pager"].handler("")
 
 
-def test_reserved_space_is_integer():
+def test_reserved_space_is_integer(monkeypatch):
     """Make sure that reserved space is returned as an integer."""
 
-    def stub_terminal_size():
-        return (5, 5)
+    def stub_terminal_size(_fallback=(80, 24)):
+        return os.terminal_size((5, 5))
 
-    old_func = shutil.get_terminal_size
-
-    shutil.get_terminal_size = stub_terminal_size  # type: ignore[assignment]
+    monkeypatch.setattr(shutil, "get_terminal_size", stub_terminal_size)
     lc = LiteCli()
     assert isinstance(lc.get_reserved_space(), int)
-    shutil.get_terminal_size = old_func
 
 
 @dbtest
@@ -285,7 +282,7 @@ def test_initialize_logging_expands_user_log_file(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("USERPROFILE", str(home))
 
-    m = object.__new__(LiteCli)
+    m = cast(Any, object.__new__(LiteCli))
     m.config = {"main": {"log_file": "~/.cache/litecli/log", "log_level": "INFO"}}
     echo_messages = []
     m.echo = lambda *args, **kwargs: echo_messages.append((args, kwargs))

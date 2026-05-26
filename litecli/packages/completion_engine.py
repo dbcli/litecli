@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import sqlparse
 from sqlparse.sql import Comparison, Identifier, Where, Token
@@ -243,7 +243,7 @@ def suggest_based_on_last_token(
         return [{"type": "user"}]
     elif token_v in ("select", "where", "having"):
         # Check for a table alias or schema qualification
-        parent = (identifier and identifier.get_parent_name()) or []
+        parent = _get_parent_name(identifier)
 
         tables = extract_tables(full_text)
         if parent:
@@ -265,7 +265,7 @@ def suggest_based_on_last_token(
     elif (token_v.endswith("join") and isinstance(token, Token) and token.is_keyword) or (
         token_v in ("copy", "from", "update", "into", "describe", "truncate", "desc", "explain")
     ):
-        schema = (identifier and identifier.get_parent_name()) or []
+        schema = _get_parent_name(identifier)
 
         # Suggest tables from either the currently-selected schema or the
         # public schema if no schema has been specified
@@ -284,14 +284,14 @@ def suggest_based_on_last_token(
     elif token_v in ("table", "view", "function"):
         # E.g. 'DROP FUNCTION <funcname>', 'ALTER TABLE <tablname>'
         rel_type = token_v
-        schema = (identifier and identifier.get_parent_name()) or []
+        schema = _get_parent_name(identifier)
         if schema:
             return [{"type": rel_type, "schema": schema}]
         else:
             return [{"type": "schema"}, {"type": rel_type, "schema": []}]
     elif token_v == "on":
         tables = extract_tables(full_text)  # [(schema, table, alias), ...]
-        parent = (identifier and identifier.get_parent_name()) or []
+        parent = _get_parent_name(identifier)
         if parent:
             # "ON parent.<suggestion>"
             # parent can be either a schema name or table alias
@@ -333,3 +333,11 @@ def suggest_based_on_last_token(
 
 def identifies(id: Any, schema: str | None, table: str, alias: str | None) -> bool:
     return (id == alias) or (id == table) or (schema is not None and (id == schema + "." + table))
+
+
+def _get_parent_name(identifier: Identifier | None) -> str | list[str]:
+    if identifier is None:
+        return []
+
+    parent = identifier.get_parent_name()
+    return cast(str, parent) if parent else []
