@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from collections import namedtuple
@@ -276,6 +277,33 @@ def test_startup_commands(executor):
     ]
 
     # implement tests on executions of the startupcommands
+
+
+def test_initialize_logging_expands_user_log_file(monkeypatch, tmp_path):
+    home = tmp_path / "home"
+    log_file = home / ".cache" / "litecli" / "log"
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
+
+    m = object.__new__(LiteCli)
+    m.config = {"main": {"log_file": "~/.cache/litecli/log", "log_level": "INFO"}}
+    echo_messages = []
+    m.echo = lambda *args, **kwargs: echo_messages.append((args, kwargs))
+
+    root_logger = logging.getLogger("litecli")
+    original_handlers = list(root_logger.handlers)
+    try:
+        m.initialize_logging()
+
+        added_handlers = [handler for handler in root_logger.handlers if handler not in original_handlers]
+        assert log_file.exists()
+        assert not echo_messages
+        assert any(isinstance(handler, logging.FileHandler) and handler.baseFilename == str(log_file) for handler in added_handlers)
+    finally:
+        for handler in root_logger.handlers[:]:
+            if handler not in original_handlers:
+                root_logger.removeHandler(handler)
+                handler.close()
 
 
 @patch("litecli.main.datetime")  # Adjust if your module path is different

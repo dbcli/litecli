@@ -249,6 +249,7 @@ class LiteCli(object):
         log_file = self.config["main"]["log_file"]
         if log_file == "default":
             log_file = config_location() + "log"
+        log_file = os.path.expanduser(log_file)
         try:
             ensure_dir_exists(log_file)
         except OSError:
