@@ -236,7 +236,7 @@ def test_conditional_pager(monkeypatch):
 def test_reserved_space_is_integer(monkeypatch):
     """Make sure that reserved space is returned as an integer."""
 
-    def stub_terminal_size(_fallback=(80, 24)):
+    def stub_terminal_size(fallback=(80, 24)):
         return os.terminal_size((5, 5))
 
     monkeypatch.setattr(shutil, "get_terminal_size", stub_terminal_size)
