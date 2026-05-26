@@ -12,7 +12,7 @@ from collections import namedtuple
 from datetime import datetime
 from io import open
 from time import time
-from typing import Any, Generator, Iterable, cast
+from typing import Any, Generator, Iterable, Literal, TextIO, cast
 
 import click
 import sqlparse
@@ -75,13 +75,13 @@ class LiteCli(object):
         self,
         sqlexecute: SQLExecute | None = None,
         prompt: str | None = None,
-        logfile: Any | None = None,
+        logfile: TextIO | None = None,
         auto_vertical_output: bool = False,
         warn: bool | None = None,
         liteclirc: str | None = None,
     ) -> None:
         self.sqlexecute = sqlexecute
-        self.logfile = logfile
+        self.logfile: TextIO | Literal[False] | None = logfile
 
         # Load config.
         c = self.config = get_config(liteclirc)
@@ -249,6 +249,7 @@ class LiteCli(object):
         log_file = self.config["main"]["log_file"]
         if log_file == "default":
             log_file = config_location() + "log"
+        log_file = os.path.expanduser(log_file)
         try:
             ensure_dir_exists(log_file)
         except OSError:
@@ -472,7 +473,9 @@ class LiteCli(object):
                     try:
                         start = time()
                         assert self.sqlexecute is not None
-                        cur = self.sqlexecute.conn and self.sqlexecute.conn.cursor()
+                        conn = self.sqlexecute.conn
+                        assert conn is not None
+                        cur = conn.cursor()
                         context, sql, duration = special.handle_llm(text, cur)
                         if context:
                             click.echo("LLM Reponse:")
@@ -534,7 +537,9 @@ class LiteCli(object):
             except KeyboardInterrupt:
                 try:
                     # since connection can be sqlite3 or sqlean, it's hard to annotate the type for interrupt. so ignore the type hint warning.
-                    sqlexecute.conn.interrupt()  # type: ignore[attr-defined]
+                    conn = sqlexecute.conn
+                    if conn is not None:
+                        conn.interrupt()  # type: ignore[attr-defined]
                 except Exception as e:
                     self.echo(
                         "Encountered error while cancelling query: {}".format(e),
@@ -791,7 +796,7 @@ class LiteCli(object):
 
     def get_completions(self, text: str, cursor_positition: int) -> Iterable[Completion]:
         with self._completer_lock:
-            return cast(Iterable[Completion], self.completer.get_completions(Document(text=text, cursor_position=cursor_positition), None))
+            return self.completer.get_completions(Document(text=text, cursor_position=cursor_positition), None)
 
     def get_prompt(self, string: str) -> str:
         self.logger.debug("Getting prompt %r", string)
@@ -933,7 +938,7 @@ def cli(
     database: str,
     dbname: str,
     prompt: str | None,
-    logfile: Any | None,
+    logfile: TextIO | None,
     auto_vertical_output: bool,
     table: bool,
     csv: bool,
