@@ -72,7 +72,7 @@ class CompletionRefresher(object):
             executor = sqlexecute
         else:
             # Create a new sqlexecute method to populate the completions.
-            executor = SQLExecute(e.dbname)
+            executor = SQLExecute(e.connect_target)
 
         # If callbacks is a single function then push it into a list.
         if callable(callbacks):

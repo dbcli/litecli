@@ -14,6 +14,7 @@ from prompt_toolkit import PromptSession
 
 from litecli.main import LiteCli, cli
 from litecli.packages.special.main import COMMANDS as SPECIAL_COMMANDS
+from litecli.sqlexecute import OperationalError, make_readonly_uri
 
 from .utils import create_db, db_connection, dbtest, run
 
@@ -390,3 +391,80 @@ def test_file_uri(tmp_path, uri, expected_dbname):
     lc.connect(uri)
 
     assert lc.get_prompt(r"\d") == expected_dbname.format(tmp_path=tmp_path)
+
+
+def _create_readonly_test_db(db_path):
+    conn = db_connection(str(db_path))
+    try:
+        conn.execute("create table test(value text)")
+        conn.execute("insert into test values('seed')")
+    finally:
+        conn.close()
+
+
+def test_make_readonly_uri_adds_readonly_mode(tmp_path):
+    db_path = str(tmp_path / "test.db")
+
+    assert make_readonly_uri(db_path) == f"file:{db_path}?mode=ro"
+    assert make_readonly_uri(f"file:{db_path}?cache=shared") == f"file://{db_path}?cache=shared&mode=ro"
+    assert make_readonly_uri(f"file:{db_path}?mode=rw&cache=shared") == f"file://{db_path}?cache=shared&mode=ro"
+
+
+def test_readonly_option_opens_database_readonly(tmp_path):
+    db_path = tmp_path / "readonly.db"
+    _create_readonly_test_db(db_path)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        args=[
+            "--liteclirc",
+            default_config_file,
+            "--readonly",
+            "-e",
+            "select value from test;",
+            str(db_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "seed" in result.output
+
+    result = runner.invoke(
+        cli,
+        args=[
+            "--liteclirc",
+            default_config_file,
+            "--readonly",
+            "-e",
+            "insert into test values('blocked');",
+            str(db_path),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "readonly" in result.output.lower()
+
+    conn = db_connection(str(db_path))
+    try:
+        rows = conn.execute("select value from test").fetchall()
+    finally:
+        conn.close()
+    assert rows == [("seed",)]
+
+
+def test_open_readonly_opens_database_readonly(tmp_path):
+    db_path = tmp_path / "readonly.db"
+    _create_readonly_test_db(db_path)
+
+    lc = LiteCli(liteclirc=default_config_file)
+    lc.connect("")
+    assert lc.sqlexecute is not None
+
+    results = run(lc.sqlexecute, f".open --readonly {db_path}")
+
+    assert results[0]["status"] == f'You are now connected to database "{db_path}"'
+    assert lc.sqlexecute.connect_target == make_readonly_uri(str(db_path))
+    with pytest.raises(OperationalError) as excinfo:
+        run(lc.sqlexecute, "insert into test values('blocked')")
+    assert "readonly" in str(excinfo.value).lower()

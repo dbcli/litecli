@@ -4,7 +4,8 @@ import logging
 import os.path
 from contextlib import closing
 from typing import Any, Generator, Iterable, cast
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, unquote, urlencode, urlparse, urlunparse
+from urllib.request import pathname2url
 
 import sqlparse
 
@@ -60,6 +61,7 @@ class SQLExecute(object):
     WHERE ROUTINE_TYPE="FUNCTION" AND ROUTINE_SCHEMA = "%s"'''
 
     def __init__(self, database: str | None):
+        self.connect_target: str | None = database
         self.dbname: str | None = database
         self._server_type: tuple[str, str] | None = None
         # Connection can be sqlite3.Connection or sqlean.sqlite3 connection.
@@ -70,7 +72,7 @@ class SQLExecute(object):
         self.connect()
 
     def connect(self, database: str | None = None) -> None:
-        db = database or self.dbname
+        db = database or self.connect_target
         _logger.debug("Connection DB Params: \n\tdatabase: %r", db)
         if db is None:
             # Nothing to connect to.
@@ -80,7 +82,7 @@ class SQLExecute(object):
         if location.scheme and location.scheme == "file":
             uri = True
             db_name = db
-            db_filename = location.path
+            db_filename = unquote(location.path)
         else:
             uri = False
             db_filename = db_name = os.path.expanduser(db)
@@ -96,6 +98,7 @@ class SQLExecute(object):
         self.conn = conn
         # Update them after the connection is made to ensure that it was a
         # successful connection.
+        self.connect_target = db_name
         self.dbname = db_filename
 
     def run(self, statement: str) -> Iterable[tuple]:
@@ -220,3 +223,13 @@ class SQLExecute(object):
     def server_type(self) -> tuple[str, str]:
         self._server_type = ("sqlite3", "3")
         return self._server_type
+
+
+def make_readonly_uri(database: str) -> str:
+    location = urlparse(database)
+    if location.scheme == "file":
+        query = [(key, value) for key, value in parse_qsl(location.query, keep_blank_values=True) if key.lower() != "mode"]
+        query.append(("mode", "ro"))
+        return urlunparse(location._replace(query=urlencode(query)))
+
+    return "file:{}?mode=ro".format(pathname2url(os.path.expanduser(database)))

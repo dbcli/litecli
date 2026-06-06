@@ -44,7 +44,7 @@ from .packages.filepaths import dir_path_exists
 from .packages.prompt_utils import confirm, confirm_destructive_query
 from .packages.special.main import NO_QUERY
 from .sqlcompleter import SQLCompleter
-from .sqlexecute import SQLExecute
+from .sqlexecute import SQLExecute, make_readonly_uri
 
 
 def _load_sqlite3() -> Any:
@@ -203,6 +203,12 @@ class LiteCli(object):
             assert self.sqlexecute is not None
             self.sqlexecute.connect()
         else:
+            open_args = arg.split(maxsplit=1)
+            if open_args and open_args[0] == "--readonly":
+                if len(open_args) == 1:
+                    yield (None, None, None, "Missing required argument, database.")
+                    return
+                arg = make_readonly_uri(open_args[1])
             assert self.sqlexecute is not None
             self.sqlexecute.connect(database=arg)
 
@@ -932,6 +938,7 @@ class LiteCli(object):
 @click.option("-t", "--table", is_flag=True, help="Display batch output in table format.")
 @click.option("--csv", is_flag=True, help="Display batch output in CSV format.")
 @click.option("--warn/--no-warn", default=None, help="Warn before running a destructive query.")
+@click.option("--readonly", is_flag=True, help="Open the database in read-only mode.")
 @click.option("-e", "--execute", type=str, help="Execute command and quit.")
 @click.argument("database", default="", nargs=1)
 def cli(
@@ -943,6 +950,7 @@ def cli(
     table: bool,
     csv: bool,
     warn: bool | None,
+    readonly: bool,
     execute: str | None,
     liteclirc: str,
 ) -> None:
@@ -963,6 +971,8 @@ def cli(
 
     # Choose which ever one has a valid value.
     database = database or dbname
+    if readonly and database:
+        database = make_readonly_uri(database)
 
     litecli.connect(database)
 

@@ -93,3 +93,18 @@ def test_refresh_with_callbacks(refresher):
         refresher.refresh(sqlexecute, callbacks)
         time.sleep(1)  # Wait for the thread to work.
         assert callbacks[0].call_count == 1
+
+
+def test_bg_refresh_uses_connect_target(refresher):
+    callbacks = Mock()
+    sqlexecute_class = Mock()
+    sqlexecute = Mock()
+    sqlexecute.dbname = "/tmp/test.db"
+    sqlexecute.connect_target = "file:/tmp/test.db?mode=ro"
+
+    with patch("litecli.completion_refresher.SQLExecute", sqlexecute_class):
+        refresher.refreshers = {}
+        refresher._bg_refresh(sqlexecute, callbacks, {})
+
+    sqlexecute_class.assert_called_once_with("file:/tmp/test.db?mode=ro")
+    callbacks.assert_called_once()
