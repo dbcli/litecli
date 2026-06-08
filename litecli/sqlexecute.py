@@ -29,6 +29,16 @@ _logger = logging.getLogger(__name__)
 # })
 
 
+def _decode_blob(value: Any) -> Any:
+    if isinstance(value, bytes):
+        return value.hex().upper()
+    return value
+
+
+def _decode_blobs(row: tuple) -> tuple:
+    return tuple(_decode_blob(value) for value in row)
+
+
 class SQLExecute(object):
     databases_query = """
         PRAGMA database_list
@@ -163,7 +173,7 @@ class SQLExecute(object):
         if cursor.description is not None:
             headers = [x[0] for x in cursor.description]
             status = "{count} row{s} in set"
-            cursor = list(cursor)
+            cursor = [_decode_blobs(row) for row in cursor]
             rowcount = len(cursor)
         else:
             _logger.debug("No rows in result.")

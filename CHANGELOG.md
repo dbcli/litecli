@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- Display SQLite BLOB values as decoded hex strings in query results.
 - Expand `~` in configured log file paths before opening the log.
 
 ### Internal

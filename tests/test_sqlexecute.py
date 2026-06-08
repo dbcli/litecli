@@ -53,6 +53,15 @@ def test_binary(executor):
 
 
 @dbtest
+def test_blob_returns_hex(executor):
+    run(executor, """create table foo(blb BLOB NOT NULL)""")
+    run(executor, """INSERT INTO foo VALUES (x'0101C30A')""")
+    results = run(executor, """select * from foo""")
+
+    assert_result_equal(results, headers=["blb"], rows=[("0101C30A",)])
+
+
+@dbtest
 def test_table_and_columns_query(executor):
     run(executor, "create table a(x text, y text)")
     run(executor, "create table b(z text)")
