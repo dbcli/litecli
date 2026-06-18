@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Features
+
+- Add Solarized syntax highlighting styles.
+
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.

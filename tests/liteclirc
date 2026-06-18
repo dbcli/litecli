@@ -39,7 +39,7 @@ table_format = ascii
 # Syntax coloring style. Possible values (many support the "-dark" suffix):
 # manni, igor, xcode, vim, autumn, vs, rrt, native, perldoc, borland, tango, emacs,
 # friendly, monokai, paraiso, colorful, murphy, bw, pastie, paraiso, trac, default,
-# fruity.
+# fruity, solarized, solarized-dark, solarized-light.
 # Screenshots at http://mycli.net/syntax
 syntax_style = default
 
