@@ -244,6 +244,16 @@ def test_reserved_space_is_integer(monkeypatch):
     assert isinstance(lc.get_reserved_space(), int)
 
 
+def test_format_output_does_not_truncate_long_strings():
+    long_value = "x" * 600
+    lc = LiteCli(liteclirc=default_config_file)
+
+    output = "\n".join(lc.format_output(None, [(long_value,)], ["value"]))
+
+    assert long_value in output
+    assert "..." not in output
+
+
 @dbtest
 def test_import_command(executor):
     data_file = os.path.join(project_dir, "tests", "data", "import_data.csv")

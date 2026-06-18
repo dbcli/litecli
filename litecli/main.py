@@ -845,6 +845,7 @@ class LiteCli(object):
         output_kwargs = {
             "dialect": "unix",
             "disable_numparse": True,
+            "max_field_width": None,
             "preserve_whitespace": True,
             "preprocessors": (preprocessors.align_decimals,),
             "style": self.output_style,

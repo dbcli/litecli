@@ -3,6 +3,7 @@
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.
+- Stop truncating long string values in table output.
 
 ### Internal
 
