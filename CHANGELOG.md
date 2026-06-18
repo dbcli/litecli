@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Features
+
+- Add a `dot` table format for exporting query results as Graphviz DOT.
+
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.

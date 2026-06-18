@@ -40,6 +40,7 @@ from .config import config_location, ensure_dir_exists, get_config
 from .key_bindings import cli_bindings
 from .lexer import LiteCliLexer
 from .packages import special
+from .packages.dot_output import format_dot_output
 from .packages.filepaths import dir_path_exists
 from .packages.prompt_utils import confirm, confirm_destructive_query
 from .packages.special.main import NO_QUERY
@@ -60,6 +61,7 @@ def _load_sqlite3() -> Any:
 _sqlite3 = _load_sqlite3()
 OperationalError = _sqlite3.OperationalError
 sqlite_version = _sqlite3.sqlite_version
+LOCAL_OUTPUT_FORMATS = ("dot",)
 
 # Query tuples are used for maintaining history
 Query = namedtuple("Query", ["query", "successful", "mutating"])
@@ -89,7 +91,11 @@ class LiteCli(object):
         self.multi_line = c["main"].as_bool("multi_line")
         self.key_bindings = c["main"]["key_bindings"]
         special.set_favorite_queries(self.config)
-        self.formatter = TabularOutputFormatter(format_name=c["main"]["table_format"])
+        self.local_format_name: str | None = None
+        config_table_format = c["main"]["table_format"]
+        self.formatter = TabularOutputFormatter(format_name="ascii" if config_table_format in LOCAL_OUTPUT_FORMATS else config_table_format)
+        if config_table_format in LOCAL_OUTPUT_FORMATS:
+            self.local_format_name = config_table_format
         # self.formatter.litecli = self, ty raises unresolved-attribute, hence use dynamic assignment
         setattr(self.formatter, "litecli", self)
         self.syntax_style = c["main"]["syntax_style"]
@@ -137,7 +143,7 @@ class LiteCli(object):
 
         # Initialize completer.
         self.completer = SQLCompleter(
-            supported_formats=self.formatter.supported_formats,
+            supported_formats=self.supported_table_formats(),
             keyword_casing=keyword_casing,
         )
         self._completer_lock = threading.Lock()
@@ -188,13 +194,31 @@ class LiteCli(object):
             case_sensitive=True,
         )
 
+    def supported_table_formats(self) -> list[str]:
+        supported_formats = list(self.formatter.supported_formats)
+        for format_name in LOCAL_OUTPUT_FORMATS:
+            if format_name not in supported_formats:
+                supported_formats.append(format_name)
+        return supported_formats
+
+    def current_table_format(self) -> str:
+        return self.local_format_name or self.formatter.format_name
+
+    def set_table_format(self, format_name: str) -> None:
+        if format_name in LOCAL_OUTPUT_FORMATS:
+            self.local_format_name = format_name
+            return
+
+        self.formatter.format_name = format_name
+        self.local_format_name = None
+
     def change_table_format(self, arg: str, **_: Any) -> Generator[tuple[None, None, None, str], None, None]:
         try:
-            self.formatter.format_name = arg
+            self.set_table_format(arg)
             yield (None, None, None, "Changed table format to {}".format(arg))
         except ValueError:
             msg = "Table format {} not recognized. Allowed formats:".format(arg)
-            for table_type in self.formatter.supported_formats:
+            for table_type in self.supported_table_formats():
                 msg += "\n\t{}".format(table_type)
             yield (None, None, None, msg)
 
@@ -839,7 +863,8 @@ class LiteCli(object):
                 click.echo(line, nl=new_line)
 
     def format_output(self, title: Any, cur: Any, headers: Any, expanded: bool = False, max_width: int | None = None) -> Iterable[str]:
-        expanded = expanded or self.formatter.format_name == "vertical"
+        format_name = self.current_table_format()
+        expanded = expanded or format_name == "vertical"
         output_iter: Iterable[str] = []
 
         output_kwargs = {
@@ -854,6 +879,9 @@ class LiteCli(object):
             output_iter = itertools.chain(output_iter, [title])
 
         if cur:
+            if format_name == "dot":
+                return itertools.chain(output_iter, format_dot_output(cur, headers or []))
+
             column_types = None
             if hasattr(cur, "description"):
                 column_types = [str(col) for col in cur.description]
@@ -972,9 +1000,9 @@ def cli(
     if execute:
         try:
             if csv:
-                litecli.formatter.format_name = "csv"
+                litecli.set_table_format("csv")
             elif not table:
-                litecli.formatter.format_name = "tsv"
+                litecli.set_table_format("tsv")
 
             litecli.run_query(execute)
             exit(0)
@@ -999,9 +1027,9 @@ def cli(
             new_line = True
 
             if csv:
-                litecli.formatter.format_name = "csv"
+                litecli.set_table_format("csv")
             elif not table:
-                litecli.formatter.format_name = "tsv"
+                litecli.set_table_format("tsv")
 
             litecli.run_query(stdin_text, new_line=new_line)
             exit(0)

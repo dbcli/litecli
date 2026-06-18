@@ -134,6 +134,19 @@ def test_batch_mode_csv(executor):
     assert expected in "".join(result.output)
 
 
+def test_dot_table_format_is_supported():
+    m = LiteCli(liteclirc=default_config_file)
+
+    assert "dot" in m.supported_table_formats()
+    assert list(m.change_table_format("dot")) == [(None, None, None, "Changed table format to dot")]
+    assert list(m.format_output(None, [("orders", "customers")], ["source", "target"])) == [
+        "digraph result {",
+        "  // Columns: source, target",
+        '  "orders" -> "customers";',
+        "}",
+    ]
+
+
 def test_help_strings_end_with_periods():
     """Make sure click options have help text that end with a period."""
     for param in cli.params:

@@ -32,7 +32,7 @@ log_level = INFO
 # Table format. Possible values:
 # ascii, double, github, psql, plain, simple, grid, fancy_grid, pipe, orgtbl,
 # rst, mediawiki, html, latex, latex_booktabs, textile, moinmoin, jira,
-# vertical, tsv, csv.
+# vertical, tsv, csv, dot.
 # Recommended: ascii
 table_format = ascii
 
