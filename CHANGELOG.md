@@ -3,6 +3,8 @@
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.
+- Say that a semi-colon runs the query in the multiline toolbar hint, which is
+  what it actually does.
 
 ### Internal
 
