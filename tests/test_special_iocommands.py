@@ -87,3 +87,10 @@ def test_parse_special_command_edge_cases():
     sql = r"\llm+- Question"
     # '+' in command sets verbosity; strip('+-') removes both suffixes
     assert parse_special_command(sql) == ("\\llm", Verbosity.VERBOSE, "Question")
+
+
+@pytest.mark.parametrize("command", ["watch", "watch -c", "watch 3"])
+def test_watch_without_a_query_prints_usage(command):
+    results = list(litecli.packages.special.execute(None, command))
+    assert len(results) == 1
+    assert results[0][3].startswith("Syntax: watch")
