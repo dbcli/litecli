@@ -15,7 +15,7 @@ def create_toolbar_tokens_func(cli: Any, show_fish_help: Callable[[], bool]) -> 
         result.append(("class:bottom-toolbar", " "))
 
         if cli.multi_line:
-            result.append(("class:bottom-toolbar", " (Semi-colon [;] will end the line) "))
+            result.append(("class:bottom-toolbar", " (Semi-colon [;] will run the query) "))
 
         if cli.multi_line:
             result.append(("class:bottom-toolbar.on", "[F3] Multiline: ON  "))
