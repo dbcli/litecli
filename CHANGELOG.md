@@ -3,6 +3,7 @@
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.
+- Print the usage message instead of raising `RuntimeError` when `watch` is run without a query.
 
 ### Internal
 
