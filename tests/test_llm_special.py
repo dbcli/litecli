@@ -1,9 +1,12 @@
+from contextlib import closing
 from unittest.mock import patch
 
 import pytest
 
 import litecli.packages.special.llm as llm_module
 from litecli.packages.special.llm import USAGE, FinishIteration, handle_llm
+
+from .utils import db_connection
 
 
 @pytest.fixture(autouse=True)
@@ -174,3 +177,29 @@ def test_llm_command_question_verbose(mock_sql_using_llm, mock_ensure_template, 
     assert sql == "SELECT 42;"
 
     assert isinstance(duration, float)
+
+
+@pytest.mark.parametrize("name", ["products", "products 1", "order", 'product"name', "catalog.products"])
+@pytest.mark.parametrize("object_type", ["table", "view"])
+@patch("litecli.packages.special.llm.run_external_cmd")
+def test_sql_using_llm_quotes_table_and_view_names(mock_run_cmd, object_type, name):
+    response = "```sql\nSELECT 42;\n```"
+    mock_run_cmd.return_value = (0, response)
+    quoted_name = '"' + name.replace('"', '""') + '"'
+
+    with closing(db_connection()) as connection:
+        cursor = connection.cursor()
+        if object_type == "table":
+            cursor.execute(f"CREATE TABLE {quoted_name} (name TEXT, quantity INTEGER)")
+            cursor.execute(f"INSERT INTO {quoted_name} VALUES ('widget', 1), ('gadget', 2)")
+        else:
+            cursor.execute(f"CREATE VIEW {quoted_name} AS SELECT 'widget' AS name, 1 AS quantity")
+
+        result, sql, _ = llm_module.sql_using_llm(cursor, "Top products?")
+
+    assert result == response
+    assert sql == "SELECT 42;"
+    mock_run_cmd.assert_called_once()
+    args = mock_run_cmd.call_args.args
+    sample_data = args[args.index("sample_data") + 1]
+    assert sample_data == str({name: [("name", "widget"), ("quantity", 1)]})
