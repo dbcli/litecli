@@ -389,7 +389,7 @@ def sql_using_llm(
             ORDER BY 1
     """
     click.echo("Preparing schema information to feed the llm")
-    sample_row_query = "SELECT * FROM {table} LIMIT 1"
+    sample_row_query = 'SELECT * FROM "{table}" LIMIT 1'
     log.debug(schema_query)
     cur.execute(schema_query)
     db_schema = "\n".join([x for (x,) in cur.fetchall()])
@@ -398,7 +398,7 @@ def sql_using_llm(
     cur.execute(tables_query)
     sample_data = {}
     for (table,) in cur.fetchall():
-        sample_row = sample_row_query.format(table=table)
+        sample_row = sample_row_query.format(table=table.replace('"', '""'))
         cur.execute(sample_row)
         if cur.description is None:
             continue

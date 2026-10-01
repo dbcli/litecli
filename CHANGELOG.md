@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- Fix `\llm` failing to read tables or views whose names need quoting.
 - Expand `~` in configured log file paths before opening the log.
 
 ### Internal
