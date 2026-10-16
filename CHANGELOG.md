@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- Use visible terminal widths for automatic paging and vertical output.
 - Expand `~` in configured log file paths before opening the log.
 
 ### Internal
