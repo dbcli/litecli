@@ -30,6 +30,7 @@ from prompt_toolkit.layout.processors import (
 )
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
+from prompt_toolkit.utils import get_cwidth
 
 from .__init__ import __version__
 from .clibuffer import cli_is_multiline
@@ -727,7 +728,7 @@ class LiteCli(object):
                 if fits or output_via_pager:
                     # buffering
                     buf.append(line)
-                    if len(line) > size.columns or i > (size.rows - margin):
+                    if get_cwidth(click.unstyle(line)) > size.columns or i > (size.rows - margin):
                         fits = False
                         if not self.explicit_pager and special.is_pager_enabled():
                             # doesn't fit, use pager
@@ -876,7 +877,7 @@ class LiteCli(object):
             first_line = next(formatted)
             formatted = itertools.chain([first_line], formatted)
 
-            if not expanded and max_width and headers and cur and len(first_line) > max_width:
+            if not expanded and max_width and headers and cur and get_cwidth(click.unstyle(first_line)) > max_width:
                 formatted = self.formatter.format_output(
                     cur,
                     headers,

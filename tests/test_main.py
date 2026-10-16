@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 import click
 import pytest
+from cli_helpers.tabular_output import TabularOutputFormatter
 from click.testing import CliRunner
 from prompt_toolkit import PromptSession
 
@@ -231,6 +232,40 @@ def test_conditional_pager(monkeypatch):
         expect_pager=False,
     )
     SPECIAL_COMMANDS["pager"].handler("")
+
+
+@pytest.mark.parametrize(
+    "line,width,expect_pager",
+    [
+        ("text", 4, False),
+        ("\x1b[31mtext\x1b[0m", 4, False),
+        ("資料", 3, True),
+        ("cafe\u0301", 4, False),
+        ("\x1b[31m資料\x1b[0m", 4, False),
+    ],
+)
+def test_conditional_pager_uses_display_width(monkeypatch, line, width, expect_pager):
+    output(
+        monkeypatch,
+        terminal_size=(width, 20),
+        testdata=[line],
+        explicit_pager=False,
+        expect_pager=expect_pager,
+    )
+
+
+@pytest.mark.parametrize(
+    "header,width,expect_vertical",
+    [("text", 4, False), ("資料", 3, True), ("cafe\u0301", 4, False)],
+)
+def test_auto_vertical_output_uses_display_width(header, width, expect_vertical):
+    m = cast(Any, object.__new__(LiteCli))
+    m.formatter = TabularOutputFormatter(format_name="plain")
+    m.output_style = None
+
+    rendered = "\n".join(m.format_output(None, [("v",)], [header], max_width=width))
+
+    assert ("[ 1. row ]" in rendered) == expect_vertical
 
 
 def test_reserved_space_is_integer(monkeypatch):
