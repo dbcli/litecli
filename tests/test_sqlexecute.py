@@ -1,6 +1,7 @@
 # coding=UTF-8
 
 import os
+from contextlib import closing
 from typing import Any
 
 import pytest
@@ -61,6 +62,25 @@ def test_table_and_columns_query(executor):
     assert set(executor.tables()) == set([("a",), ("b",), ("t",)])
     assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
     assert set(executor.table_columns()) == set([("a", "x"), ("a", "y"), ("b", "z"), ("t", "t")])
+
+
+@dbtest
+def test_table_columns_with_function_only_available_in_another_session(executor, connection):
+    run(executor, "create table products(product_id integer primary key, product_name text)")
+
+    # The view references a function that is only registered in the session of
+    # the `connection` fixture, as a function provided by a loadable extension
+    # would be. It cannot be introspected from the executor's session.
+    with closing(connection.cursor()) as cur:
+        connection.create_function("unavailable_ext_func", 1, lambda x: b"")
+        cur.execute("create view v_ext_hashed as select hex(unavailable_ext_func(product_id)) from products")
+
+    assert ("v_ext_hashed",) in set(executor.tables())
+
+    columns = set(executor.table_columns())
+    assert ("products", "product_id") in columns
+    assert ("products", "product_name") in columns
+    assert not any(table == "v_ext_hashed" for table, _ in columns)
 
 
 @dbtest

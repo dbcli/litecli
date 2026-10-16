@@ -49,6 +49,12 @@ class SQLExecute(object):
         ORDER BY tableName, columnName
     """
 
+    relation_columns_query = """
+        SELECT p.name as columnName
+        FROM pragma_table_info(?) p
+        ORDER BY columnName
+    """
+
     indexes_query = """
         SELECT name, sql
         FROM sqlite_master
@@ -194,9 +200,27 @@ class SQLExecute(object):
             return
         with closing(self.conn.cursor()) as cur:
             _logger.debug("Columns Query. sql: %r", self.table_columns_query)
-            cur.execute(self.table_columns_query)
-            for row in cur:
-                yield row
+            try:
+                rows = list(cur.execute(self.table_columns_query))
+            except OperationalError:
+                # A relation in the database (e.g. a view) can reference a
+                # function that is not available in this session, such as one
+                # provided by a loadable extension. Introspect each relation
+                # individually and skip the ones that cannot be introspected.
+                _logger.debug("Columns Query failed. Introspecting relations individually.")
+                cur.execute(self.tables_query)
+                relations = [row[0] for row in cur]
+                for name in relations:
+                    with closing(self.conn.cursor()) as columns_cur:
+                        try:
+                            columns_cur.execute(self.relation_columns_query, (name,))
+                        except OperationalError:
+                            _logger.debug("Unable to introspect the columns of %s.", name)
+                            continue
+                        for (column,) in columns_cur:
+                            yield (name, column)
+                return
+            yield from rows
 
     def databases(self) -> Generator[str, None, None]:
         if not self.conn:
