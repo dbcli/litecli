@@ -125,8 +125,11 @@ def refresh_schemata(completer: SQLCompleter, executor: SQLExecute) -> None:
 
 @refresher("tables")
 def refresh_tables(completer: SQLCompleter, executor: SQLExecute) -> None:
+    # Register the names of all relations first so that relations whose columns
+    # cannot be introspected in this session (e.g. views that reference a
+    # function provided by a loadable extension) still complete by name.
+    completer.extend_relations(list(executor.tables()), kind="tables")
     table_cols = list(executor.table_columns())
-    completer.extend_relations(table_cols, kind="tables")
     completer.extend_columns(table_cols, kind="tables")
 
 

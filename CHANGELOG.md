@@ -3,6 +3,7 @@
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.
+- Avoid completion refresh crashes when a relation references a function that is unavailable in the current session.
 
 ### Internal
 
