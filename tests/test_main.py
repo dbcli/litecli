@@ -76,6 +76,14 @@ def test_execute_arg_with_csv(executor):
     assert expected in "".join(result.output)
 
 
+def test_execute_arg_with_json():
+    runner = CliRunner()
+    result = runner.invoke(cli, args=CLI_ARGS[:-1] + [":memory:", "-e", "select 'abc' as a;", "--json"])
+
+    assert result.exit_code == 0
+    assert '[{"a":"abc"}]' in result.output
+
+
 @dbtest
 def test_batch_mode(executor):
     run(executor, """create table test(a text)""")
@@ -132,6 +140,14 @@ def test_batch_mode_csv(executor):
 
     assert result.exit_code == 0
     assert expected in "".join(result.output)
+
+
+def test_batch_mode_json():
+    runner = CliRunner()
+    result = runner.invoke(cli, args=CLI_ARGS[:-1] + [":memory:", "--json"], input="select 'abc' as a;")
+
+    assert result.exit_code == 0
+    assert '[{"a":"abc"}]' in result.output
 
 
 def test_help_strings_end_with_periods():

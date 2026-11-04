@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Features
+
+- Add JSON output for batch queries with the `--json` option.
+
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.
