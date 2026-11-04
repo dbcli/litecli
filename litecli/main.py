@@ -16,7 +16,7 @@ from typing import Any, Generator, Iterable, Literal, TextIO, cast
 
 import click
 import sqlparse
-from cli_helpers.tabular_output import TabularOutputFormatter, preprocessors
+from cli_helpers.tabular_output import TabularOutputFormatter, json_output_adapter, preprocessors
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completion, DynamicCompleter
 from prompt_toolkit.document import Document
@@ -65,6 +65,18 @@ sqlite_version = _sqlite3.sqlite_version
 Query = namedtuple("Query", ["query", "successful", "mutating"])
 
 PACKAGE_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+
+def _json_output_adapter(data: Iterable[Iterable[Any]], headers: Iterable[Any], **kwargs: Any) -> str:
+    rows = json_output_adapter.adapter(data, headers, **kwargs)
+    return "[{}]".format(",".join(rows))
+
+
+TabularOutputFormatter.register_new_formatter(
+    "json",
+    _json_output_adapter,
+    json_output_adapter.preprocessors,
+)
 
 
 class LiteCli(object):
@@ -931,6 +943,7 @@ class LiteCli(object):
 )
 @click.option("-t", "--table", is_flag=True, help="Display batch output in table format.")
 @click.option("--csv", is_flag=True, help="Display batch output in CSV format.")
+@click.option("--json", "json_output", is_flag=True, help="Display batch output in JSON format.")
 @click.option("--warn/--no-warn", default=None, help="Warn before running a destructive query.")
 @click.option("-e", "--execute", type=str, help="Execute command and quit.")
 @click.argument("database", default="", nargs=1)
@@ -942,6 +955,7 @@ def cli(
     auto_vertical_output: bool,
     table: bool,
     csv: bool,
+    json_output: bool,
     warn: bool | None,
     execute: str | None,
     liteclirc: str,
@@ -971,7 +985,9 @@ def cli(
     #  --execute argument
     if execute:
         try:
-            if csv:
+            if json_output:
+                litecli.formatter.format_name = "json"
+            elif csv:
                 litecli.formatter.format_name = "csv"
             elif not table:
                 litecli.formatter.format_name = "tsv"
@@ -998,7 +1014,9 @@ def cli(
         try:
             new_line = True
 
-            if csv:
+            if json_output:
+                litecli.formatter.format_name = "json"
+            elif csv:
                 litecli.formatter.format_name = "csv"
             elif not table:
                 litecli.formatter.format_name = "tsv"
