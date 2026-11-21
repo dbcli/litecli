@@ -931,6 +931,7 @@ class LiteCli(object):
 )
 @click.option("-t", "--table", is_flag=True, help="Display batch output in table format.")
 @click.option("--csv", is_flag=True, help="Display batch output in CSV format.")
+@click.option("--json", is_flag=True, help="Display batch output in JSON format (one JSON object per line).")
 @click.option("--warn/--no-warn", default=None, help="Warn before running a destructive query.")
 @click.option("-e", "--execute", type=str, help="Execute command and quit.")
 @click.argument("database", default="", nargs=1)
@@ -942,6 +943,7 @@ def cli(
     auto_vertical_output: bool,
     table: bool,
     csv: bool,
+    json: bool,
     warn: bool | None,
     execute: str | None,
     liteclirc: str,
@@ -973,6 +975,9 @@ def cli(
         try:
             if csv:
                 litecli.formatter.format_name = "csv"
+            elif json:
+                # cli_helpers' JSON Lines adapter: one JSON object per row.
+                litecli.formatter.format_name = "jsonl"
             elif not table:
                 litecli.formatter.format_name = "tsv"
 
@@ -1000,6 +1005,9 @@ def cli(
 
             if csv:
                 litecli.formatter.format_name = "csv"
+            elif json:
+                # cli_helpers' JSON Lines adapter: one JSON object per row.
+                litecli.formatter.format_name = "jsonl"
             elif not table:
                 litecli.formatter.format_name = "tsv"
 
