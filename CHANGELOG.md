@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Features
+
+- Add a `--json` option for batch query output (JSON Lines, one object per row), e.g. `litecli -e "select ..." --json`. (#263)
+
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.

@@ -77,6 +77,20 @@ def test_execute_arg_with_csv(executor):
 
 
 @dbtest
+def test_execute_arg_with_json(executor):
+    run(executor, "create table test (a text)")
+    run(executor, 'insert into test values("abc")')
+
+    sql = "select * from test;"
+    runner = CliRunner()
+    result = runner.invoke(cli, args=CLI_ARGS + ["-e", sql] + ["--json"])
+    expected = '{"a":"abc"}\n'
+
+    assert result.exit_code == 0
+    assert expected in "".join(result.output)
+
+
+@dbtest
 def test_batch_mode(executor):
     run(executor, """create table test(a text)""")
     run(executor, """insert into test values('abc'), ('def'), ('ghi')""")
@@ -129,6 +143,23 @@ def test_batch_mode_csv(executor):
     result = runner.invoke(cli, args=CLI_ARGS + ["--csv"], input=sql)
 
     expected = '"a","b"\n"abc","de\nf"\n"ghi","jkl"\n'
+
+    assert result.exit_code == 0
+    assert expected in "".join(result.output)
+
+
+@dbtest
+def test_batch_mode_json(executor):
+    run(executor, """create table test(a text, b text)""")
+    run(executor, """insert into test (a, b) values('abc', 'de\nf'), ('ghi', 'jkl')""")
+
+    sql = "select * from test;"
+
+    runner = CliRunner()
+    result = runner.invoke(cli, args=CLI_ARGS + ["--json"], input=sql)
+
+    # JSON Lines: one JSON object per row, embedded newlines escaped.
+    expected = '{"a":"abc","b":"de\\nf"}\n{"a":"ghi","b":"jkl"}\n'
 
     assert result.exit_code == 0
     assert expected in "".join(result.output)
