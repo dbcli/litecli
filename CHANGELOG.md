@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- Remove a stray test database (and a `.tox` lock file) accidentally committed by mistake; the database file was named as an absolute Windows path, which broke `git clone` on Windows. (#276)
 - Expand `~` in configured log file paths before opening the log.
 
 ### Internal
