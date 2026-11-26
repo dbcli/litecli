@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import logging
 import os
+import re
 import sys
 import platform
 import shlex
@@ -103,16 +104,58 @@ def list_views(
     return [(None, views, headers, status)]
 
 
+# Skip quoted SQL and comments when looking for punctuation between column definitions.
+_SCHEMA_TOKENS = re.compile(
+    r"""'[^']*'|"[^"]*"|`[^`]*`|\[[^\]]*\]|--[^\n]*|/\*.*?\*/|[(),]""",
+    re.DOTALL,
+)
+
+
+def _indent_schema(sql: str) -> str:
+    """Indent the outer column list, preserving SQL expressions and quoted text."""
+    if not sql.startswith(("CREATE TABLE ", "CREATE INDEX ", "CREATE UNIQUE INDEX ")):
+        return sql
+
+    sql_whitespace = " \t\n\f\r"
+    lines = []
+    depth = 0
+    start = 0
+    for match in _SCHEMA_TOKENS.finditer(sql):
+        token = match.group()
+        if token == "(":
+            depth += 1
+            if depth == 1:
+                lines.append(sql[: match.end()])
+                start = match.end()
+        elif token == "," and depth == 1:
+            lines.append("  " + sql[start : match.end()].lstrip(sql_whitespace))
+            start = match.end()
+        elif token == ")":
+            depth -= 1
+            if depth == 0:
+                if len(lines) == 1:  # A single column needs no line breaks.
+                    return sql
+                lines.append("  " + sql[start : match.start()].strip(sql_whitespace))
+                lines.append(sql[match.start() :])
+                return "\n".join(lines)
+    return sql
+
+
 @special_command(
     ".schema",
-    ".schema[+] [table]",
+    ".schema[+] [--indent] [table]",
     "The complete schema for the database or a single table",
     arg_type=PARSED_QUERY,
     case_sensitive=True,
 )
 def show_schema(cur: DBCursor, arg: str | None = None, **_: Any) -> list[tuple]:
-    if arg:
-        args: tuple[str, ...] = (arg,)
+    # The table name can contain spaces, so only recognize the option at either end.
+    table, indent = re.subn(r"^--indent(?:\s+|$)|\s+--indent$", "", arg or "")
+    if table:
+        if len(table) >= 2 and table[0] in ('"', "'") and table[0] == table[-1]:
+            quote = table[0]
+            table = table[1:-1].replace(quote * 2, quote)
+        args: tuple[str, ...] = (table,)
         query = """
             SELECT sql FROM sqlite_master
             WHERE tbl_name==? AND sql IS NOT NULL
@@ -129,6 +172,8 @@ def show_schema(cur: DBCursor, arg: str | None = None, **_: Any) -> list[tuple]:
     log.debug(query)
     cur.execute(query, args)
     tables = cur.fetchall()
+    if indent:
+        tables = [(_indent_schema(sql),) for (sql,) in tables]
     status = ""
     if cur.description:
         headers = [x[0] for x in cur.description]

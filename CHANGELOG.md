@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 
+- Support `.schema --indent` to display table columns, constraints, and indexed expressions on separate lines.
 - Expand `~` in configured log file paths before opening the log.
 
 ### Internal
