@@ -1,3 +1,5 @@
+import pytest
+
 from litecli.packages.completion_engine import suggest_type
 from litecli.packages.special.utils import check_if_sqlitedotcommand, format_uptime
 
@@ -101,3 +103,54 @@ def test_special_d_w_arg(executor):
     assert_result_equal(
         results, headers=["cid", "name", "type", "notnull", "dflt_value", "pk"], rows=[(0, "a", "TEXT", 0, None, 0)], status=""
     )
+
+
+@dbtest
+@pytest.mark.parametrize("command", [".schema runstats --indent", ".schema --indent runstats"])
+def test_schema_indent_table(executor, command):
+    run(executor, """CREATE TABLE runstats("run,id" INTEGER, label TEXT DEFAULT 'a,b', CHECK("run,id" IN (1, 2)))""")
+    index = 'CREATE INDEX runstats_id ON runstats("run,id")'
+    run(executor, index)
+    run(executor, "CREATE TABLE other(id)")
+
+    table = """CREATE TABLE runstats(
+  "run,id" INTEGER,
+  label TEXT DEFAULT 'a,b',
+  CHECK("run,id" IN (1, 2))
+)"""
+    assert_result_equal(run(executor, command), headers=["sql"], rows=[(table,), (index,)], status="")
+
+
+@dbtest
+def test_schema_indent_all(executor):
+    existing = set(run(executor, ".schema --indent")[0]["rows"])
+    run(executor, 'CREATE TABLE "run  stats"(a, b)')
+    run(executor, "CREATE TABLE tags(name)")
+
+    rows = set(run(executor, ".schema --indent")[0]["rows"])
+    assert rows == existing | {('CREATE TABLE "run  stats"(\n  a,\n  b\n)',), ("CREATE TABLE tags(name)",)}
+    assert_result_equal(run(executor, ".schema run  stats"), headers=["sql"], rows=[('CREATE TABLE "run  stats"(a, b)',)], status="")
+
+
+@dbtest
+def test_schema_indent_quoted_table_and_partial_index(executor):
+    run(executor, 'CREATE TABLE "--indent"(a, b)')
+    run(executor, """CREATE UNIQUE INDEX by_value ON "--indent"(ifnull(a, 'x,y'), b) WHERE b IN (1, 2)""")
+
+    table = 'CREATE TABLE "--indent"(\n  a,\n  b\n)'
+    index = """CREATE UNIQUE INDEX by_value ON "--indent"(\n  ifnull(a, 'x,y'),\n  b\n) WHERE b IN (1, 2)"""
+    assert_result_equal(run(executor, '.schema "--indent" --indent'), headers=["sql"], rows=[(table,), (index,)], status="")
+
+
+@dbtest
+def test_schema_indent_preserves_comments_and_literals(executor):
+    run(
+        executor,
+        """CREATE TABLE messages(a /* comma, paren) */, msg TEXT DEFAULT 'it''s (a,b)' -- last column
+    )""",
+    )
+    [(sql,)] = run(executor, ".schema messages --indent")[0]["rows"]
+    run(executor, "DROP TABLE messages")
+    run(executor, sql)
+    run(executor, "INSERT INTO messages DEFAULT VALUES")
+    assert run(executor, "SELECT msg FROM messages")[0]["rows"] == [("it's (a,b)",)]
