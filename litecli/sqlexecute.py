@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os.path
+import re
 from contextlib import closing
 from typing import Any, Generator, Iterable, cast
 from urllib.parse import urlparse
@@ -22,6 +23,22 @@ sqlite3 = cast(Any, _sqlite3)
 OperationalError = sqlite3.OperationalError
 
 _logger = logging.getLogger(__name__)
+
+
+def _regexp(pattern: str | None, value: Any) -> bool | None:
+    """Implement SQLite's ``X REGEXP Y`` operator, which calls ``regexp(Y, X)``."""
+    if pattern is None or value is None:
+        return None
+    return re.search(pattern, str(value)) is not None
+
+
+def _register_regexp(conn: Any) -> None:
+    """Register a Python REGEXP function unless the connection already provides one (e.g. sqlean)."""
+    try:
+        conn.execute("SELECT 'a' REGEXP 'a'")
+    except sqlite3.OperationalError:
+        conn.create_function("REGEXP", 2, _regexp, deterministic=True)
+
 
 # FIELD_TYPES = decoders.copy()
 # FIELD_TYPES.update({
@@ -90,6 +107,7 @@ class SQLExecute(object):
 
         conn = sqlite3.connect(database=db_name, isolation_level=None, uri=uri)
         conn.text_factory = lambda x: x.decode("utf-8", "backslashreplace")
+        _register_regexp(conn)
         if self.conn:
             self.conn.close()
 

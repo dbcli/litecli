@@ -3,6 +3,7 @@
 ### Bug Fixes
 
 - Expand `~` in configured log file paths before opening the log.
+- Support the `REGEXP` operator when SQLite does not provide one. [(#139)](https://github.com/dbcli/litecli/issues/139)
 
 ### Internal
 
