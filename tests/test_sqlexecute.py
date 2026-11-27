@@ -392,3 +392,17 @@ def test_time_null(executor):
     run(executor, """insert into time_null values(null)""")
     results = run(executor, """select * from time_null""")
     assert_result_equal(results, headers=["a"], rows=[(None,)])
+
+
+@dbtest
+def test_regexp_operator(executor):
+    run(executor, "create table regexp_test(t text)")
+    run(executor, "insert into regexp_test (t) values ('apple'), ('banana'), ('cherry'), (null)")
+    results = run(executor, "select t from regexp_test where t regexp '^b|y$' order by t")
+    assert_result_equal(results, headers=["t"], rows=[("banana",), ("cherry",)])
+
+
+@dbtest
+def test_regexp_null_and_non_text(executor):
+    results = run(executor, "select null regexp 'a', 'a' regexp null, 123 regexp '^1'")
+    assert results[0]["rows"] == [(None, None, 1)]
